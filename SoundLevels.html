@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Underwater Sound Levels</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="underwater acoustics, sound level measurement, underwater sounds, sound in air and water, sound levels compared" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Sound Pressure Levels</h1>
+        <div class="text_01">
+
+          <h2>Underwater sound pressure levels</h2>
+
+          <p>Set out below is a table of sound pressure levels in order-of-magnitude steps. Sound sources typical of some of these levels are shown for comparison.</p>
+
+<h3>Broadband versus narrow band measurements</h3>
+<p>The sound pressure levels in the table are broadband measurements, where all frequencies from a few Hz to a few kHz contribute. For narrow band signals such as sonar transmissions the broadband level will be the same as the spectral level at the transmission frequency since all the power in concentrated at this frequency, but for a broadband source like a large merchant ship, the typical spectral level will be about 160&nbsp;dB <span style="font-size: 80%">re 1&micro;Pa/Hz</span> and the total power received over a 10&nbsp;kHz band will add 40&nbsp;dB [10&times;log(10,000/1)] yielding a measured value of about 200&nbsp;dB <span style="font-size: 80%">re 1&micro;Pa</span>. </p>
+
+<h3>Spherical spreading effect</h3>
+<p>Measurements are standardised to refer to the sound pressure level at a distance of 1&nbsp;m from the source. A few values at other distances are provided in the table to demonstrate the effect of spherical spreading of the sound waves. Spreading loss is 6&nbsp;dB for each doubling of the distance from the source, so a level of 200&nbsp;dB at 1&nbsp;m will have dropped to 194&nbsp;dB at 2&nbsp;m and to 158&nbsp;dB at 128&nbsp;m and so on.</p>
+
+          <table class="txtTbl" style="width: 620px;">
+        <!--    <colgroup span="2"></colgroup>  -->
+        <thead>
+             <tr>
+                  <th style="width: 17%">Pressure<br />(Pa)</th>
+                  <th style="width: 17%">Pressure<br />(dB&nbsp;re&nbsp;1&micro;Pa)</th>
+                  <th style="width: 66%">Underwater sounds</th>
+              </tr>
+        </thead>
+        <tbody>
+               <tr>
+                <td class="right">1,000,000</td>
+                <td class="right">240</td>
+                <td>Maximum linear source level.<br/> Cavitation begins to occur at the face of transmitters.<br/>Seismic air gun (1m from source)</td>
+              </tr>
+              <tr>
+                <td class="right">100,000</td>
+                <td class="right">220</td>
+                <td>Typical active sonar transmission level<br/>Beluga whale call (1m)</td>
+              </tr>
+              <tr>
+                <td class="right">10,000</td>
+                <td class="right">200</td>
+                <td>Large ship, broadband (1m)</td>
+              </tr>
+              <tr>
+                <td class="right">1,000</td>
+                <td class="right">180</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td class="right">100</td>
+                <td class="right">160</td>
+                <td>Large ship, broadband (100m) </td>
+              </tr>
+              <tr>
+                <td class="right">10</td>
+                <td class="right">140</td>
+                <td>Fin whale call (100m)</td>
+              </tr>
+              <tr>
+                <td class="right">1</td>
+                <td class="right">120</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td class="right">0.1</td>
+                <td class="right">100</td>
+                <td>Ambient noise, sea state 4</td>
+              </tr>
+              <tr>
+                <td class="right">0.01</td>
+                <td class="right">80</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td class="right">0.001</td>
+                <td class="right">60</td>
+                <td>Ambient noise, sea state 0 (flat calm)</td>
+              </tr>
+              <tr>
+                <td class="right">100&micro;</td>
+                <td class="right">40</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td class="right">10&micro;</td>
+                <td class="right">20</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td class="right">1&micro;</td>
+                <td class="right">0</td>
+                <td>&nbsp;</td>
+              </tr>
+           </tbody>
+          </table>
+
+          <div class="captionHolder" style="width:620px">
+            <p><b>Table 1.</b> Typical Sound Pressure Levels for various sources.</p>
+          </div>  <!-- captionHolder -->
+
+          <h2>Comparison of underwater and airborne sound</h2>
+
+          <p>To make a comparison of these underwater sound <b>pressure</b> levels with the values quoted for sounds in air an important point must be addressed. The sound pressure levels in air are usually referenced to the threshold level for human hearing which is now standardised at 20&nbsp;&micro;Pa. Thus if an rms sound pressure level of 100&nbsp;Pa is measured in water the result is quoted as 160&nbsp;dB <span style="font-size: 80%">re 1&micro;Pa</span>, whereas the same level in air is quoted as 134&nbsp;dB. The conversion factor of 26&nbsp;dB [20&times;log(20/1)] is due to higher reference level, but mention of the different reference level is often omitted.</p>
+          <p>The comparison of Intensity values corresponding to the air and water measurement are also subject to a large adjustment before meaningful comparisons can be made.</p>
+          <p>The relation between pressure and intensity is often quoted as <i>P<sup>2</sup></i> proportional to <i>I</i>, but this is only true if the acoustic impedance is constant. Acoustic impedance is a measure of how the pressure in the medium rises when a sound of a given intensity is applied. If the impedance is low, say 415&nbsp;Pa.s/m as in air, there is a small rise in pressure. If the acoustic impedance is high, say 1,540,000&nbsp;Pa.s/m as in water, the rise in pressure is approx 3700 times the rise in air pressure for the same intensity wave.</p>
+          <p>So to compare a sound pressure level in air and water, take the sound pressure level of a loud rock band of say 120&nbsp;dB <span style="font-size: 80%">re 20&micro;Pa</span> and find the sound pressure that would be observed in water for a source emitting at the same intensity. There is an additional 26&nbsp;dB because the measurement is from a reference level of 1&micro;Pa instead of 20&micro;Pa, and there is 36dB additional rise in pressure due to the higher impedance of water. So the value measured will be 180&nbsp;dB <span style="font-size: 80%">re 1uPa</span>. A noise level of 180&nbsp;dB is the roughly the noise level heard from a large container ship about 10&nbsp;m away.</p>
+          <p>Comparing the noise a conventional submarine whose sound level, at worst, would be little more than the background ocean noise, to a <a href="http://www.theaustralian.com.au/national-affairs/defence/noisy-subs-actually-quiet-killers/story-e6frg8yo-1111115976910">rock band</a> indicates that someone may have misinterpreted the sound measurement scales.</p>
+
+        </div>  <!-- text_01 -->
+      </div>  <!-- content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

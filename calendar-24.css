@@ -1,0 +1,236 @@
+/*=============================================================
+  Filename: calendar-24.css
+
+  Style Sheet for historical calendar.
+
+  Date    Description                                       By
+  -------|-------------------------------------------------|---
+  28Nov07 Fifth draft                                       ARC
+  30Nov07 Support Object oriented Calendar                  ARC
+  03Dec07 Support for multi country date table              ARC
+  08Jul08 bugfix background none removed                    ARC
+  19Oct09 fixed sel-country to be wider for long names      ARC
+  19Sep10 adjust widths for fallback fonts                  ARC
+  12Oct10 fix dates table row height                        ARC
+  22May14 tidy up selBtnImg appearance                      ARC
+  11May15 Use CSS styling not images for arrows             ARC
+ ==============================================================*/
+
+#calHolder {
+  position: relative;
+  width: 655px;           /* width + L & R padding + L & R border must be <678 */
+  margin: 20px auto;
+  padding: 10px;
+  border: 1px #777777 solid;
+  background-color: #dfe2e6;
+}
+
+button {
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+button .triangle-down {
+  position: relative;
+  margin: 0 auto;
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 10px solid #505060;
+}
+
+button .triangle-left {
+  position: relative;
+  margin: 0 auto;
+	width: 0;
+	height: 0;
+	border-top: 5px solid transparent;
+	border-right: 10px solid #505060;
+	border-bottom: 5px solid transparent;
+}
+
+button .triangle-right {
+  position: relative;
+  margin: 0 auto;
+	width: 0;
+	height: 0;
+	border-top: 5px solid transparent;
+	border-left: 10px solid #505060;
+	border-bottom: 5px solid transparent;
+}
+
+select, input {
+  padding: 0;
+  margin: 0;
+  font-family: Verdana, Arial, sans-serif;
+  font-weight: normal;
+  vertical-align: middle;
+  height: 28px;
+}
+
+.selFrm {
+  position: relative;
+  height: 40px;
+  width: 650px;
+  margin: 0 0 10px 0;
+  padding: 0;
+  background-color: transparent;
+  text-align: left;
+}
+
+#prev {
+  position: absolute;
+  left: 246px;
+  top: 5px;
+  width: 20px;
+  height: 25px;
+  border-radius: 1px;
+  border-width: 1px;
+  background-color: #d0d0d0;
+}
+
+#next {
+  position: absolute;
+  left: 379px;
+  top: 5px;
+  width: 20px;
+  height: 25px;
+  border-radius: 1px;
+  border-width: 1px;
+  background-color: #d0d0d0;
+}
+
+.btnLbl {
+  position: relative;
+  width: 9px;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.ddSelect {
+  position: absolute;
+  display: block;
+/*  top: 0;
+  left: 0;
+*/
+  width: 85px;
+  height: 28px;
+  padding: 0 0 0 10px;
+  margin: 0;
+  border: 1px inset grey;
+  font-size: 19px;
+  line-height: 24px;
+}
+
+.selBtn {
+  position: absolute;
+  display: block;
+/*  top: 4px;
+  left: 352px;
+*/  width: 19px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  border-radius: 1px;
+  border-width: 1px;
+  background-color: #d0d0d0;
+}
+
+table.calendar {
+  position: relative;
+  text-align: left;
+  border-collapse: separate;
+  border-spacing: 3px;
+  padding: 0;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.2em;
+  font-family: Verdana, Arial, sans-serif;
+  font-weight: normal;
+  background-color: #dfe2e6;
+}
+
+.dates {
+  background-color: whitesmoke;
+  text-align: center;
+}
+
+.dates .monthName {      /*  January, February ... */
+  color: #303030;
+  font-size: 1.6em;
+  font-weight: bold;
+  background-color: silver;
+}
+
+.dates th {     /* Mon, Tue, Wed ... */
+  font-weight: normal;
+}
+
+.dates tr {
+  height: 2.2em;
+}
+
+.dates td {     /* 1,2,3, ... */
+  font-weight: bold;
+  width: 2.3em;
+  height: 1.5em;
+  background-color: transparent;
+  padding: 0.2em 0em;
+}
+
+.calendar .dates a {
+  color: black;
+  text-decoration: none;
+  padding: 0.2em;
+}
+
+
+table.equDate {
+  font-family: Arial, Helvetica, sans-serif ;
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  width: 34em;
+  margin: 1em auto 0 auto;
+  background-color: transparent;
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+
+table.equDate tr {
+  height: 1.5em;
+}
+
+table.equDate th {
+  text-align: right;
+  background-color: transparent;
+  padding-right: 2em;
+  border: 0;
+}
+
+table.equDate td.lbl {
+  text-align: right;
+  background-color: transparent;
+  border: 0;
+  padding-right: 1em;
+  font-weight: normal;
+}
+
+table.equDate td {
+  text-align: center;
+  padding: 0 0.5em 0 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  font-weight: bold;
+}
+
+#JDay {
+  width: 8em;
+  font-size: 1.2em;
+  font-weight: bold;
+  background-color: white;
+  text-align: center;
+}
+

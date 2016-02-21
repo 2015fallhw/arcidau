@@ -1,0 +1,586 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Zoom FFT</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="DSP, Digital Signal Processing, Zoom FFT, Kaiser-Bessel Window, Overlap-Save Filtering, Finite Impulse Response Filter, FIR Filter" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+
+    #cg14, #cg15 {
+      background-color: transparent;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="dspUtils-11.js"></script>
+  <script type="text/javascript" src="dspPlot-25.js"></script>
+
+  <script type="text/javascript">
+    function genTone2(buf)
+    {
+      var fs = 65536,
+          f1 = 18811,
+          f2 = 18925,
+          dT = 1/fs,
+          PI = Math.PI,
+          i;
+
+      for (i=0; i<buf.length; i++)
+      {
+        buf[i] = Math.sin(2*PI*f1*i*dT)+Math.sin(2*PI*f2*i*dT)+Math.random()+Math.random()-1;
+      }
+    }
+
+    function zoomFFT(cvsIDa, cvsIDb)
+    {
+      var i,
+          Fc = 19000,
+          tSize = 512,
+          Fs = 65536,
+          Fa = 0,
+          Fb = 8190,
+          M = 115,
+          Att = 96,
+          coeffs,
+          kbw,
+          sigBuf = new Array(13600),
+          opReal = [], opImag = [],
+          aReal = [], aImag = [];
+
+      kbw = kbWnd(tSize, 2.5);        // generate KB window for plotting spectra
+      coeffs = calcFilter(Fs, Fa, Fb, M, Att);  // generate anti-aliasing filter
+      genTone2(sigBuf);                         // generate the test signal
+
+            // for diagnostics only, grab a buffer full of time data
+            for (i=0; i<tSize; i++)
+            {
+              aReal[i] = kbw[i]*sigBuf[i];      // apply kb window
+              aImag[i] = 0;
+            }
+            fft(1, tSize, aReal, aImag);
+            var dispA = new DspPlot(cvsIDa, tSize);
+            dispA.plotSpectrum(dType.PW, aReal, aImag, 200, Fs, true);
+
+      // Zoom FFT starts here
+      freqTranslate(sigBuf, aReal, aImag, 13600, Fs, Fc);
+      overlapSaveFilter(coeffs, aReal, aImag, opReal, opImag, 13600);
+      for (i=0; i<3400; i++)
+      {
+        aReal[i] = 16*opReal[4*i];   // sub-sample
+        aImag[i] = 16*opImag[4*i];
+      }
+      overlapSaveFilter(coeffs, aReal, aImag, opReal, opImag, 3200);
+      for (i=0; i<800; i++)
+      {
+        aReal[i] = 16*opReal[4*i];
+        aImag[i] = 16*opImag[4*i];
+      }
+            // for diagnostics only, grab a buffer full of time data
+            for (i=0; i<tSize; i++)
+            {
+              aReal[i] *= kbw[i];      // apply kb window
+              aImag[i] *= kbw[i];
+            }
+            fft(1, tSize, aReal, aImag);
+            var dispB = new DspPlot(cvsIDb, tSize);
+            dispB.plotFullSpectrum(dType.PW, aImag, aImag, 400, Fs/16, true, Fc);
+    }
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      zoomFFT('cg14', 'cg15');
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Zoom FFT</h1>
+        <div class="text_01">
+
+<h2>Basic principle of the Zoom FFT</h2>
+<p>The zoom FFT (Fast Fourier Transform) is a signal processing technique used to analyse a portion of a spectrum at high resolution. Fig. 1a shows the spectrum of a real signal, with the region of interest shaded. The steps to apply the zoom FFT to this region are as follows:</p>
+<ul>
+  <li>Frequency translate to shift the frequency range of interest down to near 0 Hz (DC), as shown is Fig. 1b.</li>
+  <li>Low pass filter to prevent aliasing when subsequently sampled at a lower sample rate, see Fig 1c.</li>
+  <li>Re-sample at a lower rate.</li>
+  <li>FFT the re-sampled data. Multiple blocks of data are needed to have an FFT of the same length. The resulting spectrum will now have a much smaller resolution bandwidth, compared to an FFT of non-translated data, as shown in Fig. 1d.</li>
+</ul>
+
+<div class="figHolder" style="width: 690px">
+  <img src="Figures/ZF-Fig-01.png" alt="Fig 1"></img>
+ <!-- <div style="margin: 0 20px; font-size: 90%"> -->
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;1</b>. Schematic diagram of the Zoom FFT process.<br/>
+     <b>a)</b>&nbsp;Original spectrum with region of interest shaded.<br/>
+     <b>b)</b>&nbsp;Spectrum after frequency translation.<br/>
+     <b>c)</b>&nbsp;Spectrum after low pass (anti-alias) filtering.<br/>
+     <b>d)</b>&nbsp;Spectrum after sub-sampling (decimation).</p>
+  </div>
+</div>
+
+<h3>Background Information: Spectrum of a real signal</h3>
+<p>If a time domain signal is real ie. imaginary components are 0, such as generated by a physical process, then its spectrum will consist of an EVEN real part and an ODD imaginary part. EVEN real components means that the amplitude of the real values at corresponding positive and negative frequencies are equal. ODD imaginary components means the imaginary negative frequency components have equal amplitude but opposite sign to the positive frequency values. Fig 2 shows the spectrum of a real signal.</p>
+
+<div class="figHolder" style="width: 300px">
+  <img src="Figures/ZF-Fig-02.png" alt="Fig 2"></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;2</b>. Spectrum of real time domain signal. Its real part is EVEN and imaginary part is ODD.</p>
+  </div>
+</div>
+
+<div style="clear:both">&nbsp;</div>
+
+<div class="figHolder" style="width:300px; float:left; margin-left: 40px">
+  <img src="Figures/ZF-Fig-03.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;3</b>. Spectrum of cos(&omega;t), a real function with EVEN real Fourier transform consisting of two delta functions one at &omega; and one at -&omega;.</p>
+  </div>
+</div>
+
+<div class="figHolder" style="width: 300px; float: right; margin-right: 40px;">
+  <img src="Figures/ZF-Fig-04.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;4</b>. Spectrum of sin(&omega;t), a real function with ODD imaginary Fourier transform consisting of two delta functions one at &omega; and one at -&omega;.</p>
+  </div>
+</div>
+<div style="clear:both">&nbsp;</div>
+
+<h2>Frequency translation</h2>
+<p>Moving a signal to a different frequency has long been used in amplitude modulated (AM) radio signals where an audio frequency signal is mixed with (multiplied by) a high frequency carrier. Multiplying signals in the time domain is equivalent to convolving their spectra in the frequency domain. So a copy of the audio spectrum appears centered on the carrier frequency in the RF part of the spectrum.</p>
+
+<p>So if &omega; is the (angular) frequency in the center of the region to be analyzed, then multiplying by, say, cos(-&omega;t) can be expected to move the region of interest down in frequency centered on 0 frequency. Fig 5 shows the result of multiplying by cos(-&omega;t).</p>
+
+<div class="figHolder" style="width: 700px">
+  <img style="width: 230px; float:left" src="Figures/ZF-Fig-05a.png" alt=""></img>
+  <img style="width: 230px; float:left" src="Figures/ZF-Fig-05b.png" alt=""></img>
+  <img style="width: 230px; float:left" src="Figures/ZF-Fig-05c.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;5</b>. Schematic diagram of the convolution of spectra of cos(&omega;t) and a real signal spectrum. Resulting spectrum show that two copies of the signal spectrum are generated.</p>
+  </div>
+</div>
+
+<p>Unfortunately, a second, frequency reversed copy of the spectrum is also there. Since the Fourier transform of cos(-&omega;t) has two delta functions, one at -&omega; and one at +&omega;. The convolution with -&omega; delta function effectively moved the signal spectrum down in frequency as desired, but the convolution with the +&omega; delta function moved a second copy of the signal spectrum up in frequency placing the signals -ve frequencies around -&omega; up to 0 Hz.</p>
+
+<p>The second copy of the signal spectrum must be eliminated, as it corrupts the information around the 0 Hz. To do this, the convolution needs to be done with a single delta function. This can be achieved by using a sum of cos(&omega;t) and sin(&omega;t).  sin(&omega;t) has the same frequency components as the cos(&omega;t) but has an ODD spectrum, ie. it has a negative delta function at &omega; and a positive delta function at -&omega;, but these lie in the imaginary domain. Multiplying sin(&omega;t) by <i>i</i> would convert all imaginary points to negative real equivalent (i*i = -1), see Fig 6. Thus cos(&omega;t) - <i>i</i>sin(&omega;t) should have a frequency spectrum comprising just a single real delta function at -&omega;, see Fig 7.</p>
+
+<div class="figHolder" style="width:230px;float: left; margin-left: 80px">
+  <img src="Figures/ZF-Fig-06.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;6</b>. Spectrum of cos(&omega;t) in blue, and the spectrum of -<i>i</i><sub>*</sub>sin(&omega;t) in green.</p>
+  </div>
+</div>
+
+<div class="figHolder" style="width:230px;float: right; margin-right: 80px;">
+  <img src="Figures/ZF-Fig-07.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;7</b>. Spectrum of cos(&omega;t)-<i>i</i>sin(&omega;t) consisting of a delta function at -&omega;.</p>
+  </div>
+</div>
+<div style="clear:both">&nbsp;</div>
+
+<p>Multiplying the signal by cos(&omega;t) - <i>i</i>sin(&omega;t) is equivalent to convolving its spectrum with the single delta function at -&omega; producing the shifted spectrum required.</p>
+
+<div class="figHolder" style="width: 300px">
+  <img src="Figures/ZF-Fig-08.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;8</b>. Spectrum of frequency shifted (complex) time domain signal.</p>
+  </div>
+</div>
+
+<p>Note that:</p>
+<div class="srcFmt">
+<pre>
+cos(&omega;t) - <i>i</i>sin(&omega;t) = e<sup>-<i>i</i>&omega;t</sup>
+</pre>
+</div>
+<p>so the formula is usually written as:</p>
+<div class="srcFmt">
+<pre>
+Y = X * e<sup>-i(&omega;t)</sup>
+</pre>
+</div>
+<h3>Frequency translation algorithm</h3>
+<p>If the digital time domain real signal is represented by X<sub>k</sub>, where the subscript 'k' represents successive time domain samples, then the array X(real) has all the signal samples. No X(imag) array is necessary as all values would be 0 for a real input signal. The frequency shifted signal, Y, will be a complex time domain signal and is given by:</p>
+<div class="srcFmt">
+<pre>
+Y<sub>k</sub> = X<sub>k</sub>(real) * cos(&omega;t)<sub>k</sub> - iX<sub>k</sub>(real) * sin(&omega;t)<sub>k</sub>.
+
+Y<sub>k</sub>(real) = X<sub>k</sub>(real) * cos(&omega;t)<sub>k</sub>
+Y<sub>k</sub>(imag) = X<sub>k</sub>(real) * -sin(&omega;t)<sub>k</sub>.
+</pre>
+</div>
+<p>As in all complex number manipulation, the addition of real and imaginary components is only notation, the two arrays hold the real and imaginary components and corresponding elements from each array are treated as the components of a single complex value in all calculations. The multiplication by <i>i</i> is implicit, by placing the data in the Y(imag) array all subsequent calculations will treat Y(imag) array elements as having an <i>i</i> coefficient.</p>
+
+<h3>Frequency translation source code</h3>
+<p>Using JavaScript as a demonstration language, here is the code to frequency translate a time domain signal.</p>
+<div class="srcFmt">
+<pre>
+var Np = yReal.length;      // number of data points in the data buffer
+var dT = 1.0/Fsmp;          // Fsmp is the sample frequency
+// Fc = center frequency of spectral region to be zoom analysed
+
+for (var k=0; k&lt;Np; k++)
+{
+  yReal[k] = xReal[k]*Math.cos(2*Math.PI*Fc*k*dT);
+  yImag[k] = -xReal[k]*Math.sin(2*Math.PI*Fc*k*dT);
+}
+</pre>
+</div>
+<h3>Frequency translation of complex time data</h3>
+<p>If the time domain data to be frequency translated is already complex, ie. the imaginary components of the samples, X(imag) are not all 0, then the multiply by e<sup>-i&omega;t</sup> becomes a complex multiply:</p>
+
+<p>Input: </p>
+<div class="srcFmt">
+<pre>
+X<sub>k</sub>(real) + <i>i</i>X<sub>k</sub>(imag)
+</pre>
+</div>
+<p>Output: </p>
+<div class="srcFmt">
+<pre>
+Y<sub>k</sub> = (X<sub>k</sub>(real) + <i>i</i>X<sub>k</sub>(imag)) * (cos(&omega;t)<sub>k</sub> - <i>i</i>sin(&omega;t)<sub>k</sub>)
+</pre>
+</div>
+<p>ie.</p>
+<div class="srcFmt">
+<pre>
+Y<sub>k</sub>(real) = X<sub>k</sub>(real).cos(&omega;t)<sub>k</sub> + X<sub>k</sub>(imag).sin(&omega;t)<sub>k</sub>
+Y<sub>k</sub>(imag) = X<sub>k</sub>(imag).cos(&omega;t)<sub>k</sub> - X<sub>k</sub>(real).sin(&omega;t)<sub>k</sub>
+</pre>
+</div>
+<h2>Low pass filter</h2>
+<h3>Multi-pass filtering</h3>
+<p>The choice of filter characteristics will depend on the amount of 'zooming' required. An increase in resolution of 4 or 5 may be sufficient. On the other hand, zoom factors of 50 or more may be required. The most flexible way to address the filter stage of the Zoom FFT is to use a short FIR (finite impulse response) anti-aliasing filter and decimate (sub-sample) the output data, then filter again, usually with the same FIR coefficients, and decimate again. Typically the frequency resolution is increased by a factor of about 4 for each pass.</p>
+
+<h3>Filter parameter selection </h3>
+<p>An example may be the easiest way to illustrate the technique. Assume the following values:</p>
+
+<pre>
+Input sample frequency = 65536 Hz (power of 2 make the frequency bin spacing nice numbers)
+Decimation rate  = 4              (save every 4th point, first pass decimation rate is 16384 Hz)
+Output dynamic range = 96dB       (give a clean signal for a 16 bit DAC)
+</pre>
+
+<p>The anti-aliasing filter is required before decimation, the filter cutoff frequency should be chosen to be the highest frequency possible without pushing the transition region so high in frequency that its alias, folding back from the Nyquist rate, reaches the filter pass band. Aliases at higher frequencies will fall in the pass band but they will be attenuated by at least 96dB. The filter cut off frequency lies in the middle of the pass band edge and the stop band edge so the cut off frequency should be chosen as Fs/2. With this cut off frequency half of the transition region will alias back from Fs/2 falling wholly within the unaliased half of the transition region. Spectrum analysers typically maintain a pass band for display and measurement that comprises 400 point from the 512 positive frequencies of a 1024 point FFT. This means that with a sampling frequency of 65536 the frequency bin spacing is 64Hz so the 400 bin pass band will span 6400Hz (after decimation), and half the transition band is 1792Hz (8192-6400).</p>
+
+<p>The width of the transition region is determined by the number of points in the FIR filter. The filter length should be as small as possible for efficiency, i.e. small compared to the length of the FFTs that are used in the filtering process. If a 1024 point FFT is used a filter width of around 100 points would be acceptable.</p>
+
+<p>The FIR filter design using the Kaiser-Bessel window method is suitable for this type of situation. A description of this method and an interactive filter design page is available at the <a href="FilterDesign.html">FilterDesign</a> page. Various values of cut off frequency and filter length may be tried, and the resulting filter spectrum displayed.</p>
+
+<p>Selecting 115 point filter gives a half transition width of 1760Hz, so the cut off frequency of 8.19kHz gives a pass band 0 to 6400Hz as desired.</p>
+
+<p>Fig 9 shows the filter frequency response as it would be seen in the FilterDesign page. Fig 10 shows how the filter cutoff frequency and filter transition bandwidth will affect the frequency response of the signal after decimation.</p>
+
+<div class="figHolder" style="width:320px;float: left; margin-left: 30px;">
+  <img src="Figures/ZF-Fig-09.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;9</b>. Anti-aliasing filter design.</p>
+  </div>
+</div>
+
+<div class="figHolder" style="width:320px; float:right; margin-right: 30px;">
+  <img src="Figures/ZF-Fig-10.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;10</b>. Anti-aliasing filter spectrum (blue) and its alias (red) after decimation.</p>
+  </div>
+</div>
+<div style="clear:both">&nbsp;</div>
+
+<h3>Frequency domain filtering</h3>
+<p>The impulse response of the desired filter having been calculated, it remains to do the filtering. This may be done by direct convolution of the time domain data with the impulse response of the FIR filter, a computationally intensive method. Alternatively the equivalence of convolution in the time domain to multiplication in the frequency domain may be used to exploit the efficiency of the FFT algorithm.</p>
+
+<p>The steps in frequency domain filtering are as follows:</p>
+
+<ul>
+  <li>Transform the FIR filter impulse response to the frequency domain using the FFT.</li>
+  <li>Take the next block of time domain signal data, transform to the frequency domain using the FFT.</li>
+  <li>Multiply signal spectrum and the FIR filter spectrum point by point.</li>
+  <li>Inverse FFT the result, converting the signal back to the time domain. Save the filtered data to the output buffer.</li>
+
+  <p> The last three operations are then repeated until the input is consumed.</p>
+</ul>
+
+<H3>Overlap-save filtering</h3>
+
+<p>When directly convolving in the time domain, the first and last few points of the input data do not get filtered correctly. This may be explained as follows. If the length of the impulse response of the filter, M, is 113 points,  then Np = (M-1)/2 is 56 points. Convolution takes 56 points before and 56 points after each input data point, and multiplies them by the corresponding points in the filter impulse response. These product values are then summed to generate a single filtered data point. Clearly point number Np (=56) is the first point in the buffer with 56 valid points preceding it, similarly the point 57 places from the end of the buffer is the last that can be correctly filtered.</p>
+
+<p>In the frequency domain filtering, the FFT of a data block produces the Fourier transform of a signal corresponding to the block of time domain points repeated again and again, butted together. So the filtering of the 56 points at the start of the FFT buffer use data points from the end of the buffer as part of the convolution. Similarly the last 56 use data from the beginning of the buffer in their filtering. As a result, 113 of the points of each FFT buffer are not correctly filtered and should be discarded. If the FFT is 1024 points long then only 912 (1024-112) points should be saved. To compensate the next 1024 point selected from the input should overlap the previous set by 112 points to avoid 112 point gaps in the output buffer. Once again it is not possible to correctly filter the first and last 56 points in the input data, but the overlap-save method correctly generates all the data that time domain convolution can generate.</p>
+
+<p>The remaining vital point about the overlap-save method is that the set of points from the output buffer are not corrupt and should be saved, will vary depending on the placement of the impulse response in the FFT buffer prior to its transformation to the frequency domain. If the impulse response, say 113 points long, is placed in the first 113 points of the FFT buffer, then the after multiplication and inverse FFT, the uncorrupted data will be in the block from point 113 to 1023. Note that this positioning if the impulse response has introduced a phase shift in the output data relative to the input data buffer. With the impulse response position as described, the 113th point in FFT is actually the filtered version of the 56<sup>th</sup> in the input buffer. This may not matter, but if a signal is being extracted and its arrival time is to be measured from the start of the input data buffer this may be quite significant. As a result, the recommended positioning of the impulse response in the FFT buffer is to place the center point of the impulse response at the start, bin 0, of the FFT buffer and the points 0 to 55 of the impulse response are placed at the back of the FFT buffer (see Fig 13). This introduces no phase shift if the bin numbers are maintained between input and output buffer copies. ie. the uncorrupted data points after inverse FFT are from 56 to 1023-56, which should be save to points 56 to 1023-56 in the output buffer if a phase shift is to be avoided. The first 56 points of the output buffer should be ignored.</p>
+
+<p>Fig 11 shows a schematic diagram of overlap-save filtering. The FIR impulse response is shown as green areas of a time domain buffer this is then FFT'd. The filtering proceeds by taking a the FFT of a slab of data from the long input buffer (shown in red) these frequency domain data are multiplied by the FFT of the filter impulse response. The inverse FFT is then taken and the uncorrupted center section (shown in blue) of the result is saved in the output buffer. The next slab of the input data overlaps the previous section of the input buffer (as shown by the darker red block). This process is then repeated.</p>
+
+<div class="figHolder" style="width: 600px">
+  <img src="Figures/ZF-Fig-11.png" alt=""></img>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;11</b>. Schematic diagram of overlap-save filtering.</p>
+  </div>
+</div>
+
+<h2>Sub-sampling</h2>
+<p>After anti-alias filtering, the time domain data is sub-sampled. Assuming a sub-sample rate of 4, the buffer length of the signal data is now &frac14; of the original length. If there is sufficient data, the filter sub-sample process can be repeated. This zooms-in further on the region of interest (now near 0Hz).</p>
+<p>The anti-aliasing filter coefficients required to allow a second sub-sampling by 4 are identical to those previously generated. The sampling frequency is 16384Hz (65536/4) and the low pass cutoff frequency is 2048Hz (8192/4). So filtering the sub-sampled signal a second time with the same coefficients will give a spectrum suitable for decimation at a frequency of 4096Hz. This will have a clean pass band of 1600Hz (6400/4).</p>
+
+<h2>Zoom FFT</h2>
+<p>If the two pass filtering were done as described, and then the FFT of 1024 points of the data is taken, then the spectrum from 0 to 1600Hz will be a zoomed view of the original region of interest. The frequency resolution of this zoomed spectrum will be 4Hz (4096/16) sixteen times finer than the original 64Hz (65536/1024).</p>
+
+<p>To demonstrate the complete process a data buffer of 20000 points has been created, it contains random noise along with two high frequency tones, close together, around 19&nbsp;kHz.</p>
+<p>Fig 12 shows the sample spectrum of the raw data buffer.</p>
+
+<div class="figHolder" style="width: 400px">
+  <canvas id="cg14" width="400" height="300"></canvas>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;12</b>. Spectrum of raw data with signal noticeable peak near 19&nbsp;kHz.</p>
+  </div>
+</div>
+
+<p>Here is the source code of the zoom FFT process. The zoom frequency is 19&nbsp;kHz, two passes of the anti-alias filter, sub-sample process are then carried out. The filter coefficients are those calculated above, the sub-sample factor is 4, so the frequency resolution is improved from 128&nbsp;Hz to 8&nbsp;Hz.</p>
+
+<p>Fig 13 shows the spectrum of the data from the zoom FFT process.</p>
+
+<div class="figHolder" style="width: 400px">
+  <canvas id="cg15" width="400" height="300"></canvas>
+  <div class="captionHolder">
+    <p><b>Figure&nbsp;13</b>. Spectrum of the signal from Fig 13 after zoom FFT processing. The feature near 19kHz is resolved to be two tones, one at 18811 and one at 18925 Hz.</p>
+  </div>
+</div>
+
+<h3>Zoom FFT example source code</h3>
+<p>The source code to generate the Zoom FFT shown in figure 13 is given below (the code to draw figures 12 and 13 is shown indented).</p>
+<div class="srcFmt">
+<pre>
+function genTone2(buf)
+{
+  var fs = 65536,
+      f1 = 18811,
+      f2 = 18925,
+      dT = 1/fs,
+      PI = Math.PI,
+      i;
+
+  for (i=0; i&lt;buf.length; i++)
+  {
+    buf[i] = Math.sin(2*PI*f1*i*dT)+Math.sin(2*PI*f2*i*dT)+Math.random()+Math.random()-1;
+  }
+}
+
+function zoomFFT(cvsIDa, cvsIDb)
+{
+  var i,
+      Fc = 19000,
+      tSize = 512,
+      Fs = 65536,
+      Fa = 0,
+      Fb = 8190,
+      M = 115,
+      Att = 96,
+      coeffs,
+      kbw,
+      sigBuf = new Array(13600),
+      opReal = [], opImag = [],
+      aReal = [], aImag = [];
+
+  kbw = kbWnd(tSize, 2.5);        // generate KB window for plotting spectra
+  coeffs = calcFilter(Fs, Fa, Fb, M, Att);  // generate anti-aliasing filter
+  genTone2(sigBuf);                         // generate the test signal
+
+        // for diagnostics only, grab a buffer full of time data
+        for (i=0; i&lt;tSize; i++)
+        {
+          aReal[i] = kbw[i]*sigBuf[i];      // apply kb window
+          aImag[i] = 0;
+        }
+        fft(1, tSize, aReal, aImag);
+        var dispA = new DspPlot(cvsIDa, tSize);
+        dispA.plotSpectrum(dType.PW, aReal, aImag, 200, Fs, true);
+
+  // Zoom FFT starts here
+  freqTranslate(sigBuf, aReal, aImag, 13600, Fs, Fc);
+  overlapSaveFilter(coeffs, aReal, aImag, opReal, opImag, 13600);
+  for (i=0; i&lt;3400; i++)
+  {
+    aReal[i] = 16*opReal[4*i];   // sub-sample
+    aImag[i] = 16*opImag[4*i];
+  }
+  overlapSaveFilter(coeffs, aReal, aImag, opReal, opImag, 3200);
+  for (i=0; i&lt;800; i++)
+  {
+    aReal[i] = 16*opReal[4*i];
+    aImag[i] = 16*opImag[4*i];
+  }
+        // for diagnostics only, grab a buffer full of time data
+        for (i=0; i&lt;tSize; i++)
+        {
+          aReal[i] *= kbw[i];      // apply kb window
+          aImag[i] *= kbw[i];
+        }
+        fft(1, tSize, aReal, aImag);
+        var dispB = new DspPlot(cvsIDb, tSize);
+        dispB.plotFullSpectrum(dType.PW, aImag, aImag, 400, Fs/16, true, Fc);
+}
+</pre>
+</div>
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

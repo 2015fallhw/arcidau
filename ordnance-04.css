@@ -1,0 +1,96 @@
+/*==================================================
+	Filename: ordnance-04.css
+
+	Style sheet for Historic Ornance document page
+
+	Date		Description														By
+	-------------------------------------------------
+	20Jun10 First release                         ARC
+  09Jul10 patched so IE6 can see page menu      ARC
+ ==================================================*/
+
+.articleHolder {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: 1em auto 0 auto;
+  width: 660px;                   /* required to be fixed to auto center */
+  padding: 40px 10px 10px 10px;
+  background-color: transparent;
+}
+
+.article1 {
+  position: relative;
+  float: left;
+  border: 1px solid black;
+  margin: 0;
+  padding: 10px;
+  background-color: white;
+}
+
+.tab {
+  position: absolute;
+  top: 0px;
+  height: 26px;
+  margin-top: -28px;
+  border: 1px solid #444477;
+  border-bottom-width: 0;
+  background-color: white;
+}
+
+.tab a {
+  font-size: 14px;
+  line-height: 22px;
+  padding: 4px 10px 7px 10px;
+  text-decoration: none;
+  color: black;
+}
+
+.article1 table {
+/*  height: 993px;   */
+/*  width: 640px;  */
+  table-layout:fixed;
+  background-color: #d0c09d;
+  border-collapse: collapse;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.article1 td {
+  border-left: 1px solid #808080;
+  border-right: 1px solid #808080;
+  text-align: left;
+  padding: 2px;
+  margin: 0;
+  font-family:"Times";
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.article1 td.brdr {
+  border-width: 0;
+  padding: 2px;
+  margin: 0;
+  background-color: #1b261f;
+}
+
+.ovlCell {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  font-family:"Times";
+  background-color: transparent;
+}
+
+ol {
+  margin-left: 1.5em;
+}
+
+.ent {
+  padding-right: 0.5em;
+	font-size: 14px;
+  font-style: italic;
+	font-weight: bold;
+	color: #303030;
+}

@@ -1,0 +1,302 @@
+/*=============================================================
+  Filename: frontPanel-19.css
+
+  Style Sheet for the JavaScript Virtual Instruments such as
+  Spectrum Analyser.
+
+  Date    Description                                       By
+  -------|-------------------------------------------------|---
+  30Sep07 First draft                                       ARC
+  26Oct07 Shrink to fit on new 70em wide pages.             ARC
+  23Aug08 Superset of the SpecAnal-02.css                   ARC
+  21Sep09 Modified for Zazz style pages                     ARC
+  27Sep09 Self center case and make blue                    ARC
+  13Nov10 Fix knob initial positions to agree with comment  ARC
+  29Apr12 Update to use hpKnob-21 and Drag object           ARC
+  05Mar13 Tweeks to suit fixed size canvas                  ARC
+  15Feb14 Clean out commented item and remove coeffList     ARC
+  13Aug15 Major upgrade for modern browsers                 ARC
+  24Sep15 bugfix: blkTop should have square bottom corners  ARC
+  26Sep15 Change LED style                                  ARC
+  31Dec15 Add valueLabel and valueReadout support           ARC
+  01Jan16 Use box-sizing border-box for ctrlPanel           ARC
+ ==============================================================*/
+
+  .screenCvs {
+    position: relative;
+    float: left;
+    margin-left: 7px;
+    margin-top: 18px;
+    border: 3px solid;
+    border-color: #a8a7a3 #d8d7d3 #f8f7f3 #ccccb8;  /* #a8a7a3 #d8d7d3 #e8e7e3 #ccccb8; */
+    border-radius: 4px;
+    background-color: #404a40;
+  }
+
+  .ctrlPanel {
+    position:relative;
+    box-sizing: border-box;
+    height: 100%;
+    width: 9em;              /* set 0.5em > knob width */
+    padding: 18px 1em 0 0;
+    margin: 0;
+    float:right;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+    font-size: 14px;           /* sets the size of everything */
+    background-color: transparent;
+  }
+
+  .blkTop {
+    position: relative;
+    width: 18.5em;
+    height: 25em;
+    margin: 0;
+    padding: 0.5em 0 0 0.5em;
+    background-color: transparent;
+    border: 2px solid #a29d9a;
+    border-top-width: 6px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .blkTitle {
+    position: absolute;
+    top: -1.2em;
+    left: 3em;
+    padding: 0.3em;
+    font-weight: bold;
+    background-color: #eceae8;
+  }
+
+  .blkRadio {
+    position: relative;
+    top: 0em;
+    left: 0em;
+    width: 18.5em;
+    height: 1.2em;
+    padding: 0.3em 0 0.3em 0.5em;
+    background-color: transparent;
+    border: 2px solid #b4a894;
+    border-top: 0;
+  }
+
+  .blkTop .optBtn {
+    width: 6em;
+    padding: 0;
+    margin: 0.5em 0;
+  }
+
+  .valueLabel {
+    display: block;
+    position: relative;
+    font-size: 0.85em;
+    text-align: left;
+  }
+
+  .valueReadout {
+    position: relative;
+    width: 3.3em;
+    height: 1.3em;
+    float: left;
+    text-align: right;
+    font-size: inherit;           /* sets font size to match ctrlPanel, it doesn't inherit */
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+    line-height: 1.3em;
+    padding: 0 0.3em 0 0;
+    border-width: 2px;
+    border-color: #e4e4d0 #f4f3ef #f4f3ef #e4e4d0;
+    margin: 0 0 0.5em 0;
+  }
+
+  .led input[type=radio] {   /* this makes a set of LEDs behave as a radio checkbox set */
+  	visibility: hidden;
+    margin-left: -1.1em ;
+  }
+
+  .led {                  /* background rectangle for layout */
+    font-size: 12px;      /* sets the diameter of the LED */
+  	position: relative;
+  	width: 5em;
+  	height: 1.6em;
+    margin: 0;
+    float: right;
+  }
+
+  .led label {     /* define the circluar LED when off */
+  	cursor: pointer;
+  	position: absolute;
+ 	  left: 0.2em;         /* use this to position LED and label in container */
+  	top: 0.2em;
+  	width: 1em;          /* 0.2em smaller than main circle */
+  	height: 1em;
+  	border-radius: 0.6em;
+    border: 1px solid #404040;
+   	box-shadow: inset 0.0em 0.0em 0.1em #404040;     /* gap between LED and hole wall */
+  	background: #dddddd;
+  	background: radial-gradient(circle at 40% 30%, #ffffff 10%, rgba(255, 255, 255, 0.0) 60%),
+                radial-gradient(circle at 20% 15%, #808080 10%, #ffffff 70%);
+  }
+
+  .led label span {      /* this is the actual text of the label */
+    font-size: 13px;
+    position: relative;
+    margin-left: 1.3em;
+    top: -0.08em;        /* use this to position label relative to LED */
+    left: 0;
+  }
+
+  .led label:before {  /* defines the coloured LED when its ON, ie the radio input checked */
+  	opacity: 0;
+  	content: '';
+  	position: absolute;
+  	top: 0.05em;        /* position LED in center of parent */
+  	left: 0.05em;
+  	width: 1em;
+  	height: 1em;
+  	border-radius: 0.5em;
+  	background: #a0ff50;  /* green LED, other colors set by label class */
+  	background-image: radial-gradient(circle at 35% 35%, #faffe0 10%, transparent 45%, #a0d000 90%); /* hi-light for 3D effect */
+    box-shadow: -0.05em -0.05em  0.1em 0.1em #58f028;     /* glow of LED spreads over edges of hole */
+  }
+
+  .led label:hover::before {
+   	opacity: 0.4;
+  }
+
+  .led input[type=radio]:checked + label:before {
+  	opacity: 1;
+  }
+
+  .led label.green:before {  /* defines the coloured LED centred in the hole */
+  	background: #a0ff50;  /* green LED, if red use #ff6040; */
+  	background-image: radial-gradient(circle at 35% 35%, #faffe0 10%, transparent 45%, #a0d000 90%); /* hi-light for 3D effect */
+    box-shadow: -0.05em -0.05em  0.1em 0.1em #58f028;     /* glow of LED spreads over edges of hole */
+  }
+
+  .led label.green:hover::before {   /* show a hint of LED ON color when pointer hovers over */
+   	opacity: 0.4;
+  }
+
+  .led label.red:before {  /* defines the coloured LED centred in the hole */
+  	background: #ff6040;       /* LED color */
+  	background-image: radial-gradient(circle at 40% 30%, #fff6d0 14%, transparent 45%, #e85020 70%);  /* hi-light for 3D effect */
+    box-shadow: -0.05em -0.05em 0.1em 0.1em #f05828;  /* glow of LED spreads over edges of hole */
+  }
+
+  .led label.red:hover::before {   /* show a hint of LED ON color when pointer hovers over */
+   	opacity: 0.4;
+  }
+
+  .led label.blue:before {  /* defines the coloured LED centred in the hole */
+  	background: #5fdfff;  /* blue LED, other colors set by label class */
+  	background-image: radial-gradient(circle at 35% 35%, #e0faff 10%, transparent 45%, #00a0c0 90%); /* hi-light for 3D effect */
+    box-shadow: -0.05em -0.05em  0.1em 0.1em #2fafef;     /* glow of LED spreads over edges of hole */
+  }
+
+  .led label.blue:hover::before {   /* show a hint of LED ON color when pointer hovers over */
+   	opacity: 0.4;
+  }
+
+  .knob {
+    position: relative;
+    margin: 0 0 0 0;
+    width: 7.5em;
+    height: 7.5em;
+    padding: 0.5em;
+    z-index: 0;
+  }
+
+  .knob .knobFace {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: block;
+    border-radius: 50%;
+    background: linear-gradient(-45deg, #c4c4c4, #d4d4d4);
+    box-shadow:
+      -0.07em -0.07em 0.1em rgba(100,100,100,0.8) inset,
+      0.07em 0.07em 0.1em rgba(255,255,255,0.8) inset;
+  }
+
+  .knob .knobFace:after {
+    content: "";
+    position: absolute;
+    top: -0.35em; right: -0.3em; bottom: -0.3em; left: -0.35em;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(-45deg, #f0eeeb, #706e6a);
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    box-shadow:
+      0.16em 0.16em 0.2em rgba(100,100,100,0.4),
+      -0.04em -0.04em 0.1em rgba(100,100,100,0.4),
+      -0.07em -0.07em 0.1em rgba(80,80,80,0.8) inset,
+      -0.07em 0.07em 0.1em rgba(255,255,255,0.8) inset,
+      0.07em -0.07em 0.1em rgba(255,255,255,0.8) inset,
+      0.07em 0.07em 0.3em rgba(255,255,255,1.0) inset;
+  }
+
+  .knob .knobDent {
+    width: 33.3%;
+    height: 33.3%;
+    position: absolute;
+    top: 2.7em;
+    left: 0.8em;
+    display: block;
+    border-radius: 50%;
+    background: linear-gradient(-45deg, #e0e0de, #c0c0be);
+    box-shadow:
+      0.3em -0.3em 0.5em rgba(180,180,176,0.8) inset,
+      -0.3em 0.3em 0.5em rgba(180,180,180,0.3) inset,
+      0.3em 0.3em 0.7em rgba(120,120,120,0.5) inset,
+      -0.3em -0.3em 0.7em rgba(255,255,247,0.8) inset;
+  }
+
+  .valueHolder {
+    position: relative;
+    width: 7.5em;
+    height: 3.5em;
+    top: 2em;
+    margin: 0 0 0 1em;
+  }
+
+  .valueHolder .button-link {
+    position:relative;
+    width: 1.6em;
+    height: 1.4em;
+    top: -1.6em;
+    float: right;
+    padding: 0;
+    font-size: inherit;
+    line-height: 1.3em;
+    margin-right: 1em;
+  }
+
+  .valueHolder .spinner {
+    position:relative;
+    top: -1.75em;
+    float: left;
+  }
+
+  .valDecal {
+    position: absolute;
+    width: 4.5em;
+    height: 4em;
+    top: 0.2em;
+    right: 0;
+    border-top: 2px solid #b8b8b8;
+    border-right: 2px solid #b8b8b8;
+    border-top-right-radius:6px;
+  }
+
+  .knobDecal {
+    position:absolute;
+    width: 1em;
+    height: 3.5em;
+    right: 0;
+    top: 2em;
+    border-bottom: 2px solid #b8b8b8;
+    border-right: 2px solid #b8b8b8;
+    border-bottom-right-radius: 6px;
+  }
+

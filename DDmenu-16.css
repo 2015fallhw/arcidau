@@ -1,0 +1,112 @@
+/*==================================================
+	Filename: DDmenu-16.css
+
+	Style Sheet for cascading drop down menus
+	based on articles in 'A List Apart'
+
+	Date		Description														By
+	-------------------------------------------------
+	14Aug06 First Release													ARC
+	01Mar07	TopLvl text changed to white					ARC
+	09Jun07	Updated for the Rev 4.4 directories		ARC
+  26Sep09 Cleanup for zazz style                ARC
+  21May14 Add explicit font and backgrounds to
+          avoid inheriting odd values           ARC
+  09May15 Small adjustments to position         ARC
+          convert to class not id               ARC
+ ==================================================*/
+
+.ddmenu {
+  position: absolute;
+  display: block;
+  height: 30px;     /* just a place holder and parent, not actually visible */
+  width: 90px;
+	padding: 0;
+	margin: 0;
+	border: 0;
+  background-color: transparent;
+	z-index: 5;
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+/*background-color: pink;*/
+}
+
+.ddmenu ul, .ddmenu ul li {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.ddmenu .daddy {
+	background-image: url("Images/arrowRightSmall.gif");
+	background-position: 96% 50%;
+	background-repeat: no-repeat;
+}
+
+.ddmenu ul {
+  position: absolute;
+  display: block;
+  top: 30px;
+  left: -2px;
+  width: 93px;   /* Width of Top Level Menu */
+	border: 1px solid #606060;
+	background-color: white;
+  list-style: none;
+}
+
+.ddmenu ul ul {
+  display: none;
+	top: 8px;        /* down a little */
+  left: 78px;      /* off to the right */
+}
+
+.ddmenu ul ul ul {
+  display: none;
+  width: 80px;     /* make it narrower, no arrows to accomodate */
+}
+
+.ddmenu li {
+	/* NB !!! setting a height for this LI makes list jump in IE */
+  padding: 0;
+  background-color: transparent;
+	border-top: 0px solid #606060;
+}
+
+.ddmenu a {
+  display: block;
+  height: 26px;
+  color: black;
+/*  background-color: white; */
+  text-decoration: none;
+ /*	padding: 0 15px; */
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 23px;
+  vertical-align: middle;
+  padding: 0 0 0 15px;
+  border: 0;
+  margin: 0;
+}
+
+.ddmenu ul ul li {
+	padding: 0;
+}
+
+.ddmenu a:hover {
+	background-color: #687288;
+	color: white;
+}
+
+.ddmenu li:hover ul ul,    .ddmenu li.over ul ul,
+.ddmenu li:hover ul ul ul, .ddmenu li.over ul ul ul {
+  display: none;
+}
+
+.ddmenu li:hover ul,       .ddmenu li.over ul,
+.ddmenu li li:hover ul,    .ddmenu li li.over ul,
+.ddmenu li li li:hover ul, .ddmenu li li li.over ul {
+  display: block;
+}
+

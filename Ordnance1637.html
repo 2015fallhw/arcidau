@@ -1,0 +1,1550 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Royal Ordnance 1637</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="ordnance, cannon, Charles I, Royal Armoury Inventory, 17th century weapons" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "ordnance-04.css";
+    @import "horizontalMenu-09.css";
+
+    .horizMenuRgt    /* style for a div inside the target element */
+    {
+      position: absolute;
+      width: 15em;
+      top: 51px;
+      right: 20px;
+      z-index: 10;
+      background-color: transparent;
+    }
+
+    .horizMenuRgt ul
+    {
+      height: 1.6em;
+      width: 11em;
+      border-right: none;
+    }
+
+    .horizMenuRgt ul li
+    {
+      background-color: #808080;
+    }
+
+
+    .horizMenuRgt ul li a
+    {
+      color: #e0e0e0;
+    	line-height: 1.0em;
+      padding: 0.25em 0.5em  0.35em 0.5em;
+    }
+
+    .horizMenuRgt ul li a:hover
+    {
+      background-color: #e0e0e0;    /* light grey */
+      color: #000000;
+    }
+
+    /* indicate the current page using 'curr' class */
+    .horizMenuRgt ul li.curr
+    {
+      background-color: #e0e0e0;
+    }
+
+    .horizMenuRgt ul li.curr a
+    {
+      color: #000000;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript">
+    var pages = {
+
+      currPage: 1,
+
+      changePage: function(pageNum)
+      {
+        var currP = document.getElementById("page"+this.currPage+"a"),
+            currT = document.getElementById("page"+this.currPage+"b"),
+            newP = document.getElementById("page"+pageNum+"a");
+
+        currP.style.display = "none";
+        currT.style.display = "none";
+        newP.style.display = "block";
+
+        this.currPage = pageNum;
+
+        this.updateBtns();
+      },
+
+      updateBtns: function()
+      {
+
+        var menuNode = document.getElementById("pageMenu"),
+            lis = menuNode.getElementsByTagName("li"),
+            j;
+
+        for (j=0; j<lis.length; j++)
+        {
+          lis[j].className = '';            // clear the current highlight
+        }
+
+        lis[6-this.currPage].className = 'curr';
+      },
+
+      swapMode: function()
+      {
+        var node1 = document.getElementById("page"+this.currPage+"a"),
+            node2 = document.getElementById("page"+this.currPage+"b");
+
+        if (node1.style.display == "none")
+        {
+          node1.style.display = "block";
+          node2.style.display = "none";
+        }
+        else
+        {
+          node1.style.display = "none";
+          node2.style.display = "block";
+        }
+      }
+    }
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Royal Ordnance in 1637</h1>
+        <div class="text_01">
+
+            <h3>Historical context</h3>
+
+<p>In 1637, Charles <font face="Times">I</font> of England tried to impose a new prayer book on the Scots. The Scots wanted simple and plain prayer services while the new prayer book required more ritual and grandeur. Charles was unwilling to make concessions over the use of the English-style prayer book, or for allowing the bishops to take the blame for its introduction. This turned a limited protest into full scale rebellion. By 1638, Charles was preparing to go to war against his rebellious Scottish subjects.</p>
+
+<p>Charles' forces were ill prepared, due to lack of funds. This caused Charles to recall Parliament to raise the necessary money, but the King had a long history of ill will toward Parliament and no agreement was reached. The struggle for power between King and Parliament eventually led to civil war in 1642.</p>
+
+            <h3>The Royal Ordnance Inventory</h3>
+<p>This document was prepared by the Office of the Ordnance in November 1637. It tabulates the current inventory of the Royal armouries and compares it with the inventory levels recommended by the council of war in 1626. It also sets out the cost of making up the difference.</p>
+
+<div class="articleHolder">
+
+  <div class="article1" id="page1a" style="display: block;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp1.jpg" width="640" alt="1637-Inventory-p1" />
+
+  </div>  <!-- page1a -->
+
+  <div class="article1" id="page2a" style="display: none;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp2.jpg" width="640" alt="1637-Inventory-p2" />
+
+  </div>  <!-- page2a -->
+
+  <div class="article1" id="page3a" style="display: none;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp3.jpg" width="640" alt="1637-Inventory-p3" />
+
+  </div>  <!-- page3a -->
+
+  <div class="article1" id="page4a" style="display: none;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp4.jpg" width="640" alt="1637-Inventory-p4" />
+
+  </div>  <!-- page4a -->
+
+  <div class="article1" id="page5a" style="display: none;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp5.jpg" width="640" alt="1637-Inventory-p5" />
+
+  </div>  <!-- page5a -->
+
+  <div class="article1" id="page6a" style="display: none;">
+
+    <div class="tab" style="left: -1px; height: 27px">
+      <a href="#" onclick="return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">Transcription</a>
+    </div>
+
+    <img src="Images/1637-Inventory-pp6.jpg" width="640" alt="1637-Inventory-p6" />
+
+  </div>  <!-- page6a -->
+
+
+  <div class="article1" id="page1b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cellpadding="0" cols="8" border="0" width="640">
+      <col width="20" />
+      <col width="80" />
+      <col width="200" />
+      <col width="70" />
+      <col width="70" />
+      <col width="70" />
+      <col width="112" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:32px"></td>
+        </tr>
+        <tr>
+          <td class="brdr" style="width: 12px;height: 220px"></td>
+          <td style="vertical-align: top; height: 175px">
+              <div class="ovlCell" style="top: 25px; left: 30px; width: 270px; height: 80px; font-size: 30px; line-height: 40px">Office of<br />Th[e] ordn[a]nce</div>
+          </td>
+          <td></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The present state of ye principall natures of store: 21<sup>st</sup> Nov: 1637</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The stores of y<sup>e</sup> like natures as propounded <span style="font-size:12px">by&nbsp;y<sup>e</sup>&nbsp;Council</span> of warr – An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The supply to make ye present stores c Equall w<sup>th</sup> that of ye councill<br /> of warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 46px">The value<br /> of ye sayd<br /> supply.</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td style="height: 50px; vertical-align: top">
+             <div class="ovlCell" style="top: 0px; left: 150px; width: 250px; height: 50px; font-size: 30px; line-height: 40px">Brasse&nbsp;Ordn[a]nce</div>
+          </td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">Cannons of 7 &amp; 8<br />
+          Inches high //<sup>_____________</sup></td>
+          <td style="text-align: center">7</td>
+          <td style="text-align: center">20</td>
+          <td style="text-align: center">13</td>
+          <td style="text-align: center; font-size: 16px">&nbsp;&nbsp;&nbsp;&nbsp;L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;d<br />6211 - 08 - 00<br />&nbsp;</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">D[emi] Cannons //<sup>________</sup></td>
+
+          <td style="font-size: 12px">11 Inde[ture]<br />
+          2 drak[e]s</td>
+          <td style="text-align: center">30</td>
+          <td style="text-align: center">19</td>
+          <td style="text-align: center">7565 - 03 - 04</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">Culverinys //<sup>_____________</sup></td>
+
+          <td style="font-size: 12px; line-height: 13px">9 Inde[ture]<br />
+          2&nbsp;dra[kes]:&amp;<br />
+          1 cutt.</td>
+          <td style="text-align: center">40</td>
+          <td style="text-align: center">31</td>
+          <td style="text-align: center">9874 - 10 - 09</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">D[emi] Culverinys //<sup>______</sup></td>
+
+          <td style="font-size: 12px; line-height: 13px">28 Inde[ture]<br />
+          16 bast[ard]:<br />
+          4&nbsp;dra[kes]:&amp;<br />
+          <u>1 cutt</u></td>
+          <td style="text-align: center">50</td>
+          <td style="text-align: center">22</td>
+          <td style="text-align: center">5255 - 16 - 00</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">Sakers //<sup>________________</sup></td>
+
+          <td style="font-size: 12px; line-height: 13px">16 Inde 6<br />
+          dra[kes]:&amp;&nbsp;2<br />
+          <u>cutts</u></td>
+          <td style="text-align: center">24</td>
+          <td style="text-align: center">9</td>
+          <td style="text-align: center">1274 – 02 – 09</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">Mynions //<sup>______________</sup></td>
+
+          <td style="font-size: 11px; line-height: 12px">10 Inde<br />
+          8&nbsp;bast[ard]&amp;<br />
+          1 crased</td>
+          <td style="text-align: center">15</td>
+          <td style="text-align: center">5</td>
+          <td style="text-align: center">0597 – 00 – 00</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 50px">Falcons //<sup>_______________</sup></td>
+
+          <td style="text-align: center">4</td>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center">6</td>
+          <td style="text-align: center">0318 - 10 - 08</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 50px">Bases //<sup>________________</sup></td>
+
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">-</td>
+          <td style="text-align: center">-</td>
+          <td style="text-align: center">-</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Mort engenes of sundry<br />
+Heighte //<sup>_______________</sup></td>
+
+          <td style="text-align: center">6</td>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center">4</td>
+          <td style="text-align: center">0159 - 05 - 04</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Short peeces and fowler<br />
+chambers //<sup>____________</sup></td>
+
+          <td style="text-align: center">193</td>
+          <td style="text-align: center">-</td>
+          <td style="text-align: center">-</td>
+          <td style="text-align: center">-</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr"></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="text-align: center; height:20px; border-top: 1px solid #202020; border-bottom: 1px solid #202020">31255 - 16 - 08</td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td style="vertical-align: top">
+             <div class="ovlCell" style="top: 0px; left: 45px; font-size: 12px; letter-spacing: 1px; width: 550px"><span style="font-size: 18px">Memorand[um]</span> That the Counsell of Warr Ano 1626 did propose<br />
+to have some of the Brasse Peeces, then in store & out of use to be cast<br />
+into more usefull peeces, w[hi]ch have bene since cast, to furnish<br />
+some of His Ma[jes]t[i]e[s] shipps. And therefore the stores being deprived of that<br />
+Mettall, the number in the second Columbe is proposed as fitt<br />
+for store.</div>
+          </td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="height: 140px"><br /></td>
+          <td class="brdr" ></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:34px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page1b -->
+
+  <div class="article1" id="page2b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cols="8" border="0" width="640">
+      <col width="26" />
+      <col width="65" />
+      <col width="207" />
+      <col width="72" />
+      <col width="71" />
+      <col width="70" />
+      <col width="120" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:42px"></td>
+        </tr>
+        <tr>
+          <td class="brdr" style="width: 12px;height: 200px"></td>
+          <td style="height: 175px"><br /></td>
+          <td><br /></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The present state of y<sup>e</sup> principall natures of store: 21<sup>st</sup> Nov: 1637</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The stores of y<sup>e</sup> like natures  propounded by the Council of warr – An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The supply to make y<sup>e</sup> present&nbsp;store<br/>equall w<sup>th</sup> that of ye Councill<br /> of warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 46px">The value<br /> of the sayd<br /> supplys.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td style="vertical-align: top">
+            <div class="ovlCell" style="top: 0px; left: 150px; width: 300px; height: 40px; font-size: 28px">Cast Iron Ordn[a]nce</div>
+          </td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="text-align: center; height: 60px">L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">Culverinys //<sup>_____________</sup></td>
+
+          <td style="font-size: 12px">2 Inde[ture]<br />
+          1&nbsp;dra[ke]:</td>
+          <td style="text-align: center">50</td>
+          <td style="text-align: center">48</td>
+          <td style="text-align: center">1600 - 00 - 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:42px">D[emi] Culver[inys] //<sup>______</sup></td>
+
+          <td style="font-size: 12px">17 Inde[ture]<br />
+          5 defect[ive]</td>
+          <td style="text-align: center">192</td>
+          <td style="text-align: center">170</td>
+          <td style="text-align: center">3963 - 06 - 08</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:40px">Sakers //<sup>________________</sup></td>
+
+          <td style="font-size: 12px">76 Inde[ture]<br />
+          20&nbsp;dra[kes]:&amp;<br />
+          5 defect[ive]<br/>
+          of&nbsp;ye&nbsp;fortifid</td>
+          <td style="text-align: center">89</td>
+          <td style="text-align: center">18</td>
+          <td style="text-align: center">0300 – 00 – 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Mynions //<sup>_______________</sup></td>
+
+          <td style="text-align: center">15</td>
+          <td style="text-align: center">52</td>
+          <td style="text-align: center">37</td>
+          <td style="text-align: center">0370 – 00 – 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Pettards forged //<sup>_________</sup></td>
+
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">40</td>
+          <td style="text-align: center">38</td>
+          <td style="text-align: center">0095 - 00 - 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td></td>
+          <td style="padding-left: 10px; height:35px">Granadoes //<sup>_____________</sup></td>
+          <td style="text-align: center">2188</td>
+          <td style="text-align: center">300</td>
+          <td style="text-align: center">-</td>
+          <td style="text-align: center">-</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" style="height:18px"></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="text-align: center; height: 22px; border-top: 1px solid #202020; border-bottom: 1px solid #202020">6328 - 06 - 08</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td style="height:75px; vertical-align: top">
+            <div class="ovlCell" style="top: 5px; left: 35px; font-size: 12px; letter-spacing: 1px; width: 550px; height:70px"><span style="font-size: 18px">Memorand[um]</span> there were provided Ano 1624 By the Counsell of<br/>
+warr. 500 Iron Peeces, for the furnishing of 50: marchant shipps<br/>
+w[hi]ch ordn[a]nce have since bene disposed of by severale warrants.</div>
+</td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td style="height:40px; vertical-align: top">
+            <div class="ovlCell" style="top: 0px; left: 170px; width: 250px; font-size: 26px">Round Shott of Iron</div>
+          </td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px">For Cannon of 8 Inches <sup>____</sup><br /><br/>
+for Cannon of 7 Inches //<sup>___</sup></td>
+
+          <td style="text-align: center">5752<br/><br/>6414</td>
+          <td style="text-align: center">20632</td>
+          <td style="text-align: center">8462</td>
+          <td style="text-align: center">2617 - 18 - 7<sup>1</sup>/<sub>2</sub></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:85px">for D[emi] Cannons //<sup>________</sup></td>
+          <td style="text-align: center">6254</td>
+          <td style="text-align: center">19619</td>
+          <td style="text-align: center">13365</td>
+          <td style="text-align: center">2100 - 04 - 03<sup>1</sup>/<sub>2</sub></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:30px">for Culverinys //<sup>_____________</sup></td>
+          <td style="text-align: center">22735</td>
+          <td style="text-align: center">81382</td>
+          <td style="text-align: center">58647</td>
+          <td style="text-align: center">5183 - 19 - 06&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="height:60px"><br/></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:34px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page2b -->
+
+  <div class="article1" id="page3b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cols="8" border="0" width="640">
+      <col width="21" />
+      <col width="72" />
+      <col width="208" />
+      <col width="71" />
+      <col width="69" />
+      <col width="69" />
+      <col width="117" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:32px"></td>
+        </tr>
+        <tr>
+          <td style="width: 12px;height: 190px"></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 43px">The present state of y<sup>e</sup> principall natures of store: 21<sup>st</sup> Nov: 1637</td>
+          <td style="font-size: 12px; vertical-align: top; padding-top: 43px">The stores<br/> of y<sup>e</sup> like natures ~  propounded<br/>by&nbsp;y<sup>e</sup>&nbsp;Council<br/> of warr – An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 43px">The supply to make y<sup>e</sup> present&nbsp;store<br/>equall w<sup>th</sup> that of y<sup>e</sup> Councill of<br /> warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 43px">The value<br /> of the sayd<br /> supply.</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:42px"><br />for d[emi] Culverinys //<sup>_____</sup></td>
+
+          <td style="text-align: center"><br />&nbsp;48985</td>
+          <td style="text-align: center"><br />&nbsp;153663</td>
+          <td style="text-align: center"><br />&nbsp;104648</td>
+          <td style="text-align: center">&nbsp;&nbsp;&nbsp;&nbsp;L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;d<br />4630 - 11 - 04<sup>1</sup>/<sub>4</sub></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:62px">for Sakers //<sup>_______________</sup></td>
+
+          <td style="text-align: center">40716</td>
+          <td style="text-align: center">131719</td>
+          <td style="text-align: center">91003</td>
+          <td style="text-align: center">2346 - 03 - 05&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:42px">for Mynions //<sup>_____________</sup></td>
+
+          <td style="text-align: center">38604</td>
+          <td style="text-align: center">72574</td>
+          <td style="text-align: center">33970</td>
+          <td style="text-align: center">0667 – 05 – 4<sup>1</sup>/<sub>4</sub></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:60px">for Falcons //<sup>______________</sup></td>
+
+          <td style="text-align: center">11805</td>
+          <td style="text-align: center">29481</td>
+          <td style="text-align: center">17676</td>
+          <td style="text-align: center">0195 – 06 – 01&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:35px"><br/>Burr shott //<sup>_______________</sup></td>
+
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>8 . 8 . 2 . 14</td>
+          <td style="text-align: center; font-size: 15px">. to .<br/>21</td>
+          <td style="text-align: center; font-size: 12px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>12 . 11 . 1 . 4</td>
+          <td style="text-align: center"><br/>0150 - 15 - 05&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td style="height:26px"></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="text-align: center; height: 22px; border-top: 1px solid #202020; border-bottom: 1px solid #202020">17892 - 4 - 0<sup>1</sup>/<sub>4</sub></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td style="padding-left: 10px; height:205px; vertical-align: top">
+            <div class="ovlCell" style="top: 100px; left: 70px; width: 300px; font-size: 24px">Powder & other principall<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;natures of Stores.</div>
+</td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td class="brdr"><br /></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 55px"><br/>Corn[e]d powder //<sup>_______</sup><br/>&nbsp;</td>
+          <td style="vertical-align: top; text-align: center; font-size: 15px">la&nbsp;&nbsp;C&nbsp;&nbsp;p<br/>287 . 5 . 24<br/>&nbsp;</td>
+          <td style="vertical-align: top; text-align: center; font-size: 15px">la<br/>350<br/>&nbsp;</td>
+          <td style="vertical-align: top; text-align: center; font-size: 15px">la&nbsp;&nbsp;C&nbsp;&nbsp;p
+<span style="vertical-align: top; font-size: 11px; white-space: nowrap"><br/>62 . 18 . 76<br/>at&nbsp;75p[er]&nbsp;last</span></td>
+          <td style="vertical-align: top; text-align: center; font-size: 15px">4708 - 12 -06<br/>12300 - 14 - 00
+
+<div class="ovlCell" style="top: -20px; left: 15px; width: 85px; height: 10px; font-size: 10px; line-height: 10px">________________</div>
+          </td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:32px">Musketts  //<sup>______________</sup></td>
+          <td style="text-align: center">5108</td>
+          <td style="text-align: center">10112</td>
+          <td style="text-align: center">5004</td>
+          <td style="text-align: center">4628 - 14 - 00</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Calivers  //<sup>______________</sup></td>
+          <td style="text-align: center">323</td>
+          <td style="text-align: center">5094</td>
+          <td style="text-align: center">4771</td>
+          <td style="text-align: center">3180 - 13 - 04</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Bandaleers for musketts  //<sup>_</sup></td>
+          <td style="text-align: center">687</td>
+          <td style="text-align: center">10000</td>
+          <td style="text-align: center">9313</td>
+          <td style="text-align: center">1164 - 02 - 06</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="height:40px"><br/></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:42px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page3b -->
+
+  <div class="article1" id="page4b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cols="8" border="0" width="640">
+      <col width="23" />
+      <col width="72" />
+      <col width="197" />
+      <col width="71" />
+      <col width="69" />
+      <col width="70" />
+      <col width="124" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:30px"></td>
+        </tr>
+        <tr>
+          <td class="brdr" style="width: 12px;height: 180px"></td>
+          <td style="height: 175px"><br /></td>
+          <td><br /></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The present state of y<sup>e</sup> principall natures of store:<br/>21<sup>st</sup>&nbsp;Nov:1637</td>
+          <td style="font-size: 12px; vertical-align: top; padding-top: 46px">The stores of the like natures ~<br/>propounded by&nbsp;y<sup>e</sup>&nbsp;Council<br/> of warr<br/>An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The supply to make y<sup>e</sup> present store equall<br/> w<sup>th</sup> that of ye Councill<br /> of warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 46px">The value<br /> of y<sup>e</sup> sayd<br /> supplys.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="text-align: center; height: 35px">L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 40px">Bandaleers for Calivers //<sup>__</sup></td>
+
+          <td style="text-align: center">120</td>
+          <td style="text-align: center">5094</td>
+          <td style="text-align: center">4974</td>
+          <td style="text-align: center">0497 - 08 - 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 60px">Rests for Musketts //<sup>______</sup></td>
+
+          <td style="text-align: center">200</td>
+          <td style="text-align: center">10000</td>
+          <td style="text-align: center">9800</td>
+          <td style="text-align: center">0490 - 00 - 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:55px"><br/>Match //<sup>________________</sup></td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>45&nbsp;.&nbsp;14&nbsp;.&nbsp;0&nbsp;.&nbsp;22</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>258&nbsp;.&nbsp;3&nbsp;.&nbsp;0&nbsp;.&nbsp;0</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>212&nbsp;.&nbsp;8&nbsp;.&nbsp;3&nbsp;.&nbsp;8</td>
+          <td style="text-align: center"><br/>6373 – 04 – 06</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Lead in shott //<sup>__________</sup></td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>1&nbsp;.&nbsp;12&nbsp;.&nbsp;0&nbsp;.&nbsp;0</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>20&nbsp;.&nbsp;4&nbsp;.&nbsp;3&nbsp;.&nbsp;0</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>18&nbsp;.&nbsp;12&nbsp;.&nbsp;3&nbsp;.&nbsp;0</td>
+          <td style="text-align: center"><br/>335 – 09 – 06</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Long Pikes //<sup>____________</sup></td>
+
+          <td style="text-align: center">8046</td>
+          <td style="text-align: center">15786</td>
+          <td style="text-align: center">7740</td>
+          <td style="text-align: center">1225 - 10 - 00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:55px">Swords //<sup>_______________</sup></td>
+
+          <td style="text-align: center">687</td>
+          <td style="text-align: center">10360</td>
+          <td style="text-align: center">9673</td>
+          <td style="text-align: center">3627 - 07 - 06</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:55px">Partizans guilt //<sup>__________</sup></td>
+
+          <td style="text-align: center">217</td>
+          <td style="text-align: center">618</td>
+          <td style="text-align: center">401</td>
+          <td style="text-align: center">-</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:47px">halberts planie //<sup>_________</sup></td>
+          <td style="text-align: center">198</td>
+          <td style="text-align: center">1594</td>
+          <td style="text-align: center">1396</td>
+          <td style="text-align: center">4708 - 12 - 06</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:47px">stooke targets //<sup>__________</sup></td>
+          <td style="text-align: center">22</td>
+          <td style="text-align: center">200</td>
+          <td style="text-align: center">178</td>
+          <td style="text-align: center">0356 - 00 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:47px">Cressetts of Iron //<sup>_______</sup></td>
+          <td style="text-align: center">27</td>
+          <td style="text-align: center">292</td>
+          <td style="text-align: center">265</td>
+          <td style="text-align: center">0092 - 15 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:47px">Pickaxes //<sup>______________</sup></td>
+          <td style="text-align: center">254</td>
+          <td style="text-align: center">4300</td>
+          <td style="text-align: center">4046</td>
+          <td style="text-align: center">0505 - 15 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:47px">skrewes &amp; wi[n]tches<br/>to mount ordn[an]ce //<sup>___</sup></td>
+          <td style="text-align: center">6</td>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center">4</td>
+          <td style="text-align: center">0012 - 00 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="height:70px"><br/></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:30px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page4b -->
+
+  <div class="article1" id="page5b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cols="8" border="0" width="640">
+      <col width="20" />
+      <col width="71" />
+      <col width="205" />
+      <col width="69" />
+      <col width="70" />
+      <col width="68" />
+      <col width="117" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:24px"></td>
+        </tr>
+        <tr>
+          <td style="width: 12px;height: 160px"></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 43px">The present state of<br/> y<sup>e</sup> principall<br/> natures of store: 21<sup>st</sup> Nov: 1637</td>
+          <td style="font-size: 12px; vertical-align: top; padding-top: 43px">The stores<br/> of y<sup>e</sup> like natures ~  propounded<br/>by&nbsp;y<sup>e</sup>&nbsp;Council<br/> of warr<br/> An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 43px">The supply to make y<sup>e</sup> present<br/>store&nbsp;equall w<sup>th</sup> that of y<sup>e</sup> Councill<br /> of warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 43px">The value<br /> of y<sup>e</sup> sayd<br /> supply.</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="text-align: center; height: 30px">&nbsp;&nbsp;L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d&nbsp;&nbsp;&nbsp;&nbsp;<br/></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td style="padding-left: 10px; height:55px">Fare carts complete <sup>_</sup></td>
+          <td style="text-align: center">29</td>
+          <td style="text-align: center">50</td>
+          <td style="text-align: center">21</td>
+          <td style="text-align: center">150 - 00 - 00&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; line-height: 25px; height:100px">field carriages of all<br/>
+sorts mounted uppon<br/>
+shode wheeles //<sup>___</sup></td>
+
+          <td style="text-align: center">17</td>
+          <td style="text-align: center">&nbsp;</td>
+          <td style="text-align: center">&nbsp;</td>
+          <td style="text-align: center">&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:55px">Extras for field cann[on] //<sup>_____</sup></td>
+          <td style="text-align: center">53</td>
+          <td style="text-align: center">248</td>
+          <td style="text-align: center">195</td>
+          <td style="text-align: center">039 – 00 – 00&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:60px">Fare carriages complete //<sup>____</sup></td>
+
+          <td style="text-align: center">8</td>
+          <td style="text-align: center">20</td>
+          <td style="text-align: center">12</td>
+          <td style="text-align: center">094 – 00 – 00&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:60px">Block carriages //<sup>________</sup></td>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">12</td>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center">200 - 00 - 00&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding: 0 10px 0 10px; height: 16px">Tumbrells //<sup>________</sup></td>
+          <td style="padding: 0;text-align: center">n[i]l</td>
+          <td style="padding: 0;text-align: center">20</td>
+          <td style="padding: 0;text-align: center">20</td>
+          <td style="padding: 0;text-align: center">180 - 00 - 00&nbsp;&nbsp;&nbsp;</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="padding: 0; text-align: center; vertical-align: top; font-size: 12px; height:35px">w[i]th shodd<br/>wheels</td>
+          <td></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:32px">Gynns to mount ~<br/>Ordnance  //<sup>____________</sup></td>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">26</td>
+          <td style="text-align: center">24</td>
+          <td style="text-align: center">0108 - 00 - 00</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">handbarrowes  //<sup>_________</sup></td>
+          <td style="text-align: center">28</td>
+          <td style="text-align: center">2000</td>
+          <td style="text-align: center">1972</td>
+          <td style="text-align: center">0328 - 13 - 04</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">whe[e]lbarrows //<sup>________</sup></td>
+          <td style="text-align: center">124</td>
+          <td style="text-align: center">2059</td>
+          <td style="text-align: center">1935</td>
+          <td style="text-align: center">0677 - 05 - 00</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Vruggs for ordn[a]nce //<sup>_____</sup></td>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">12</td>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center">0030 - 00 - 00</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Draf[t]e horse harnis furniters</td>
+          <td style="text-align: center; font-size:13px">n[i]l&nbsp;service</td>
+          <td style="text-align: center">1000</td>
+          <td style="text-align: center">1000</td>
+          <td style="text-align: center">0666 - 13 - 04</td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><br /></td>
+          <td style="height:40px"><br/></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td class="brdr"></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:42px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page5b -->
+
+  <div class="article1" id="page6b" style="display: none">
+
+    <div class="tab" style="left: -1px; top: 0px; background-color: #eeeeee">
+      <a href="#" onclick="pages.swapMode(); return false;">&nbsp;&nbsp;Document&nbsp;&nbsp;</a>
+    </div>
+    <div class="tab" style="left: 135px; height: 27px">
+      <a href="#" onclick="return false;">Transcription</a>
+    </div>
+
+    <table cellspacing="0" cols="8" border="0" width="640">
+      <col width="17" />
+      <col width="66" />
+      <col width="205" />
+      <col width="69" />
+      <col width="69" />
+      <col width="70" />
+      <col width="123" />
+      <col />
+      <tbody>
+        <tr>
+          <td class="brdr" colspan="8" style="height:40px"></td>
+        </tr>
+        <tr>
+          <td class="brdr" style="width: 12px;height: 180px"></td>
+          <td style="height: 175px"><br /></td>
+          <td><br /></td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The present state of y<sup>e</sup> principall natures of stores: 21<sup>st</sup><br/>Nov: 1637</td>
+          <td style="font-size: 12px; vertical-align: top; padding-top: 46px">The stores<br/> of y<sup>e</sup> like natures ~<br/>propounded by&nbsp;y<sup>e</sup>&nbsp;Council<br/> of warr<br/>An<sup>o</sup> 1626.</td>
+          <td style="font-size: 13px; vertical-align: top; padding-top: 46px">The supply to make<br/> y<sup>e</sup> present store c<br/>equall w<sup>th</sup> that of ye Councill of<br /> warr.</td>
+          <td style="font-size: 14px; vertical-align: top; padding-top: 46px">The value<br /> of y<sup>e</sup> sayd<br /> supplys.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="text-align: center; height: 35px">L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 40px">The horse harnis furnith[u]re -</td>
+
+          <td style="text-align: center; font-size: 13px">n[i]l&nbsp;service</td>
+          <td style="text-align: center">100</td>
+          <td style="text-align: center">100</td>
+          <td style="text-align: center">0066 - 13 - 04&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height: 50px">shovells & spades //<sup>_______</sup></td>
+
+          <td style="text-align: center">893</td>
+          <td style="text-align: center">20000</td>
+          <td style="text-align: center">19107</td>
+          <td style="text-align: center">1910 - 14 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">scowpes //<sup>_______________</sup></td>
+
+          <td style="text-align: center">177</td>
+          <td style="text-align: center">800</td>
+          <td style="text-align: center">623</td>
+          <td style="text-align: center">0031 - 03 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">hand & draugh copper //<sup>___</sup></td>
+
+          <td style="text-align: center">n[i]l</td>
+          <td style="text-align: center">5<sup>tons</sup></td>
+          <td style="text-align: center">5<sup>tons</sup></td>
+          <td style="text-align: center">0250 - 00 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Gynn ropes //<sup>_____________</sup></td>
+
+          <td style="text-align: center">n[i]l</td>
+          <td style="text-align: center">5<sup>tons</sup></td>
+          <td style="text-align: center">5<sup>tons</sup></td>
+          <td style="text-align: center">0323 - 06 - 08&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Cressett stands //<sup>_________</sup></td>
+          <td style="text-align: center">n[i]l</td>
+          <td style="text-align: center">250</td>
+          <td style="text-align: center">250</td>
+          <td style="text-align: center">0025 - 00 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Barehides //<sup>______________</sup></td>
+          <td style="text-align: center">3</td>
+          <td style="text-align: center">27</td>
+          <td style="text-align: center">24</td>
+          <td style="text-align: center">0240 - 00 - 00&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:50px">Leather bucketts //<sup>_______</sup></td>
+          <td style="text-align: center">50</td>
+          <td style="text-align: center">300</td>
+          <td style="text-align: center">250</td>
+          <td style="text-align: center">0041 - 13 - 04&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:45px">Tylts of hayrd //<sup>__________</sup></td>
+          <td style="text-align: center">3<sup>des</sup></td>
+          <td style="text-align: center">100</td>
+          <td style="text-align: center">100</td>
+          <td style="text-align: center">0066 - 13 - 04&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="padding-left: 10px; height:40px"><br/>Cressett lights //<sup>__________</sup></td>
+          <td style="text-align: center; font-size: 13px">c&nbsp;&nbsp;&nbsp;qr&nbsp;&nbsp;&nbsp;&nbsp;p<br/>6&nbsp;-&nbsp;0&nbsp;-&nbsp;18</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>2&nbsp;-&nbsp;12&nbsp;-&nbsp;0&nbsp;-&nbsp;0</td>
+          <td style="text-align: center; font-size: 13px">to&nbsp;&nbsp;c&nbsp;&nbsp;qr&nbsp;&nbsp;p<br/>2&nbsp;-&nbsp;5&nbsp;-&nbsp;3&nbsp;-&nbsp;10</td>
+          <td style="text-align: center"><br/>0034 – 07 – 06&nbsp;&nbsp;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" ></td>
+          <td><br /></td>
+          <td style="height:180px"><br/></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td><br /></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="brdr" colspan="8" style="height:30px"></td>
+        </tr>
+      </tbody>
+    </table><!-- ************************************************************************** -->
+
+  </div>   <!-- page6b -->
+
+<p style="clear: both"><b>Figure 1</b>. An inventory of the Royal Ordnance 1637, with deficiencies from that recommended by the council of war in 1626.</p>
+<p>The document comprises three folded and sewn paper sheets, forming twelve 9" by 13&frac34;" pages, 6 written upon, 6 blank (Transcription &copy; 2010, Collins Collection).</p>
+
+  <div id="pageMenu" class="horizMenuRgt">
+    <ul>
+      <li>
+        <a href="#" onclick="pages.changePage(6); return false">6</a>
+      </li>
+      <li>
+        <a href="#" onclick="pages.changePage(5); return false">5</a>
+      </li>
+      <li>
+        <a href="#" onclick="pages.changePage(4); return false">4</a>
+      </li>
+      <li>
+        <a href="#" onclick="pages.changePage(3); return false">3</a>
+      </li>
+      <li>
+        <a href="#" onclick="pages.changePage(2); return false">2</a>
+      </li>
+      <li class="curr">
+        <a href="#" onclick="pages.changePage(1); return false">1</a>
+      </li>
+    </ul>
+    <span style="float: right; color: white; padding-top: 0.2em">Page</span>
+  </div>          <!-- horizMenuRgt -->
+
+</div> <!--articleHolder-->
+
+                <h3 style="clear: both; margin-top: 30px">Glossary</h3>
+                <p><span class=ent>Indenture:</span> An official or authenticated inventory or list, derived from the use of notches (indents) on multiple copies of the documents that could be matched to prove authenticity.</p>
+                <p><span class=ent>Brass Ordnance:</span> Guns described as being <b>brass</b> were actually <b>bronze</b>, an alloy of copper and tin. Brass is an alloy of copper and zinc.</p>
+                <p><span class=ent>Cannon:</span>  A gun with 7 inch bore (calibre) firing round shot of approx. 46 pound weight. Royal cannon were 8 inch bore firing round shot approx. 68 pound weight.</p>
+                <p><span class=ent>Demi Cannon:</span>  A gun firing round shot of 6 inch diameter (variously recorded at 6<sup>1</sup>/<sub>8</sub> and 6<sup>3</sup>/<sub>8</sub> inches), weight of shot approx. 32 pounds.</p>
+                <p><span class=ent>Culveriny (culverin):</span>  A gun firing round shot of 5 inch diameter (variously recorded at 4<sup>3</sup>/<sub>4</sub> and 5<sup>1</sup>/<sub>4</sub> inches), weight of shot approx. 18 pounds.</p>
+                <p><span class=ent>Demi Culverin:</span>  A gun firing round shot of 4 inch diameter (variously recorded at 4<sup>1</sup>/<sub>4</sub> and 4<sup>1</sup>/<sub>2</sub> inches), weight of shot approx. 12 pounds.</p>
+                <p><span class=ent>Saker:</span>  A gun firing round shot of 3 inch diameter (variously recorded at 3<sup>1</sup>/<sub>4</sub> and 3<sup>3</sup>/<sub>4</sub> inches), weight of shot approx. 6 pounds.</p>
+                <p><span class=ent>Mynion (minion):</span>  A gun firing round shot of 3 inch diameter (variously recorded at 2<sup>7</sup>/<sub>8</sub> inches), weight of shot approx. 4 pounds.</p>
+                <p><span class=ent>Falcon:</span>  A piece of ordnance of 2<sup>1</sup>/<sub>2</sub> inch calibre firing round shot with weight approx. 1<sup>1</sup>/<sub>2</sub> pounds.</p>
+                <p><span class=ent>Base:</span> A piece of ordnance of 1<sup>1</sup>/<sub>2</sub> inch calibre firing round shot with weight approx. <sup>1</sup>/<sub>2</sub> a pound.</p>
+                <p><span class=ent>Mort Engines:</span> A mortar. A piece of ordnance with a very short barrel firing granados with high trajectory. Their bore was typically 13 to 15 inches.</p>
+                <p><span class=ent>Musket:</span> A muzzle-loaded, smooth bore long gun, fired from the shoulder. The Council of War in 1630 laid down that barrel was to be 4 ft long and of 12 bore, i.e 12 lead shot to the pound, equ. to a musket ball diameter of 0.73". Both flintlock and the cheaper matchlock were in use. These rather heavy weapons were usually supported by a <b>rest</b> when fired.</p>
+                <p><span class=ent>Fowler:</span> A long barrelled musket.</p>
+                <p><span class=ent>Chamber:</span> A small gun, without carriage, chiefly used on festive occasions.</p>
+                <p><span class=ent>Drake:</span>  A lighter weight version of the standard types of cannon, firing the same shot but using a smaller charge, commensurate with their lesser barrel strength.</p>
+                <p><span class=ent>Cutt:</span>  A gun with shortened barrel originally made by cutting off the end of a failed barrel, later a version of the standard types cast with a shorter barrel.</p>
+                <p><span class=ent>Bastard:</span>  A lighter weight version of the larger calibre guns <i>cf</i>. <b>drake</b>.</p>
+                <p><span class=ent>Pettard (petard):</span> A small bell-shaped bomb used to breach a gate or wall.</p>
+                <p><span class=ent>Granado:</span>  A grenade, a hollow metal shell filled with gunpowder, ignited by a fuse.</p>
+                <p><span class=ent>Burr Shot:</span>  Rough cast small shot.</p>
+                <p><span class=ent>Corned Gunpowder:</span>  Gunpowder comprised Saltpetre (KNO<sub>3</sub>), Charcoal (C) and Sulphur (S) in the proportions 75:12&frac12;:12&frac12; (English standard in 1645). When finely ground and mixed, it was referred to a Serpentine gunpowder. Corned or grain gunpowder was made from a slurry of the ingredients mixed with liquid (usually water) which was then dried and resulting cakes ground into uniformly sized grains. The liquid mixing allowed the saltpetre and sulphur to lodge in the interstices of the charcoal which ensured the mix didn't separate during travel. Controlling the grain size controlled grain surface area and hence burn rate.</p>
+                <p><span class=ent>Caliver:</span>  A large pistol or blunderbuss.</p>
+                <p><span class=ent>Bandaleer (bandelleer):</span>  Little wooden cases covered with leather, each of them containing the charge of powder for a musket, and fastened to a broad band of leather which the musketeer wore round his neck.</p>
+                <p><span class=ent>Pike:</span>  A long wooden shafted weapon having a pointed head, used by infantry particularly against cavalry.</p>
+                <p><span class=ent>Match:</span>  A wick, cord, or the like, impregnated with chemicals and allowed to burn continuously at  an  even rate, used as an ignition source to fire cannon. An army consumed match at a great rate, e.g. in 1644 a 1500 man company are recorded as consuming 5 cwt (250kg) of match per day.</p>
+                <p><span class=ent>Partizan (partisan):</span>  A kind of short pike, used in places where the long pike would have been inconvenient.</p>
+                <p><span class=ent>Halbert:</span> A weapon having an axe-like blade and a steel spike mounted on the end of a long shaft.</p>
+
+          <p><span class=ent>Stook Target:</span> A target made from a sheaf of wheat or barley.</p>
+
+                <p><span class=ent>Cressett (cresset):</span>  A metal cup or basket often mounted on a pole or suspended from above, containing oil, pitch, a rope steeped in rosin, etc., burned as a light. </p>
+                <p><span class=ent>Scowpe (scoop):</span> A cylindrical container on a long handle used to deliver a measured quantity of gunpowder into the cannon barrel.</p>
+                <p><span class=ent>Tumbrell:</span>  A cart, usually referring to a two wheeled cart.</p>
+                <p><span class=ent>Block Carriage:</span>  A carriage with solid or 'block' wheels.</p>
+                <p><span class=ent>Tylt of Hayde (tilt of hide):</span> A cover made of cattle hide, for a wagon.</p>
+                <p><span class=ent>Gynn (gin):</span> A pole or mast which is guyed by ropes to maintain it in a vertical or nearly vertical position, fitted at the top with hoisting tackle.</p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

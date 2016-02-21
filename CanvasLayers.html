@@ -1,0 +1,524 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Canvas Layers</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="canvas, javascript graphics, canvas overlay, canvas layers, HTML5 canvas" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "userManual-01.css";
+
+    #cvs1 {
+      position: relative;   /* positioned to parent bottom menus */
+      display: block;
+      margin: 2em auto;
+      background-color: wheat;
+      width: 450px;
+      height: 275px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="canvasStack1v06.js"></script>
+
+  <script type="text/javascript">
+    var clock;
+    var ovlyID = null;    // overlay canvas ID string
+
+    function Clock(cvsID)           // pass the background canvas id
+    {
+      var g,    // graphics context for clock face
+          L1_ID, // ID for the clock hands layer
+          gL1,   // graphics context for clock hands layer
+          hrHnd, mnHnd, scHnd;
+
+      function updateClock()
+      {
+        // update the hands to current time
+        var now = new Date(),
+            msec = now.getMilliseconds(),
+            sec = now.getSeconds() + msec/1000,
+            min = now.getMinutes(),
+            hr  = now.getHours();
+
+        if (hr >= 12)
+        {
+          hr -= 12;
+        }
+        gL1.clearCanvas();    // erase previous hands
+        gL1.render(hrHnd, 0, 0, 1, -hr*30 - min*0.5 + 90);
+        gL1.render(mnHnd, 0, 0, 1, -min*6 - sec*0.1 + 90);
+        gL1.render(scHnd, 0, 0, 1, -sec*6 +90);
+      }
+
+      function drawClock()
+      {
+        var hrMarks, mnMarks, bezel, arm, c1, c2, c3, i;
+
+        // hour marks
+        g.setPropertyDefault("lineCap", "round");
+        hrMarks = new Cobj(['M',100,0, 'L',120,0], "PATH", {strokeColor:'black', lineWidth:6});
+        for (i=0; i<12; i++)
+        {
+          g.render(hrMarks, 0, 0, 1, i*30);
+        }
+        // minute marks
+        mnMarks = new Cobj(['M',117,0, 'L',120,0], "PATH", {strokeColor:'black', lineWidth:4});
+        for (i=0; i<60; i++)
+        {
+          if (i%5)        // skip the hour marks
+          {
+            g.render(mnMarks, 0, 0, 1, i*6);
+          }
+        }
+        // draw face bezel
+        bezel = new Cobj(shapeDefs.circle(284), "PATH", {strokeColor:'#325FA2', lineWidth:10, iso:true});
+        g.render(bezel);
+        // create hr hand
+        hrHnd = new Cobj(['M',-20,0, 'L',80,0], "PATH", {
+          strokeColor:'black',
+          lineWidth:10,
+          lineCap: "round" });
+        // create min hand
+        mnHnd = new Cobj(['M',-28,0, 'L',112,0], "PATH", {
+          strokeColor:'black',
+          lineWidth:6,
+          lineCap: "round" });
+        // create sec hand
+        arm = new Cobj(['M',-30,0, 'L',83,0], "PATH", {strokeColor:"#D40000", lineWidth:4});
+        c1 = new Cobj(shapeDefs.circle(16), "SHAPE", {fillColor:"#555555"});
+        c2 = new Cobj(shapeDefs.circle(16), "PATH", {strokeColor:"#D40000", lineWidth:4});
+        c3 = new Cobj(shapeDefs.circle(20), "PATH", {strokeColor:"#D40000", lineWidth:4});
+        c3.translate(95, 0);
+        scHnd = [arm, c1, c2, c3];
+      }
+
+      g = new Cango(cvsID);         // g is the graphics context for the background
+      g.setGridboxRHC(25, 5, 50, 50);     // start drawing the face in the background canvas
+      g.fillGridbox("white");
+      g.setWorldCoords(-175, -175, 350);
+
+      this.clockCS = new CanvasStack(cvsID);  // create a CanvasStack
+      L1_ID = this.clockCS.createLayer();     // create a layer for the clock hands
+      gL1 = new Cango(L1_ID);     // setup gL1 as the drawing context for 'hands' layer
+      gL1.dupCtx(g);              // copy canvas scaling etc from the background layer
+
+      drawClock();
+      updateClock();
+      setInterval(updateClock, 250);
+    }
+
+    function drawHullo()
+    {
+      var oCtx, hullo;
+
+      if (!ovlyID)
+      {
+        ovlyID = clock.clockCS.createLayer();     // create a canvas layer (save ID as global to remove later)
+        oCtx = new Cango(ovlyID);       // create an graphics context for overlay
+        oCtx.setGridboxRHC(20, 20, 50, 50);   // define square viewport width=50% of canvas width
+        oCtx.setWorldCoords(0, 0, 10);  // scale x axis 0 to 10, and y axis 0 to 10
+        hullo = new Cobj("Hullo World", "TEXT", {
+          fillColor:"#ffa500",
+          fontSize:36,
+          lorg:5,
+          fontWeight: "bold" });
+        oCtx.render(hullo, 5, 4, 1, 20);    // x=5,y=4, scale=1, rotation=20deg
+      }
+    }
+
+    function clearHullo()
+    {
+      if (ovlyID)
+      {
+        clock.clockCS.deleteLayer(ovlyID);
+        ovlyID = null;
+      }
+    }
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      clock = new Clock('cvs1');
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Canvas Layers</h1>
+        <div class="text_01">
+
+<h2>Benefits of layers</h2>
+<p>The canvas element is designed to provide native script driven graphics on web pages. The canvas is a 2D drawing surface with a quite powerful set of drawing methods, but the individual items drawn on the canvas are all flattened to create a single image. When a canvas is used for animation, the image requires a complete redraw for each animation frame, even if only one item in the drawing has changed.</p>
+<p>A far more efficient animation technique is to use a stack of transparent layers overlaying a background image, with the items to be animated each being drawn on a separate layer. Only the layers that change on each frame are redrawn and the other layers are left unchanged. The graphics engine can sort out the exposed areas to be redrawn from underlying layers without user code being required.</p>
+
+<h2>The <i><b>CanvasStack</b></i></h2>
+<p>A stack of canvas layers suitable for animation on a web page can be created and managed using a JavaScript <i><b>CanvasStack</b></i>. This provides an (initially empty) array of transparent canvas layers directly overlaying an existing canvas along with methods for creating new layers or deleting existing layers.</p>
+<p>The existing canvas element becomes the background layer to the canvas stack. Each new layer added is a transparent canvas the same size as the background canvas and positioned directly over it. It may be drawn onto with the same methods as the background or any canvas element. Those areas left blank are transparent and the underlying canvas content will be visible. A layer's contents may be erased and the underlying drawing so exposed will show through with no user code required for redrawing.</p>
+<p>In cases where the canvas dimensions have been styled to change with any resize of its containing element, Version 1v06 adds a resize event handler to ensure that layers track the background canvas dimension. </p>
+
+<p>Creating the CanvasStack requires a HTML canvas element to exist on the page, after the document is loaded the CanvasStack constructor is called passing the ID of the canvas. The CanvasStack object creates an (empty) array for the overlay canvases. Each subsequent calls to the CanvasStack method <i>createLayer</i> will create a new transparent overlay canvas. Typical setup code is as follows:</p>
+
+<p>Firstly download the library <a href="canvasStack1v06.js" download>canvasStack1v06.js</a> and ensure that it will be loaded by including in the document header the following: </p>
+<div class="srcFmt">
+<pre>
+  &lt;script type="text/javascript" src="canvasStack1v06.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+<p>To insert a CanvasStack over a canvas element, make sure the background canvas element has a unique ID. The following HTML snippet shows and example. The width and height attributes set the number of drawing pixels on the canvas:</p>
+<div class="srcFmt">
+<pre>
+&lt;canvas id="cvs1" width="500" height="300"&gt;&lt;/canvas&gt;
+</pre>
+</div>
+<p>The background color of the canvas can be set by the CSS style it has been assigned. If the 'background-color' property is not set, the background canvas will be transparent by default, and the contents of the page beneath the canvas will show through. If the background color is specified, clearing the background canvas will fill it with the background color.</p>
+<p>The canvas stack is created by passing the ID of the background canvas to the <i>CanvasStack</i> constructor as follows:</p>
+<div class="srcFmt">
+<pre>
+  var cvsStk = new CanvasStack("cvsId");
+</pre>
+</div>
+<p>The returned CanvasStack object has the following methods:</p>
+<a href="#getBackgroundCanvasId">getBackgroundCanvasId</a>,<br/>
+<a href="#createLayer">createLayer</a>,<br/>
+<a href="#deleteLayer">deleteLayer</a>,<br/>
+<a href="#deleteAllLayers">deleteAllLayers</a>.<br/>
+
+<p>Drawing in the background canvas or in any layer is just the same as drawing in any canvas. First get a reference to the canvas element by passing the canvas ID to the 'document.getElementById' method. To access the background canvas, use the ID of the canvas already on the page, or for consistency, the '<i>cvsStk</i>.getBackgroundCanvasId' method is available. To draw in this canvas, a graphics context must be created using the canvas element 'getContext("2D")' method as follows:</p>
+<div class="srcFmt">
+<pre>
+  var bkgID = cvsStk.getBackgroundCanvasId();
+  var ctx = document.getElementById(bkgID).getContext('2D');
+</pre>
+</div>
+
+<p>To create a Cango graphics context use the Cango constructor. This must be passed the ID string of the canvas as follows:</p>
+<div class="srcFmt">
+<pre>
+  var bkgID = cvsStk.getBackgroundCanvasId();
+  var cgo = new Cango(bkgID);
+</pre>
+</div>
+
+<h2>Creating a new layer</h2>
+<p>To create a CanvasStack layer, call the <i>cvsStk</i>.createLayer method, the ID of the canvas created will be returned. The new transparent canvas will be placed on top of all the other layers already in the stack. A typical call to create a layer is as follows:</p>
+<div class="srcFmt">
+<pre>
+  var layer1_ID = cvsStk.createLayer();  // create a new layer, its ID string is returned
+</pre>
+</div>
+
+<h3>Drawing in the layer</h3>
+<p>Once the new layer has been created a graphics context must be created to draw into the new canvas. To create a native canvas context, a reference to the canvas element is used as follows:</p>
+<div class="srcFmt">
+<pre>
+  var L1_ctx = document.getElementById(layer1_ID).getContext('2D');
+</pre>
+</div>
+
+<p>If drawing with the <i>Cango</i> library the call is:</p>
+<div class="srcFmt">
+<pre>
+  var L1_ctx = new Cango(layer1_ID);
+</pre>
+</div>
+<p>All the <a href="CangoUserGuide.html">Cango</a> commands are available as methods of the <i>L1_ctx</i>.</p>
+
+<h3>CanvasStack example</h3>
+<p>Figure 1 shows a clock, its a reproduction of the clock from the Mozilla canvas animation <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Basic_animations/#An_animated_clock">tutorial</a>, but here it has been drawn using the <i>Cango</i> library. In this demonstration two layers have been used, the background canvas holds the image of the face and the second layer is used to draw the hands. Every 250 msec the 'hands' layer is cleared and the hands are redrawn rotated to show the new time.</p>
+<p>Here is the code snippet to create the canvas for the clock face and the canvasStack holding a layer for the hands and other layers for 'Hullo World' message:</p>
+
+<p>The 'drawClock' function creates the clock face in the background layer. It then creates the hands which are to be drawn using a different graphics context which is associated with a layer. Here are relevant few lines:</p>
+<div class="srcFmt">
+<pre>
+...
+g = new Cango(cvsID);         // g is the graphics context for the background
+g.setGridboxRHC(25, 5, 50, 50);     // start drawing the face in the background canvas
+g.fillGridbox("white");
+g.setWorldCoords(-175, -175, 350);
+
+this.clockCS = new CanvasStack(cvsID);  // create a CanvasStack
+L1_ID = this.clockCS.createLayer();     // create a layer for the clock hands
+gL1 = new Cango(L1_ID);     // setup gL1 as the drawing context for 'hands' layer
+gL1.dupCtx(g);              // copy canvas scaling etc from the background layer
+
+drawClock();
+updateClock();
+setInterval(updateClock, 250);
+</pre>
+</div>
+  <p>Here is the clock drawn on a "white" square in the "wheat" colored canvas.</p>
+
+  <canvas id="cvs1" width="450" height="275"></canvas>
+
+  <div class="captionHolder" style="width: 450px">
+    <p class="caption"><b>Figure 1.</b> The basic clock with hands drawn on a separate layer.</p>
+  </div>  <!-- captionHolder -->
+
+  <p>To demonstrate the independence of the layers in the CanvasStack let's create a new layer, write "Hullo World" across the clock. In the flattened canvas drawing, such as used in the Mozilla tutorial, the 'Hullo World' would be written into the same canvas as the clock face and hands. When the next redraw of the hands occurs, a few milliseconds later, the "Hullo World" would be cleared. With a CanvasStack, "Hullo World" is on a separate layer and the clock hands will keep on being drawn and erased on their own layer.</p>
+  <p>To try this code, click <a href="#" onclick="drawHullo(); return false">here</a>. It will draw "Hullo World" over the clock in Fig 1. Click <a href="#" onclick="clearHullo();return false">here</a> to erase the "Hullo World". The clock hands continue ticking along, independent of the other layers.</p>
+  <p>The source code for drawing 'Hullo World' is shown below, Note: the CanvasStack on which the clock is drawn is the global <i>clockCS</i>:</p>
+<div class="srcFmt">
+<pre>
+function drawHullo()
+{
+  var oCtx, hullo;
+
+  if (!ovlyID)
+  {
+    ovlyID = clock.clockCS.createLayer(); // create a canvas layer (save ID for layer removal)
+    oCtx = new Cango(ovlyID);             // create an graphics context for overlay
+    oCtx.setGridboxRHC(20, 20, 50, 50);   // define square viewport width=50% of canvas width
+    oCtx.setWorldCoords(0, 0, 10);        // scale x axis 0 to 10, and y axis 0 to 10
+    hullo = new Cobj("Hullo World", "TEXT", {
+      fillColor:"#ffa500",
+      fontSize:36,
+      lorg:5,
+      fontWeight: "bold" });
+    oCtx.render(hullo, 5, 4, 1, 20);      // x=5,y=4, scale=1, rotation=20deg
+  }
+}
+</pre>
+</div>
+
+<hr class="ugHr" />
+<h2>CanvasStack</h2>
+<h3 id="CanvasStack">CanvasStack constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var cvsStk = <i>new </i><b>CanvasStack</b>(canvasID);</p>
+<h4>Description:</h4>
+<p>Creates a new CanvasStack object and an array (initially empty) of transparent canvases overlying an existing canvas element.</p>
+<h4>Parameters:</h4>
+<div  style="padding:0 0 1em 2em">
+  <p><b>canvasID</b>:String - The ID of the canvas that acts a the background to all the overlay canvases in the stack. The width and height of this canvas sets the size of the canvases in the stack.</p>
+</div>
+<h4>Returns:</h4>
+<p>Object - Reference to the CanvasStack object just created. This object has a set of methods, described below.</p>
+
+<h3>CanvasStack methods</h3>
+
+<div class="manualItems">
+
+<div class="sectOpen">
+  <a id="getBackgroundCanvasId" href="#" class="itemName" onclick="return false" style="background-image:none">getBackgroundCanvasId</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var bkgId = <i>cvsStk</i><b>.getBackgroundCanvasId</b>();</p>
+<h4>Description:</h4>
+<p>Returns the ID string of the background canvas element. Identical to the 'canvasId' string passed in to the CanvasStack constructor.</p>
+<p>The ID is required to create a graphics context for drawing in the background canvas.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+  <p>none.</p>
+</div>
+<h4>Returns:</h4>
+<p>String - The canvas element ID attribute. This ID is required to create a graphics context to enable drawing into the canvas layer.</p>
+  </dt>
+</div>
+
+<div class="sectOpen">
+  <a id="createLayer" href="#" class="itemName" onclick="return false" style="background-image:none">createLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var layerId = <i>cvsStk</i><b>.createLayer</b>();</p>
+<h4>Description:</h4>
+<p>Creates a canvas layer the size of the background canvas and positioned to directly overlay it. The canvas is stacked to be above all previously created layers. The canvas is transparent.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p>none.</p>
+</div>
+<h4>Returns:</h4>
+<p>String - The canvas element ID attribute. This ID is required to create a graphics context to enable drawing into the canvas layer.</p>
+  </dt>
+</div>
+
+<div class="sectOpen">
+  <a id="deleteLayer" href="#" class="itemName" onclick="return false" style="background-image:none">deleteLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cvsStk</i><b>.deleteLayer</b>(layerId);</p>
+<h4>Description:</h4>
+<p>Deletes the canvas layer with ID, <i>layerId</i>. The layers canvas element is deleted from the document. Any further references to drawing in this layer will fail. The background canvas cannot be deleted.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>layerId</b>:String - The ID of the canvas to be deleted.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectOpen">
+  <a id="deleteAllLayers" href="#" class="itemName" onclick="return false" style="background-image:none">deleteAllLayers</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cvsStk</i><b>.deleteAllLayers</b>();</p>
+<h4>Description:</h4>
+<p>Deletes all the canvas overlay layers from the 'cvsStk'. The background layer is not deleted. Each layer's canvas element is deleted from the document.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p>none.</p>
+</div>
+  </dt>
+</div>
+</div>  <!-- manualItems -->
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

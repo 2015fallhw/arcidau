@@ -1,0 +1,689 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Cango Axes Module User Guide</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="canvas graphics, plotting graphs with canvas, Cango, Cango extension, canvas graphics library" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+
+    .cvsEg {
+      position: relative;   /* positioned to parent bottom menus */
+      display: block;       /* must have for position canvas elements */
+      margin: 20px auto;
+      padding: 0;
+      background-color: lightyellow;
+      border: 1px solid black;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+
+  <script type="text/javascript">
+    function drawAxesTest(cvsID)
+    {
+      var gc = new Cango(cvsID),
+          xmin = -20000, xmax = 25000,
+          ymin = -300, ymax = 600;
+
+      gc.setGridboxRHC(5, 5, 90, 60);
+      gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      gc.drawAxes(xmin, xmax, ymin, ymax, {
+        xOrigin: -10000,
+        yOrigin: 0,
+        xUnits:"nm",
+        yUnits:"ft",
+        xLabel:"X",
+        yLabel:"Fn" });
+    }
+
+    function drawBoxAxesTest(cvsID)
+    {
+      var g = new Cango(cvsID),
+          data = [],
+          i;
+
+      g.fillGridbox("#303a30");
+      g.setGridboxRHC(12, 8, 85, 60);
+      g.setWorldCoords(0, -10, 1200, 20);
+
+      g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL"});
+      for (i=0; i<=200; i++)
+      {
+        data.push(i*6, 5*Math.sin(i/6));
+      }
+      g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+    }
+
+    function drawHTML(cvsID)
+    {
+      var gc = new Cango(cvsID),
+          xmin = -50, xmax = 250,
+          ymin = 0, ymax = 100,
+          t, s;
+
+      gc.setGridboxRHC();
+      gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+
+      t = "<b>HTML</b>&nbsp;text&nbsp;test</br>multi-line&nbsp;and</br>special&nbsp;chars&nbsp;too &lt; &amp; etc.";
+      gc.drawHTMLtext(t, -25, 80, "black", 14, 400);
+
+      // test the MathJax access to the Cango text object
+      s = "MathJax works $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
+      gc.drawHTMLtext(s, -25, 40, "black", 12, 400);
+    }
+
+    function drawHullo(cvsID)
+    {
+      var hullo,
+          fgCol = "orange",
+          bgCol = "red",
+          g = new Cango(cvsID);
+
+      g.setGridboxRHC();    // define viewport to be full canvas
+      g.setWorldCoords(0, 0, 10);  // lower left is 0,0 canvas 10 units wide, square pixels
+      g.clearCanvas();
+
+      hullo = new Cobj(" Hullo World ", "TEXT", {fillColor:fgCol, fontSize:30, lorg:5, fontWeight:"bold"});
+      // orange text on red
+      g.renderBoxText(hullo, 5, 4, 1, 20, fgCol, bgCol);
+      // inverse text
+      g.renderBoxText(hullo, 5, 2, 1, 20, bgCol, fgCol);
+    }
+
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+
+      drawAxesTest('cvs1');
+      drawBoxAxesTest('cvs2');
+      drawHTML('cvs4');
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+      drawHullo('cvs5');
+
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Cango Axes Module User Guide</h1>
+        <div class="text_01">
+
+<h2>Cango axes drawing extension</h2>
+<p>The Cango Axes extension module <a href="CangoAxes-1v33.js" download>CangoAxes-1v33.js</a> provides additional methods to the Cango library and some utility functions assist the quick programming of 2D graphs on the canvas element. The drawing methods are:</p>
+<p>
+<a href="#drawAxes">drawAxes</a><br/>
+<a href="#drawBoxAxes">drawBoxAxes</a><br/>
+<a href="#drawHTMLtext">drawHTMLtext</a><br/>
+<a href="#renderBoxText">renderBoxText</a>
+</p>
+
+<p>The <b>drawHTMLtext</b> method allows HTML format text to be written over the canvas element integrated with the Cango graphics context. The utility creates a small transparent overlay DIV element for each text string and positions it using the Cango world coordinate system. Any HTML text can be used. Mathmamatical expressions in LaTeX syntax will be correctly parsed by MathJax if '\' characters are replaced with '\\' and the MathJax script is loaded.</p>
+
+<p>The <b>renderBoxText</b> is a specialised version of the render method which takes a TEXT type Cobj along with the normal position, scale and rotation parameters but adds foreground and background color parameters. The text bounding box is filled with the background color prior to the text being rendered in the foreground color. Foreground color over-rides the value of the Cobj 'fillColor' property normally used as the text color.</p>
+
+<p>Two global utility functions are provided to format numbers in engineering notation which is scientific notation but the powers of ten are restricted to multiples of 3 ie. nano, micro, milli, kilo, Mega, Giga etc.</p>
+
+<p>
+<a href="#toEngFixed">toEngFixed</a><br/>
+<a href="#toEngPrec">toEngPrec</a><br/>
+</p>
+
+<p>The module also contains a JavaScript implementation of very useful 'sprintf' function.</p>
+
+<p>
+<a href="#sprintf">sprintf</a>
+</p>
+
+<p>All these extensions require the <i>Cango</i> canvas graphics library Version 5 or later.</p>
+
+<hr class="ugHr"/>
+<h2>Cango methods added</h2>
+
+<h3 id="drawAxes" style="color:blue">drawAxes</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo.</i><b>drawAxes</b>(xmin, xmax, ymin, ymax, options)</p>
+<h4>Description:</h4>
+<p>Draws a set of Cartesian coordinate (X, Y) axes.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>xmin</b>:Number - Minimum X axis value, the value of the left end of the X axis. Measured in the X axis world coordinates.</p>
+<p><b>xmax</b>:Number - Maximum X axis value, the value of the right end of the X axis. Measured in the X axis world coordinates.</p>
+<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis. Measured in the Y axis world coordinates.</p>
+<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis. Measured in the Y axis world coordinates.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Parameters below).</p>
+</div>
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 660px; margin: 2em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th style="width:15%">Name</th><th style="width:25%">Type</th><th>Range</th>
+</tr>
+<tr>
+<td>xOrigin</td><td>Number<br/>(world coordinates)</td><td>Point along X axis where Y axis will intersect.</td>
+</tr>
+<tr>
+<td>yOrigin</td><td>Number<br/>(world coordinates)</td><td>Point along Y axis where X axis will intersect.</td>
+</tr>
+<tr>
+<td>xLabel</td><td>String</td><td>Text label to be writing at end of X axis</td>
+</tr>
+<tr>
+<td>yLabel</td><td>String</td><td>Text label to be writing at end of Y axis</td>
+</tr>
+<tr>
+<td>xUnits</td><td>String</td><td>Text to be written in parentheses after the xLabel</td>
+</tr>
+<tr>
+<td>yUnits</td><td>String</td><td>Text to be written in parentheses after the yLabel.</td>
+</tr>
+<tr>
+<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along X axis. If omitted or set to "auto", a suitable tick interval will be calculated and the X axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
+</tr>
+<tr>
+<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along Y axis. If omitted or set to "auto", a suitable tick interval will be calculated and the Y axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
+</tr>
+<tr>
+<td>tickLength</td><td>Number<br/>(pixels)</td><td>Length of the (double sided) minor ticks (default is 5). Major ticks are twice as long and have labels.</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>CSS font family definitions (default set by Cango default fontFamily).</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number<br/>(pixels)</td><td>Height of text characters (default set by Cango default fontSize).</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900 (default set by Cango default fontWeight).</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>String</td><td>Color to be used for axes and tick marks (default set by Cango default strokeColor).</td>
+</tr>
+<tr>
+<td>fillColor</td><td>String</td><td>Color to be used for text labels (default set by Cango default fillColor).</td>
+</tr>
+</table>
+
+<h4>Example:</h4>
+
+<div class="srcFmt">
+<pre>
+function drawAxesTest(cvsID)
+{
+  var gc = new Cango(cvsID),
+      xmin = -20000, xmax = 25000,
+      ymin = -300, ymax = 600;
+
+  gc.setGridboxRHC(5, 5, 90, 60);
+  gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+  gc.drawAxes(xmin, xmax, ymin, ymax, {
+    xOrigin: -10000,
+    yOrigin: 0,
+    xUnits:"nm",
+    yUnits:"ft",
+    xLabel:"X",
+    yLabel:"Fn" });
+}
+</pre>
+</div>
+
+  <canvas id="cvs1" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 1.</b> Simple example of 'drawAxes' method.</p>
+</div>
+
+<hr class="ugHr" />
+<h3 id="drawBoxAxes" style="color:blue">drawBoxAxes</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo.</i><b>drawBoxAxes</b>(xmin, xmax, ymin, ymax, options)</p>
+<h4>Description:</h4>
+<p>Draws a set of X, Y axes in the shape of a box.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>xmin</b>:Number - Minimum X axis value, the value of the left end of the X axis. Measured in the X axis world coordinates.</p>
+<p><b>xmax</b>:Number - Maximum X axis value, the value of the right end of the X axis. Measured in the X axis world coordinates.</p>
+<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis. Measured in the Y axis world coordinates.</p>
+<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis. Measured in the Y axis world coordinates.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Parameters below).</p>
+</div>
+
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 660px; margin: 2em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th style="width:15%">Name</th><th style="width:25%">Type</th><th>Range</th>
+</tr>
+<tr>
+<td>title</td><td>String</td><td>Text of the label to be drawn at the top left of the axes box, normally used to describe the graphed data.</td>
+</tr>
+<tr>
+<td>xUnits</td><td>String</td><td>Text of the label to be drawn below the center of the X axis. The string is prepended with the xTickInterval value and the string "/div" is appended.</td>
+</tr>
+<tr>
+<td>yUnits</td><td>String</td><td>Text of the label to be drawn to the left of the center of the Y axis. The string is prepended with the yTickInterval value and string "/div" is drawn below the yUnits label.</td>
+</tr>
+<tr>
+<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along X axis. If omitted the tick interval will be automatic. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
+</tr>
+<tr>
+<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along Y axis. If omitted the tick interval will default to 1/5th of the Y axis span. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>CSS font family definitions (default set by Cango default fontFamily).</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number<br/>(pixels)</td><td>Height of text characters (default set by Cango default fontSize).</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900 (default set by Cango default fontWeight)</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>String</td><td>Color to be used for axes and tick marks (default value "#ffffff").</td>
+</tr>
+<tr>
+<td>fillColor</td><td>String</td><td>Color to be used for text labels (default value "#cccccc").</td>
+</tr>
+<tr>
+<td>gridColor</td><td>String</td><td>Color to be used for the grid drawn within the box, usually semi-transparent or dashed (default value "rgba(255,255,255,0.2)").</td>
+</tr>
+</table>
+
+<h4>Example:</h4>
+
+<div class="srcFmt">
+<pre>
+function drawBoxAxesTest(cvsID)
+{
+  var g = new Cango(cvsID),
+      data = [],
+      i;
+
+  g.fillGridbox("#303a30");
+  g.setGridboxRHC(12, 10, 85, 60);
+  g.setWorldCoords(0, -10, 1200, 20);
+
+  g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL"});
+  for (i=0; i&lt;=200; i++)
+  {
+    data.push(i*6, 5*Math.sin(i/6));
+  }
+  g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+}
+</pre>
+</div>
+
+  <canvas id="cvs2" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 2.</b> Simple example of 'drawBoxAxes' method.</p>
+</div>
+
+<hr class="ugHr" />
+<h3 id="drawHTMLtext" style="color:blue">drawHTMLtext</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawHTMLtext</b>(str, x, y, color, fntSize, fntWeight);</p>
+<h4>Description:</h4>
+<p>Creates a transparent DIV element containing the HTML text 'str'. The DIV is position on the page overlying the canvas with drawing origin the upper left corner at the position x,y in the Cango world coordinates. The parameter 'color' will be the color with which the text is rendered. The text is rendered in the current default font family and the font size and font weight can optionally be set to 'fntSize' measured in pixels and 'fntWeight' specified as a number between 100 and 900.</p>
+<p>NOTE: This draw function differs from other Cango draw functions by not returning an Obj2D for re-use.</p>
+<p>If the text is to be further processed after rendering, such as by MathJax utility then the '\' characters should be entered into 'str' as '\\' to be correctly interpreted.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>str</b>:String - The text string to be written.</p>
+  <p style='margin-left:2em'><b>x</b> <b>y</b>:Number - X and Y coordinates of the position at which the test drawing origin will be placed, measured in world coordinates.</p>
+<p style='margin-left:2em'><b>color</b>:String or canvasGradient - The color to be used to stroke the text when rendered to the canvas.</p>
+  <p style='margin-left:2em'><b>fntSize</b>:Number - Size of the font to be used when rendering the text, measured in pixels. If undefined or set to null, the default font size is used. The default font size is 12px but may be set by the 'setPropertyDefault' method.</p>
+  <p style='margin-left:2em'><b>fntWeight</b>:String or Number - The line weight used when rendering the text. This may be a string with the values 'normal' bold' etc or a number between 100 and 900 where 400 is 'normal' and 700 equivalent to 'bold'. If undefined or set to null, the default font size is used. The default font weight is 400 but may be set by the 'setPropertyDefault' method.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>none</p>
+
+<h4>Example:</h4>
+
+<div class="srcFmt">
+<pre>
+function drawHTML(cvsID)
+{
+  var gc = new Cango(cvsID),
+      xmin = -50, xmax = 250,
+      ymin = 0, ymax = 100,
+      t, s;
+
+  gc.setGridboxRHC();
+  gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+
+  t = "<b>HTML</b>&nbsp;text&nbsp;test</br>multi-line&nbsp;and</br>special&nbsp;chars&nbsp;too &lt; &amp; etc.";
+  gc.drawHTMLtext(t, -25, 80, "black", 14, 400);
+
+  // test the MathJax access to the Cango text object
+  s = "MathJax works $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
+  gc.drawHTMLtext(s, -25, 40, "black", 12, 400);
+}
+</pre>
+</div>
+
+  <canvas id="cvs4" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 4.</b> Simple example of 'drawHTMLtext' method.</p>
+</div>
+
+<hr class="ugHr" />
+<h3 id="renderBoxText" style="color:blue">renderBoxText</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>renderBoxText</b>(txtObj, x, y, scl, degs, fgColor, bgColor);</p>
+<h4>Description:</h4>
+<p>Fills the 'txtObj' bounding box with color 'bgColor' the renders the Cobj of type TEXT into the box. The renderBoxText method applies translation, scaling and rotation transforms to the canvas drawing context, effectively moving the text object's drawing origin to 'x,y' and scaling the text from its reference size by a factor of 'scl'. The object can also be rotated by an angle of 'degs' degrees. The center of scaling and rotation is the drawing origin of the Cobj set by the Cobj.lorg property. Gradient fills are supported the gradient will be translated, rotated and scaled along with the object. If txtObj.border is set true, then the text is rendered with a border with color 'txtObj.strokeColor' and width 'txtObj.lineWidth'. Borders on the background box are not supported. If the txtObj dropShadow properties are non-zero then the text is rendered with a drop shadow but with no shadow on the background box.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>obj</b>:Cobj - The TEXT type object to be rendered to the canvas. If txtObj Cobj is not type 'TEXT' then nothing is rendered.</p>
+  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y coordinates of the position at which the drawing origin of the path will be located, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>scl</b>:Number - An optional scale factor by which the text and background box will be scaled. The same scale factor is applied to both x and y coordinates.</p>
+  <p style='margin-left:2em'><b>degs</b>:Number - Number of degrees by which the box text will be rotated, measured in degrees +ve counter clockwise.</p>
+  <p style='margin-left:2em'><b>fgColor</b>:String or canvasGradient- The foreground color with which the text will be rendered. The color may be solid color defined by a string in one of the CSS color formats or if a gradient color is to be used a reference to a canvasGradient object should be passed, see <a href="#colors">colors</a> section for detailed syntax.</p>
+  <p style='margin-left:2em'><b>bgColor</b>:String or canvasGradient- The background color with which the bounding box of the text will be filled prior to rendering the text over it. The color may be solid color defined by a string in one of the CSS color formats or if a gradient color is to be used a reference to a canvasGradient object should be passed, see <a href="#colors">colors</a> section for detailed syntax.</p>
+
+<h4>Example:</h4>
+
+<div class="srcFmt">
+<pre>
+function drawHullo(cvsID)
+{
+  var hullo,
+      fgCol = "orange",
+      bgCol = "red",
+      g = new Cango(cvsID);
+
+  g.setGridboxRHC();   // define viewport to be full canvas
+  g.setWorldCoords(0, 0, 10); // lower left is 0,0 canvas 10 units wide, square pixels
+  g.clearCanvas();
+
+  hullo = new Cobj(" Hullo World ", "TEXT", {
+    fillColor:fgCol,
+    fontSize:30,
+    lorg:5,
+    fontWeight:"bold" });
+
+  // orange text on red
+  g.renderBoxText(hullo, 5, 4, 1, 20, fgCol, bgCol);
+  // inverse text
+  g.renderBoxText(hullo, 5, 2, 1, 20, bgCol, fgCol);
+}
+</pre>
+</div>
+
+  <canvas id="cvs5" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 4.</b> Simple example of 'renderBoxText' method.</p>
+</div>
+
+<hr class="ugHr" />
+
+<h2>Global utilities added</h2>
+
+<h3 id="toEngFixed"style="color:blue">toEngFixed</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var str = <b>toEngFixed</b>(val, decPlaces);</p>
+<h4>Description:</h4>
+<p>Converts the value <i>val</i> to engineering notation, i.e. mantissa and exponent where the exponent is restricted to values that are multiples of 1000. The string returned denotes the exponent by the standard single letter values &micro;, m, k, M, G etc. All mantissa values are expressed in the range 1 to 1000 with the number of decimal places set by the <i>decPlaces</i> parameter. The result is rounded to the <i>decPlaces</i> decimal places with no trailing zeroes are removed.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>val</b>:Number - The value to be formatted.</p>
+<p style='margin-left:2em'><b>decPlaces</b>:Number - the number of decimal places in the mantissa.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>String - The formatted string version of <i>val</i>.</p>
+<h4>Examples:</h4>
+<pre>
+<b>toEngFixed(1200.0, 3)</b> returns "1.200k".
+<b>toEngFixed(0.012345, 2)</b> returns "12.35m".
+</pre>
+
+<hr class="ugHr" />
+<h3 id="toEngPrec" style="color:blue">toEngPrec</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var str = <b>toEngPrec</b>(val, sigFigs);</p>
+<h4>Description:</h4>
+<p>Converts the value <i>val</i> to engineering notation, i.e. mantissa and exponent where the exponent is restricted to values that are multiples of 1000. The result is then rounded to a precision of <i>sigFigs</i> significant figures which must be 3 or greater.  The string returned denotes the exponent by the standard single letter values p, n, &micro;, m, k, M, G. All mantissa values are expressed in the range 1 to &lt;1000. Trailing zeroes are removed.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>val</b>:Number - The value to be formatted.</p>
+<p style='margin-left:2em'><b>sigFigs</b>:Number - the number, greater than 3 of significant figures in the mantissa.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>String - The formatted string version of <i>val</i>.</p>
+<h4>Examples:</h4>
+<pre>
+<b>toEngPrec(1234.5678, 5)</b> returns "1.2346k".
+<b>toEngPrec(0.012345, 3)</b> returns "12.3m".
+</pre>
+
+<hr />
+<h3 id="sprintf" style="color:blue">sprintf</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var str = <b>sprintf</b>(format, arg1, arg2 ...);</p>
+<h4>Description:</h4>
+<p>This JavaScript implementation of the 'sprintf' utility was originally written by Ash Searle (2007/03/printf-sprintf/) and enhanced by Kevin van Zonneveld <i>(http://kevin.vanzonneveld.net).</i></p>
+ <p>The 'format' string is composed of ordinary characters (excluding %) and optional conversion specifications. Ordinary characters are copied directly to the result. Each conversion specification consists of a percent sign (%), followed by one or more of these elements, flags, width, precision and type specifier. Each conversion specifications takes an argument in turn from those following 'format' and converts it a substring which replaces the specifier in the output.</p>
+
+<h4>Parameters:</h4>
+<div  style='margin-left:2em'>
+<p><b>format</b>:String - Which may contain characters which are returned unaltered, and conversion specifiers. The conversion specifier sub-string should be in the form:</p>
+<pre>
+  %[flags][width][.precision]type_specifier
+</pre>
+<p>The optional <b>flags</b> are shown in the table below.</p>
+
+<table class="txtTbl" style="width: 620px; margin: 1em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr><th style="width: 10%"><i>flags</i></th><th>description</th></tr>
+<tr><td><tt>-</tt></td><td>Left-justify within the given field width; Right justification is the default (see <i>width</i> sub-specifier).</td></tr>
+<tr><td><tt>+</tt></td><td>Forces the result to be preceded by a '+' or '-' sign. By default, only negative numbers are preceded with a - sign.</td></tr>
+<tr><td><i>(space)</i></td><td>If no sign is going to be written, a blank space is inserted before the value.</td></tr>
+<tr><td><tt>#</tt></td><td>Used with <tt>o</tt>, <tt>x</tt> or <tt>X</tt> specifiers. The value is preceded by a <tt>0</tt>, <tt>0x</tt> or <tt>0X</tt> respectively, for values different than zero.<br>
+Used with <tt>a</tt>, <tt>A</tt>, <tt>e</tt>, <tt>E</tt>, <tt>f</tt>, <tt>F</tt>, <tt>g</tt> or <tt>G</tt> it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written.</td></tr>
+<tr><td><tt>0</tt></td><td>Left-pads the number with zeroes (<tt>0</tt>) instead of spaces when padding is specified (see <i>width</i> sub-specifier).</td></tr>
+</table>
+
+    <p>The optional <b>width</b> specifier is a number that says how many characters (minimum) this conversion should result in.</p>
+    <p>An optional <b>precision</b> specifier in the form of a period ('.') followed by an optional decimal digit string that says how many decimal digits should be displayed for floating-point numbers. When using this specifier on a string, it acts as a cutoff point, setting a maximum character limit to the string.</p>
+    <p>The <b>type specifier</b> defines what type the argument data should be treated as. Possible types are shown in the table below.</p>
+
+<table class="txtTbl" style="width: 620px; margin: 1em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr><th style="width: 10%"><i>type specifier</i></th><th style="width: 70%">Output</th><th style="width: 20%">Example</th></tr>
+<tr><td><tt>d</tt> <i>or</i> <tt>i</tt></td><td>Signed decimal integer</td><td><tt>392</tt></td></tr>
+<tr><td><tt>u</tt></td><td>Unsigned decimal integer</td><td><tt>7235</tt></td></tr>
+<tr><td><tt>o</tt></td><td>Unsigned octal</td><td><tt>610</tt></td></tr>
+<tr><td><tt>x</tt></td><td>Unsigned hexadecimal integer</td><td><tt>7fa</tt></td></tr>
+<tr><td><tt>X</tt></td><td>Unsigned hexadecimal integer (uppercase)</td><td><tt>7FA</tt></td></tr>
+<tr><td><tt>f</tt> <i>or</i> <tt>F</tt></td><td>Decimal floating point</td><td><tt>392.65</tt></td></tr>
+<tr><td><tt>e</tt></td><td>Scientific notation (mantissa/exponent), lowercase</td><td><tt>3.9265e+2</tt></td></tr>
+<tr><td><tt>E</tt></td><td>Scientific notation (mantissa/exponent), uppercase</td><td><tt>3.9265E+2</tt></td></tr>
+<tr><td><tt>g</tt></td><td>Use the shortest representation: <tt>%e</tt> or <tt>%f</tt></td><td><tt>392.65</tt></td></tr>
+<tr><td><tt>G</tt></td><td>Use the shortest representation: <tt>%E</tt> or <tt>%F</tt></td><td><tt>392.65</tt></td></tr>
+<tr><td><tt>c</tt></td><td>Character</td><td><tt>a</tt></td></tr>
+<tr><td><tt>s</tt></td><td>String of characters</td><td><tt>sample</tt></td></tr>
+<tr><td><tt>%</tt></td><td><tt>%%</tt> will write a single <tt>%</tt> to the string.</td><td><tt>%</tt></td></tr>
+</table>
+
+<p><b>arg1, arg2, . . . &nbsp;</b>:mixed types - The parameters to be converted to strings and substituted for conversion specifiers.</p>
+</div>
+
+<h4>Returns:</h4>
+<p style='margin-left:2em'>String - The formatted version of <i>format</i> with specifiers replaced with arguments in the order passed.</p>
+<h4>Examples:</h4>
+<pre>
+<b>var str = sprintf("pi = %4.2f", Math.PI);</b> //  returns "pi = 3.14".
+</pre>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

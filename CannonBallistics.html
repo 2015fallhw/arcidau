@@ -1,0 +1,714 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Smooth Bore Cannon Ballistics</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="ballistics theory, smoothbore cannon, smooth bore cannon, cannonball ballistics, interior ballistics, exterior ballistics" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Smooth Bore Cannon Ballistics</h1>
+        <div class="text_01">
+
+<h3>Abstract</h3>
+
+<p>This article models the ballistics of smooth bore cannon firing round shot. Ballistics software currently available is almost entirely devoted to ogive head, cylindrical projectiles. Ballistics tables catering for spherical bullets are only applicable to calibre less than ~1 inch. The smooth bore guns used until the mid 19th century were designed to fire cast-iron round shot, cannonballs, with diameters from 2 to 8 inches, so modelling the performance of such guns requires a return to fundamentals. The muzzle velocity may be calculated from the interior ballistics model originally developed by <a href="RobinsOnBallistics.html">Benjamin Robins</a> in 1742. The external ballistics of the cannonball can be well modelled given the aerodynamic drag data measured over the intervening centuries. The predictions of the resulting ballistics model are compared to historical muzzle velocity and range data.</p>
+
+<h2>Internal Ballistics</h2>
+
+<p>The work of Benjamin Robins resulted in the first useful model of the interior ballistics of guns. Robins' formula for muzzle velocity may be expressed as follows;</p>
+
+<p>The force of the gas pressure on the ball accelerating it down the barrel is given by</p>
+
+$$ F(x) = \frac{R P_{atm} A c}{x}   \tag{1}$$
+
+$$\mbox{where:} \\
+\mbox{x = is the distance the ball has moved down the barrel} \\
+\mbox{R = initial ratio of hot gas pressure to atmospheric pressure (Robins calculated to be 1000)} \\
+P_{atm}\mbox{ = atmospheric pressure} \\
+\mbox{A = cross-sectional area of the ball or bore} \\
+\mbox{c = the length of the barrel occupied by the powder charge before ignition. } \\
+$$
+
+<p>from Newton's 2nd law, the integral of the force over the distance it moves the ball will equal the kinetic energy of the ball. Hence:
+$$ \tfrac{1}{2} m v^2 = \int_{c}^{L} F(x) dx  \tag{2}$$
+
+$$ \mbox{where:} \\
+\mbox{m = mass of the cannonball} \\
+\mbox{v = muzzle velocity, velocity of ball a distance L down the barrel} \\
+\mbox{c = length of the powder charge in the barrel, equal to the initial position of the ball down the barrel} \\
+\mbox{L = full length of the barrel} \\
+$$
+
+Rearranging:
+
+$$ v^2 = \frac{2 R P_{atm}}{m}\frac{\pi d^2 c}{4} ln(\frac{L}{c})  \tag{3}$$
+$$ \mbox{where:} \\
+\mbox{d = barrel diameter, the bore} \\
+\mbox{L = full length of the barrel} \\
+\mbox{c = length of the powder charge, distance to the initial position of the ball} $$
+
+Given the density of the gunpowder \( \eta \), then the mass of the powder change \(p\) is given by:
+
+$$ p = \frac{\pi d^2 c }{4}\eta  \tag{4}$$
+
+Substituting this expression for the powder charge into eqn 3, yields:
+
+$$ v = \sqrt{\frac{2 R P_{atm}}{m}\frac{p}{\eta} ln(\frac{L}{c})}  \tag{5} $$
+
+</p>
+
+<p>Atmospheric pressure is 14.7&times;144&times;32.2 lbw/ft<sup>2</sup> and the density of gun powder is 55 lb/ft<sup>3</sup> [2]. The ratio of the initial pressure of exploding powder to atmospheric pressure, <i>R</i>,  was measured by Robins to be roughly 1000. Later Hutton's measurements [1, pp79] put this figure between 1500 and 1600. The values are empirical and depend on the quality of the gunpowder and the loss of pressure due to windage. Early 18th century muzzle velocities are better modelled with a value of R near 1500 and the early 19th century muzzle velocities, with higher quality powder and smaller windage, a value of 1600 is more appropriate.</p>
+
+<p>The original Robins' model may be refined by correcting for the energy required to accelerate the mass of burning powder and gas along the barrel as well as the ball, this effectively increases the mass of the ball by about one third of the weight of the powder charge [2][4].</p>
+
+<p>Hence, the average muzzle velocity of 18th century smooth bore cannon may be expressed, in units of ft/sec by:
+
+$$ v = 1928 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{6}$$
+
+and 19th century guns are better modelled by:
+
+$$ v = 1991 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{7}$$
+
+</p>
+
+<h3>Muzzle Velocity Source Code</h3>
+
+<p>Here is the JavaScript source code to calculate the muzzle velocity given the shot weight and powder charge weight.</p>
+
+<div class="srcFmt">
+<pre>
+// Barrel bore for standard iron shot weights, windage of 25/24 is assumed
+var bore = [];
+bore[4] = 3.18;
+bore[6] = 3.65;
+bore[9] = 4.17;
+bore[12] = 4.58;
+bore[18] = 5.25;
+bore[24] = 5.78;
+bore[32] = 6.36;
+bore[42] = 6.96;
+
+// Muzzle Velocity as function of round shot mass and powder charge
+function MuzzleVelocity(m, p) // mass of ball (lb), mass of charge (lb)
+{
+  var d = bore[m]/12;   // bore (ft) from table at ./Cannonballs.html
+  var eta = 55;         // density of powder (lb/ft^3)
+  var rho = 62.4;       // density of water
+  var atm = 14.7*32.2*144;    // 14 psi x g atmospheric pressure (lbw/ft^2)
+  var R = 1600;         // gunpowder gas pressure ratio to atm
+  var L = d*18;         // (18 calibre) length barrel (ft)
+  var c = p*4/(Math.PI*d*d*eta);  // length of charge in (ft)
+
+  return Math.sqrt(2*R*atm/eta)*Math.sqrt(p/(m+p/3)*Math.log(L/c));
+}
+</pre>
+</div>
+
+
+<h3>Comparison with historic muzzle velocity data</h3>
+<p>Table 1 shows historic measurements of muzzle velocity versus powder charge and round shot weight. These data are compared to the muzzle velocity values predicted by the Robins' model of interior ballistics described above, which are shown in blue. Published values of muzzle velocity are only available for 19th century guns, so the data in Table 1 compares these values with values calculated by eqn 7. The records do not usually state the barrel length, so where unavailable, a value of 18 calibre has been assumed.</p>
+
+  <table class="txtTbl" cellpadding="1" cellspacing="0" border="1">
+    <tbody style="text-align: center">
+      <tr>
+        <th style="width: 90px">Year [Ref]</th>
+        <th style="width: 70px">Shot Weight<br/>(lb)</th>
+        <th style="width: 70px">Charge<br/>(lb)</th>
+        <th style="width: 70px">Barrel Length<br/>(calibre)</th>
+        <th style="width: 70px">Muzzle Velocity<br/>(ft/sec)</th>
+        <th style="width: 70px">Calc'd<br/>Muzzle Velocity</th>
+      </tr>
+
+      <tr>
+        <td>1860 [3]</td>
+        <td>6</td>
+        <td>1&frac14;</td>
+        <td>16</td>
+        <td>1437</td>
+        <td style="color:blue">1456</td>
+      </tr>
+
+      <tr>
+        <td>"</td>
+        <td>12<br /></td>
+        <td>2&frac12;</td>
+        <td>18</td>
+        <td>1486</td>
+        <td style="color:blue">1484</td>
+      </tr>
+
+      <tr>
+        <td>1862 [5]</td>
+        <td>18</td>
+        <td>6</td>
+        <td>"</td>
+        <td>1720</td>
+        <td style="color:blue">1684</td>
+      </tr>
+
+      <tr>
+        <td>"</td>
+        <td>24</td>
+        <td>8</td>
+        <td>"</td>
+        <td>1720</td>
+        <td style="color:blue">1685</td>
+      </tr>
+
+      <tr>
+        <td>"</td>
+        <td>32</td>
+        <td>4.5</td>
+        <td>"</td>
+        <td>1250</td>
+        <td style="color:blue">1315</td>
+      </tr>
+
+      <tr>
+        <td>"</td>
+        <td>32</td>
+        <td>6</td>
+        <td>"</td>
+        <td>1450</td>
+        <td style="color:blue">1439</td>
+      </tr>
+
+      <tr>
+        <td>"</td>
+        <td>32</td>
+        <td>9</td>
+        <td>"</td>
+        <td>1700</td>
+        <td style="color:blue">1614</td>
+      </tr>
+
+    </tbody>
+  </table><!-- ************************************************************************** -->
+
+  <div class="captionHolder" style="width: 600px">
+    <p><b>Table 1.</b>&nbsp;&nbsp;Comparison of measured muzzle velocity with Robins' interior ballistics model.</p>
+  </div>  <!-- captionHolder -->
+
+
+<h2>External Ballistics</h2>
+
+<p>The ballistic path that a cannonball will follow after leaving the barrel may be expressed by Newton's equations of motion, to which must be added a term for the drag force due to the air's resistance to the motion. The resulting equations may be difficult to solve analytically, but the actual trajectory may be easily calculated by numerical methods. The ballistics software model developed here, uses the equations for aerodynamic drag of spherical projectiles from the <a href="CannonballDrag.html">Cannonball Aerodynamic Drag</a> page. Given an expression for the drag, and an expression for the muzzle velocity developed above, the equations for the trajectory may be expressed as follows:</p>
+
+<h3>Projectile Kinematics</h3>
+
+<p>The instantaneous aerodynamic drag force on a projectile travelling at velocity <i>v</i>, is given by the formula:
+
+$$ F = \frac{1}{2} C_D \rho A v^2    \tag{1} $$
+
+$$ \text{where } C_D \text{ is the dimensionless drag coefficient,} \\
+\rho \text{ is the density of air at sea level,} \\
+A \text{ is the cross-sectional area of the object in the direction of motion, and} \\
+v \text{ is the instantaneous velocity of the projectile relative to the air.}
+$$
+
+for a spherical projectile,
+
+$$ F_D = \frac{1}{2} \rho C_D(v,d) \frac{\pi d^2}{4} v^2   \tag{2} $$
+
+$$
+\mbox{where } d = \mbox{ diameter of the spherical projectile.}
+$$
+
+The expression for <i>C<sub>D</sub>(v)</i> is given by
+
+$$ C_D = SphereDrag(v, d). $$
+
+</p>
+
+<p>For high trajectories the force should be corrected for the reduction in density of the air with increasing altitude, <i>y</i>. The dimensionless correction factor is given by:
+
+$$ H(y) = e^{-3.158E-05y} \quad \text{ where y is in ft} $$
+
+This drop in density with altitude is only significant for shot fired at very high angles of elevation and may be omitted for sea service cannon where the gun carriage and gun ports restricted elevation to less than ~12&deg;
+</p>
+
+<p>If the projectile has mass, <i>m</i>, it follows from Newton's 2nd law of motion, \(F = ma \) that the deceleration due to drag is given by
+
+$$ a_D =  \frac{\pi}{8} \rho H(y) C_D(v,d) \frac{d^2}{m} v^2   \tag{4} $$
+
+Assuming that the air is still, the velocity of the projectile relative to the ground is equal to the velocity relative to the air and the direction of the drag force <i>F<sub>D</sub></i> is opposite the direction of the bullet velocity <i>v</i>. The x, and y components of the acceleration are then given by:
+
+$$ \begin{eqnarray}
+a_x & = & -a_D cos(\theta) \\
+a_y & = & -g -a_D sin(\theta) \\
+\end{eqnarray} $$
+
+where \( \theta \) is the instantaneous angle of the trajectory w.r.t. the horizontal.<br/>
+
+From eqn 4,
+
+$$ \begin{eqnarray}
+a_x & = & -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 cos(\theta)\\
+a_y & =&  -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 sin(\theta)\\
+\end{eqnarray}  $$
+
+Now \(v_x cos(\theta) \text{ and } v_y sin(\theta)\) are the <i>x</i> and <i>y</i> components of the velocity vector <i>v</i>, whose magnitude is <i>V</i><br />
+then
+
+$$ \begin{eqnarray}
+a_x & =&  -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_x\\
+a_y & =&  -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_y\\
+ \end{eqnarray} $$
+</p>
+
+<h3>Ballistic Trajectory Source Code</h3>
+
+<p>Having developed an expression for the acceleration of a projectile throughout its flight, the actual coordinates of its path may be calculated numerically and plotted. The values for the shot mass, powder charge and elevation may be user defined. Here is the JavaScript code to generate the trajectory data as a JavaScript array in the format [x0, y0, x1, y1, x2, y2 ... ]:</p>
+
+<div class="srcFmt" style="max-height:700px">
+<pre>
+/*================================================================
+  Plot ballistic trajectory of cannonball
+  please give credit to A.R.Collins [www.arc.id.au]
+  last rev: 01Feb16
+  ================================================================*/
+function plotTrack(dragFn, d, m, u, theta, y0)
+{
+  var g = 32.2,            // acceleration due to gravity (9.8 m/s)
+      rho = 0.074,         // density of air  (1.225 kg/m^3)
+      phi = 3.158E-5,      // atm density scale factor (9.626E-6 /m)
+      Cd, decel, H,        // drag coeff, deceleration, altitude factor
+      x = 0,               // range
+      y = y0 || 7,         // height
+      V = u || 1680,       // magnitude of velocity vector
+      theta0 = theta || 40,
+      vx = V*Math.cos(Math.PI*theta/180.0), // x vel component
+      vy = V*Math.sin(Math.PI*theta/180.0),
+      ax, ay,              // acceleration components
+      dt = 0.02,           // time step size
+      trackData;
+
+  trackData = [x/3, y/3];
+  while (y>0)    // stop track when bullet hits ground
+  {
+    Cd = dragFn(V, d);
+    H = Math.exp(-phi*y);
+    decel = Cd*rho*H*Math.PI*d*d/(m*8);
+    ax = -decel*V*vx;
+    ay = -g -decel*V*vy;
+    vx = vx + ax*dt;
+    vy = vy + ay*dt;
+    V = Math.sqrt(vx*vx+vy*vy);
+    x = x + vx*dt + ax*dt*dt/2;
+    y = y + vy*dt + ay*dt*dt/2;
+    trackData.push(x/3, y/3);
+  }
+
+  return trackData;
+}
+</pre>
+</div>
+
+<p>Figure 1 shows the effect of different drag models on cannonball trajectory. The blue track was generated with the software listed above. The red track was plotted using the GS ballistic table, scaled for a 5.78" diameter sphere. The GS drag over-estimates the sub-sonic drag for large spheres. The green track is a reference plot which uses constant (Newtonian) drag with Cd = 0.47. Constant drag model does not take into account the rise in drag near the speed of sound.</p>
+
+<div class="figHolder">
+  <img src="Images/Traj-24lb-GS-N-ARC.png" style="width:600px" alt="" />
+</div>    <!-- figHolder -->
+
+<div class="captionHolder" style="width:600px">
+  <p><b>Figure 1.</b> Blue track is the trajectory plot of 24 lb cannonball fired with 8 lb charge at 10&deg;.<br/>
+  For comparison: Red track GS drag scaled for 5.78" ball, Green track Newtonian sphere drag (constant Cd=0.47).</p>
+</div>   <!-- captionHolder -->
+
+<h3>Comparison with Historical Range data</h3>
+
+<p>Several 19th century text books on gunnery published range records of test firings of guns with different size charges and elevation angles etc.</p>
+
+<p>Table 1 shows the measured and predicted range for various size standard pattern British smooth bore guns firing cast iron round shot.</p>
+
+  <table class="txtTbl" style="width: 700px" cellpadding="0" cellspacing="0" border="1">
+    <colgroup>
+      <col width="auto" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+    </colgroup>
+    <tbody style="text-align:center">
+      <tr>
+        <td></td> <th colspan="2">Shot Mass</th> <td><b>42 <i>lb</i></b></td>
+        <th colspan="2">Charge</th> <td>14 <i>lb</i></td>
+        <th colspan="3">Calc'd Muzzle Vel</th> <td colspan="2"><span style="color:blue">1684</span> <i>ft/sec</i></td>
+      </tr>
+    	<tr>
+    		<th>Elevation (<i>deg</i>)</th>
+          <td>0</td> <td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td> <td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[4]</sup> (<i>yd</i>)</th>
+         <td>400</td>  <td>1045</td> <td>1263</td> <td>1622</td> <td>1770</td> <td>1938</td> <td>2100</td> <td>2300</td> <td>2580</td> <td>2650</td> <td>2900</td>
+    	</tr>
+    	<tr>
+    		<th>Calculated Range (<i>yd</i>)</th>
+         <td style="color:blue">336</td> <td style="color:blue">788</td> <td style="color:blue">1182</td> <td style="color:blue">1503</td> <td style="color:blue">1777</td> <td style="color:blue">2023</td> <td style="color:blue">2242</td> <td style="color:blue">2442</td> <td style="color:blue">2625</td> <td style="color:blue">2797</td> <td style="color:blue">2958</td>
+    	</tr>
+      </tbody>
+  </table>
+
+  <table class="txtTbl" style="width: 700px" cellpadding="0" cellspacing="0" border="1">
+    <colgroup>
+      <col width="auto" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+    </colgroup>
+    <tbody style="text-align:center">
+      <tr>
+        <td></td> <th colspan="2">Shot Mass</th> <td><b>32 <i>lb</i></b></td>
+        <th colspan="2">Charge</th> <td>10 <i>lb</i></td>
+        <th colspan="3">Calc'd Muzzle Vel</th> <td colspan="2"><span style="color:blue">1658</span> <i>ft/sec</i></td>
+      </tr>
+    	<tr>
+    		<th>Elevation (<i>deg</i>)</th>
+          <td>0</td> <td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td> <td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[4]</sup> (<i>yd</i>)</th>
+         <td>350</td>  <td>750</td> <td>1050</td> <td>1320</td> <td>1600</td> <td>2085</td> <td>2100</td> <td>2200</td> <td>2460</td> <td>2600</td> <td>2900</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[5]</sup> (<i>yd</i>)</th>
+         <td></td>  <td></td> <td>1130</td> <td></td> <td></td> <td>1964</td> <td></td> <td></td> <td></td> <td></td> <td>2682</td>
+    	</tr>
+    	<tr>
+    		<th>Calculated Range (<i>yd</i>)</th>
+         <td style="color:blue">328</td> <td style="color:blue">751</td> <td style="color:blue">1128</td> <td style="color:blue">1431</td> <td style="color:blue">1693</td> <td style="color:blue">1919</td> <td style="color:blue">2128</td> <td style="color:blue">2319</td> <td style="color:blue">2494</td> <td style="color:blue">2657</td> <td style="color:blue">2811</td>
+    	</tr>
+      </tbody>
+  </table>
+
+  <table class="txtTbl" style="width: 700px" cellpadding="0" cellspacing="0" border="1">
+    <colgroup>
+      <col width="auto" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+    </colgroup>
+    <tbody style="text-align:center">
+      <tr>
+        <td></td> <th colspan="2">Shot Mass</th> <td><b>24 <i>lb</i></b></td>
+        <th colspan="2">Charge</th> <td>8 <i>lb</i></td>
+        <th colspan="3">Calc'd Muzzle Vel</th> <td colspan="2"><span style="color:blue">1685</span> <i>ft/sec</i></td>
+      </tr>
+    	<tr>
+    		<th>Elevation (<i>deg</i>)</th>
+          <td>0</td> <td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td> <td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[4]</sup> (<i>yd</i>)</th>
+         <td>297</td>  <td>720</td> <td>1000</td> <td>1240</td> <td>1538</td> <td>1807</td> <td>2023</td> <td>2100</td> <td>2498</td> <td>2638</td> <td>2870</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[5]</sup>  (<i>yd</i>)</th>
+         <td></td>  <td></td> <td>1100</td> <td></td> <td></td> <td>1854</td> <td></td> <td></td> <td></td> <td></td> <td>2600</td>
+    	</tr>
+    	<tr>
+    		<th>Calculated Range (<i>yd</i>)</th>
+         <td style="color:blue">328</td> <td style="color:blue">750</td> <td style="color:blue">1105</td> <td style="color:blue">1399</td> <td style="color:blue">1645</td> <td style="color:blue">1865</td> <td style="color:blue">2064</td> <td style="color:blue">2242</td> <td style="color:blue">2411</td> <td style="color:blue">2566</td> <td style="color:blue">2711</td>
+    	</tr>
+      </tbody>
+  </table>
+
+  <table class="txtTbl" style="width: 700px" cellpadding="0" cellspacing="0" border="1">
+    <colgroup>
+      <col width="auto" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+      <col width="45px" />
+    </colgroup>
+    <tbody style="text-align:center">
+      <tr>
+        <td></td> <th colspan="2">Shot Mass</th> <td><b>12 <i>lb</i></b></td>
+        <th colspan="2">Charge</th> <td>4 <i>lb</i></td>
+        <th colspan="3">Calc'd Muzzle Vel</th> <td colspan="2"><span style="color:blue">1685</span> <i>ft/sec</i></td>
+      </tr>
+    	<tr>
+    		<th>Elevation (<i>deg</i>)</th>
+          <td>0</td> <td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td> <td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[4]</sup> (<i>yd</i>)</th>
+         <td>300</td>  <td>700</td> <td>913</td> <td>1189</td> <td>1400</td> <td>1580</td> <td>1800</td> <td></td> <td></td> <td></td> <td></td>
+    	</tr>
+    	<tr>
+    		<th>Measured Range<sup>[5]</sup> (<i>yd</i>)</th>
+         <td></td>  <td></td> <td>1000</td> <td></td> <td></td> <td>1520</td> <td></td> <td></td> <td></td> <td></td> <td>2330</td>
+    	</tr>
+    	<tr>
+    		<th>Calculated Range (<i>yd</i>)</th>
+         <td style="color:blue">318</td style="color:blue"> <td style="color:blue">698</td> <td style="color:blue">1013</td> <td style="color:blue">1271</td> <td style="color:blue">1492</td> <td style="color:blue">1686</td> <td style="color:blue">1857</td> <td></td> <td></td> <td></td> <td style="color:blue">2429</td>
+    	</tr>
+      </tbody>
+  </table>
+
+  <div class="captionHolder" style="width: 600px">
+    <p><b>Table 2.</b>&nbsp;&nbsp;Comparison of measured and predicted range values. The muzzle velocity used was calculated from the Robins' model based on the charge weight and bore of the gun.</p>
+  </div>  <!-- captionHolder -->
+
+  <p>All the measured data shown in the tables above used a charge weight of <sup>1</sup>/<sub>3</sub> the round shot weight. This was the standard service charge from 1760 onward. Earlier, the service charge was <sup>1</sup>/<sub>2</sub> the shot weight. The powder was of lesser quality and the windage greater, so ranges achieved would not have been that much greater than the figures above.</p>
+
+<p>Using the software model described, the elevation for maximum range for these guns varied from 39&deg; and 42&deg;. Table 3 shows the predicted maximum range for each size gun. The barrel length is set at 18 calibre, the elevation angle is 40&deg;, the charge is the standard service charge of <sup>1</sup>/<sub>3</sub> shot weight.</p>
+
+  <table class="txtTbl" style="width: 700px" cellpadding="0" cellspacing="0" border="1">
+    <colgroup>
+      <col width="auto" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+      <col width="55px" />
+     </colgroup>
+    <tbody style="text-align:center">
+    	<tr>
+    		<th>Gun type (<i>lb</i>)</th>
+          <td>4</td> <td>6</td> <td>9</td> <td>12</td> <td>18</td> <td>24</td> <td>32</td> <td>42</td> <td>64</td>
+    	</tr>
+     	<tr>
+    		<th>Maximum Range (<i>yd</i>)</th>
+         <td style="color:blue">3260</td style="color:blue"> <td style="color:blue">3531</td> <td style="color:blue">3839</td> <td style="color:blue">4074</td> <td style="color:blue">4405</td> <td style="color:blue">4657</td> <td style="color:blue">4922</td> <td style="color:blue">5186</td> <td style="color:blue">5612</td>
+    	</tr>
+      </tbody>
+  </table>
+
+  <div class="captionHolder" style="width: 650px">
+    <p><b>Table 3.</b>&nbsp;&nbsp;Calculated maximum range for the standard pattern guns using the standard service charge weight equal to <sup>1</sup>/<sub>3</sub> shot weight.</p>
+  </div>  <!-- captionHolder -->
+
+<h4>Footnote:</h4>
+<p>One of the reasons put forward for the international agreement that territorial waters extend 3 nautical miles from the coast, is that 3 nm was the maximum range of shore battery guns. The accuracy of this assertion can be tested using the software. 3 nm is 6076 yards, it is just possible to achieve this range by using a 64 lb gun with a long barrel (21 calibre) fired with a charge of 64 lb of powder (3 times the normal service charge) at an elevation of 41&deg;, even then the gun must be mounted about 300 ft above the water to achieve the 6076 yd range.</p>
+
+
+      <hr />
+          <p style="font-size: 11px">References:<br/>
+            1. B. Robins <i> New Principles of Gunnery Ed 2</i>, Lon. 1805<br />
+            2. J. Muller <i>A Treatise on Artillery</i>, Lon. 1768<br/>
+            3. J. Benton <i>Ordnance and Gunnery</i>, NY. 1862<br/>
+            4. H. Douglas <i>Treatise on Naval Gunnery</i>, Lon. 1829, 1860<br/>
+            5. E. Simpson <i>Treatise on Ordnance &amp; Naval Gunnery</i>, NY. 1862<br/>
+          </p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

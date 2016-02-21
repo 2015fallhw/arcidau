@@ -1,0 +1,506 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Animated Flintlock Mechanism</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="flintlock animation, flintlock description, canvas animation flintlock, flintlock pistol animation, flintlock mechanism" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+
+    #flintlockImg {
+      float: right;
+      display: inline;  /* IE6 hack to fix double margin bug */
+      width: 24em;
+      margin: 1em 2em 1em 1em;
+    }
+
+    #flintlockImg img {
+      width: 100%;
+      padding: 0.5em;
+      border: 1px solid #404040;
+    }
+
+    #cvsUpper, #cvsLower {
+      position: relative;
+      width: 600px;
+      height: 300px;
+      text-align: center;  /* this will center console if it has display:inline-block */
+      background-color: #aabdd3;
+    }
+
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="CangoAnimation-4v01.js"></script>
+  <script type="text/javascript" src="flintlockPartDefs-02.js"></script>
+
+  <script type="text/javascript">
+    function enableBtn(btnId)
+    {
+      var btn = document.getElementById(btnId);
+      btn.disabled = false;
+    }
+
+    function disableBtn(btnId)
+    {
+      var btn = document.getElementById(btnId);
+      btn.disabled = true;
+    }
+
+    function FlintlockDemo(cvsU, cvsL)
+    {
+      "use strict"
+      var innerGCL0, innerGCL1,
+          outerGC,
+          // Lock components (Cango2D groups)
+          cockObj,
+          fizzenObj,
+          plateObj,
+          searSpringObj,
+          searObj,
+          tumblerObj,
+          mainSpringObj,
+          screwsObj,
+          // draw outside in lower canvas
+          plateOutside,
+          cockOutside,
+          fizzenOutside,
+          fizzenSpring,
+          outScrews;
+
+      this.fire_JS = function()
+  		{
+        innerGCL0.playAnimation(0, 1000);   // play for 1000 then pause
+        outerGC.playAnimation(0, 1000);
+
+        disableBtn('cock');
+        disableBtn('fire');
+        setTimeout("enableBtn('load')", 1000);
+      };
+
+      this.load_JS = function()
+      {
+        innerGCL0.playAnimation(1000, 3500);    // resume from pause play until 3500
+        outerGC.playAnimation(1000, 3500);
+
+        disableBtn('load');
+        disableBtn('fire');
+        setTimeout("enableBtn('cock')", 2500);
+
+      };
+
+      this.cock_JS = function()
+      {
+        innerGCL0.playAnimation(3500, 5000);      // resume from pause play until 5000
+        outerGC.playAnimation(3500, 5000);
+
+        disableBtn('load');
+        disableBtn('cock');
+        setTimeout("enableBtn('fire')", 1500);
+      };
+
+      // Upper display
+      innerGCL0 = new Cango(cvsU);                     // layer for the cock and fizzen
+      innerGCL0.setWorldCoords(-250, -100, 500);       // square pixels origin in center of canvas
+      innerGCL1 = new Cango(innerGCL0.createLayer());  // layer for main spring and sear
+      innerGCL1.dupCtx(innerGCL0);
+
+      // construct all the component objects
+      cockObj = makeCock(innerGCL0);
+      fizzenObj = makeFizzenInside(innerGCL0);
+      plateObj = makePlate(innerGCL0);
+      searSpringObj = makeSearSpring(innerGCL1);
+      searObj = makeSear(innerGCL1);
+      tumblerObj = makeTumbler(innerGCL1);
+      mainSpringObj = makeMainSpring(innerGCL1);
+      screwsObj = makeScrews(innerGCL1);
+
+			var innerTwnr = new Tweener(0, 5000);
+      var innerData = {
+    	  cockRot:     [0, 54, 54, 18, 18,  0],
+        cockRotTimes:[0, 10, 20, 60, 70, 90],
+        fizzenRot:     [0, 0, 73, 73,  0],
+        fizzenRotTimes:[0, 4,  8, 60, 70],
+        searSpringRot:     [0, -5, -6, -3.5,  0, -2, -3.5, -3.5,  0,  0, -2, -3, -3.5,  0],
+        searSpringRotTimes:[0,  5, 10,   15, 20, 30,   40,   50, 60, 70, 75, 80,   85, 90],
+        searRot:     [0, 10, 12,  7,  0,  4,   7,   7,  0,  0,  4, 5.5,  7,  0],
+        searRotTimes:[0,  5, 10, 15, 20, 30,  40,  50, 60, 70, 75,  80, 85, 90],
+  		  tumblerRot:     [0, 54, 54, 18, 18,  0],
+        tumblerRotTimes:[0, 10, 20, 60, 70, 90],
+        mainSpringRot:     [0, -7, -7, -2, -2,  0],
+        mainSpringRotTimes:[0, 10, 20, 60, 70, 90]
+      };
+
+      function initCock(opts)
+      {
+        this.nextState.x = cockCxOfs;
+        this.nextState.y = -cockCyOfs;
+      }
+
+      function initFissen(opts)
+      {
+        this.nextState.x = fizzenCxOfs;
+        this.nextState.y = -fizzenCyOfs;
+      }
+
+      function initSearSpring(opts)
+      {
+        this.nextState.x = searSpringCxOfs;
+        this.nextState.y = -searSpringCyOfs;
+      }
+
+      function initSear(opts)
+      {
+        this.nextState.x = searCxOfs;
+        this.nextState.y = -searCyOfs;
+      }
+
+      function initMainSpring(opts)
+      {
+        this.nextState.x = mainSpringCxOfs;
+        this.nextState.y = -mainSpringCyOfs;
+      }
+
+      function cockPathFn(time, opts)
+      {
+        var cockRotVal = innerTwnr.getVal(time, opts.cockRot, opts.cockRotTimes);
+
+        this.nextState.rot = cockRotVal;
+      }
+
+      function fizzenPathFn(time, opts)
+      {
+        var fizzenRotVal = innerTwnr.getVal(time, opts.fizzenRot, opts.fizzenRotTimes);
+
+        this.nextState.rot = fizzenRotVal;
+      }
+
+      function searSpringPathFn(time, opts)
+      {
+        var searSpringRotVal = innerTwnr.getVal(time, opts.searSpringRot, opts.searSpringRotTimes);
+
+        this.nextState.rot = searSpringRotVal;
+      }
+
+      function searPathFn(time, opts)
+      {
+        var searRotVal = innerTwnr.getVal(time, opts.searRot, opts.searRotTimes);
+
+        this.nextState.rot = searRotVal;
+      }
+
+      function tumblerPathFn(time, opts)
+      {
+        var tumblerRotVal = innerTwnr.getVal(time, opts.tumblerRot, opts.tumblerRotTimes);
+
+        this.nextState.rot = tumblerRotVal;
+      }
+
+      function mainSpringPathFn(time, opts)
+      {
+        var mainSpringRotVal = innerTwnr.getVal(time, opts.mainSpringRot, opts.mainSpringRotTimes);
+
+        this.nextState.rot = mainSpringRotVal;
+      }
+
+  		innerGCL0.animate(cockObj, initCock, cockPathFn, innerData);
+      innerGCL0.animate(fizzenObj, initFissen, fizzenPathFn, innerData);
+      innerGCL0.animate(plateObj);
+      innerGCL1.animate(searSpringObj, initSearSpring, searSpringPathFn, innerData);
+      innerGCL1.animate(searObj, initSear, searPathFn, innerData);
+      innerGCL1.animate(tumblerObj, initCock, tumblerPathFn, innerData);
+      innerGCL1.animate(mainSpringObj, initMainSpring, mainSpringPathFn, innerData);
+      innerGCL1.animate(screwsObj);
+
+      // Lower display
+      outerGC = new Cango(cvsL);
+      outerGC.setWorldCoords(-250, -100, 500);
+
+      // construct all the component objects
+      plateOutside = makePlateOutside(outerGC);
+      cockOutside = makeCockOutside(outerGC);
+      fizzenOutside = makeFizzenOutside(outerGC);
+      fizzenSpring = makeFizzenSpring(outerGC);
+      outScrews = makeOutScrews(outerGC);
+
+			var outerTwnr = new Tweener(0, 5000);
+      var outerData = {
+    	  outerCockRot:     [0, -54, -54, -18, -18,  0],
+        outerCockRotTimes:[0,  10,  20,  60,  70, 90],
+        outerFizRot:     [0, 0, -73, -73,  0],
+        outerFizRotTimes:[0, 4,   8,  60, 70],
+        outerFizSpringRot:     [0, 0, 5, 6, 3.5, 0,  0,    3,  4,    3,  0],
+        outerFizSpringRotTimes:[0, 4, 5, 6,   7, 8, 60, 62.5, 65, 67.5, 70]
+      };
+
+      function initCockOutside(opts)
+      {
+        this.nextState.x = -cockCxOfs;
+        this.nextState.y = -cockCyOfs;
+      }
+
+      function initFissenOutside(opts)
+      {
+        this.nextState.x = -fizzenCxOfs;
+        this.nextState.y = -fizzenCyOfs;
+      }
+
+      function initFissenSpring(opts)
+      {
+        this.nextState.x = -fizzenSpringCxOfs;
+        this.nextState.y = -fizzenSpringCyOfs;
+      }
+
+      function outerCockPathFn(time, opts)
+      {
+        var cockRotVal = outerTwnr.getVal(time, opts.outerCockRot, opts.outerCockRotTimes);
+
+        this.nextState.rot = cockRotVal;
+      }
+
+      function outerFizzenPathFn(time, opts)
+      {
+        var fizzenRotVal = outerTwnr.getVal(time, opts.outerFizRot, opts.outerFizRotTimes);
+
+        this.nextState.rot = fizzenRotVal;
+      }
+
+      function fizzenSpringPathFn(time, opts)
+      {
+        var fizzenSpringRotVal = outerTwnr.getVal(time, opts.outerFizSpringRot, opts.outerFizSpringRotTimes);
+
+        this.nextState.rot = fizzenSpringRotVal;
+      }
+
+      outerGC.animate(plateOutside);
+			outerGC.animate(cockOutside, initCockOutside, outerCockPathFn, outerData);
+      outerGC.animate(fizzenOutside, initFissenOutside, outerFizzenPathFn, outerData);
+      outerGC.animate(fizzenSpring, initFissenSpring, fizzenSpringPathFn, outerData);
+      outerGC.animate(outScrews);
+
+      disableBtn('load');
+      disableBtn('cock');
+      enableBtn('fire');
+    }
+
+    var consoleBtns =
+    {
+      f1:function(){demo.load_JS()},
+      f2:function(){demo.cock_JS()},
+      f3:function(){demo.fire_JS()},
+      f4:function(){}
+    };
+
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      demo = new FlintlockDemo('cvsUpper', 'cvsLower');
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Animated Flintlock Mechanism</h1>
+        <div class="text_01">
+
+          <h2>The Taylor &amp; Mander pistol</h2>
+          <div id="flintlockImg">
+            <img src="Images/TaylorMander-01.jpg" alt="Taylor and Mander Pistol" />
+          </div>
+          <p>Shown below is a schematic drawing of the flintlock dating from the early 1700s. The various moving components have been animated to demonstrate how the flintlock mechanism works. This is just the lock mechanism removed from the wooden stock. The upper image shows the inside of the lock and the lower image the outside.</p>
+          <p>The lock was made by Taylor &amp; Mander. The pistol to which it is fitted has a 4" cannon-barrel (see picture). The pistol furniture is brass with grotesque mask butt-plate. It is a good example of the simple flintlock. Later flintlocks had many refinements added but the operating principle was unchanged.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+      <div class="scrnBevel">
+        <canvas id="cvsUpper" width="600" height="300"></canvas>
+        <canvas id="cvsLower" width="600" height="300"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      <table class="btnHolder" cellspacing="0" cellpadding="0">
+        <tr align="center">
+          <td width="33%"><button type="button" onclick="consoleBtns.f1()" class="button-link" id="load">HALF COCK</button></td>
+          <td width="33%"><button type="button" onclick="consoleBtns.f2()" class="button-link" id="cock">COCK</button></td>
+          <td width="33%"><button type="button" onclick="consoleBtns.f3()" class="button-link" id="fire">FIRE</button></td>
+        </tr>
+      </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both;"></div>
+  </div> <!-- console -->
+</div>   <!-- consoleHolder -->
+
+
+          <h2>Flintlock mechanism</h2>
+          <p>To prepare for firing, the cock is pulled back to the half-cock position. The tip of the sear engages the half-cock notch in the tumbler. The lock is safe in this half-cock position since pulling the trigger will not release the sear.</p>
+
+          <p>In this position the pan is primed with gun-powder. The fizzen, which incorporates the pan cover, is then snapped shut. The fizzen is held in place by the external fizzen spring. The pistol may be safely carried and handled in this loaded, half-cock state.</p>
+
+          <p>To enable firing, the cock is pulled back further until the sear engages with the second step in the tumbler. The lock is now cocked.</p>
+          <p>To fire the pistol, the trigger is pulled which lifts the back of the sear. The sear tip slides off the tumbler. The tumbler is now free to rapidly rotate under the force of the main spring. The flint in the cock strikes the fizzen generating sparks of red hot metal. The fizzen pivots backwards as it is stuck, exposing the pan to the shower of sparks. The motion of the cock is arrested by the shoulder of the cock hitting the top of the lock plate.</p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

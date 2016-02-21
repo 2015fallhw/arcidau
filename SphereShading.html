@@ -1,0 +1,1062 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Sphere Shading with CSS</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="css shading, sphere shading, drawing a sphere in HTML, 3D shading effects, shading a ball" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+
+  <script type="text/javascript">
+
+    function demo(demoNum, holderId, rVal, gVal, bVal, R, shadowOffset, specularOffset, azimDeg) {
+      var holderNode = document.getElementById(holderId),
+          sphere = document.createElement("div"),
+          hemiSphere = document.createElement("div"),
+          lastNode,
+          dia = 2*R,
+          brightColor = "rgb("+rVal+","+gVal+","+bVal+")",
+          darkColor = "rgb("+Math.round(0.7*rVal)+","+Math.round(0.7*gVal)+","+Math.round(0.7*bVal)+")",
+          hw = Math.abs(shadowOffset)*R,
+          sphereTxt = "",
+          hemiTxt = "";
+
+          // clear out the previous structure
+          while (lastNode = holderNode.lastChild)
+          {
+            holderNode.removeChild(lastNode);
+          }
+
+          if (demoNum > 2)
+          {
+            var sx = specularOffset*R,
+                overlay = document.createElement("div"),
+                overlayTxt = "";
+          }
+
+      sphereTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+      sphereTxt += "border-radius:"+R+"px;";
+      sphereTxt += "overflow: hidden;";
+      if (shadowOffset <= 0)
+      {
+        sphereTxt += "background-color:"+darkColor+";";
+
+        hemiTxt += "position:absolute; left:auto; right:0;";
+        hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+        hemiTxt += "border-top-left-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-bottom-left-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-top-right-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-bottom-right-radius:"+R+"px "+R+"px;";
+        hemiTxt += "background-color:"+brightColor+";";
+      }
+      else
+      {
+        sphereTxt += "background-color:"+brightColor+";";
+
+        hemiTxt += "position:absolute; left:0; right:auto;";
+        hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+        hemiTxt += "border-top-left-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-bottom-left-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-top-right-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-bottom-right-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "background-color:rgba(0,0,0,0.3);";
+      }
+
+      sphere.style.cssText = sphereTxt;
+
+      if (demoNum > 1)
+      {
+        if (specularOffset !== null)   // only draw a bright spot if sun above horizon
+        {
+          // feather edges of dark-bright boundary
+          if (shadowOffset <= 0)
+          {
+            hemiTxt += "box-shadow: inset "+(0.2*R)+"px 0px "+(0.3*R)+"px 0px "+darkColor+";";
+          }
+          else
+          {
+            hemiTxt += "box-shadow:"+(0.2*R)+"px 0px "+(0.3*R)+"px 0px "+darkColor+";";
+          }
+
+          if (demoNum > 2)
+          {
+            overlayTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+            overlayTxt += "border-radius:"+R+"px;";
+            overlayTxt += "background-image:radial-gradient(circle "+R+"px at 50% 50%, \
+                                                            rgba(255,0,0,0.0) 40%, \
+                                                            rgba(0,0,0,0.05) 75%, \
+                                                            rgba(0,0,0,0.15) 100%)";
+            if (demoNum > 3)
+            {
+              // bright spot
+              overlayTxt += ", radial-gradient(circle "+0.6*R+"px at "+(R+sx)+"px "+R+"px, \
+                                                              rgba(255,255,255,0.7) 8%, \
+                                                              rgba(255,255,255,0.15) 65%, \
+                                                              rgba(255,255,255,0.0) 100%);";
+            }
+          }
+        }
+      }
+
+      hemiSphere.style.cssText = hemiTxt;
+      sphere.appendChild(hemiSphere);
+      if (demoNum > 2)
+      {
+        overlay.style.cssText = overlayTxt;
+        sphere.appendChild(overlay);
+      }
+
+      holderNode.appendChild(sphere);
+
+      if (demoNum > 4)
+      {
+        if (azimDeg)
+        {
+          sphere.style.transform = "rotate("+(-azimDeg)+"deg)";  // switch to CW positive
+        }
+      }
+    }
+
+    function toCartesian(r, a)
+    {
+      return {x:r*Math.cos(a), y:r*Math.sin(a)};
+    }
+
+    function vSubtract(v1, v2)
+    {
+      return {x:v1.x-v2.x, y:v1.y-v2.y};
+    }
+
+    function vDot(v1, v2)
+    {
+      return v1.x*v2.x + v1.y*v2.y;
+    }
+
+    function geometryDef(cvsID)
+    {
+      var cgo = new Cango(cvsID),
+          xmin = -5,
+          xmax = 5,
+          ymin = -3,
+          ymax = 7,
+          R = 1.5,                  // sphere radius
+          obsH = 6,                 // height of observer
+          tauDeg = 64,              // independent variable
+          vO = {x:0, y:obsH},
+          tau = Math.PI*tauDeg/180,
+          vP = {x:R*Math.cos(tau), y:R*Math.sin(tau)},
+          PO = vSubtract(vO, vP),
+          lenOP = Math.sqrt(vDot(PO, PO)),
+          delta = Math.asin(vP.x/lenOP),
+          phi = delta + Math.PI/2 - tau,
+          sAng = tau - phi,
+          vS = {x:4*Math.cos(sAng), y:4*Math.sin(sAng)},
+          arcData;
+      // use degrees for Cango
+      var deltaDeg = 180*delta/Math.PI,
+          phiDeg = 180*phi/Math.PI,
+          sDeg = 180*sAng/Math.PI;
+
+      // plot
+      cgo.clearCanvas();
+      cgo.setGridboxRHC(5, 38, 90, 90);
+      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.drawAxes(xmin, xmax, -2, ymax, {
+        strokeColor: "gray",
+        xOrigin: 0,
+        yOrigin: 0,
+        xTickInterval:0,
+        yTickInterval:0 });
+
+      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+
+      cgo.drawPath(["M", 0, 0, "L", 3*vP.x, 3*vP.y], 0, 0, {strokeColor:"orange", dashed:[5,3]});
+      cgo.drawPath(["M", vP.x, vP.y, "L", vO.x, vO.y], 0, 0, {strokeColor:"green", lineWidth: 2});
+      cgo.drawPath(["M", 0, 0, "L", vS.x, vS.y], vP.x, vP.y, {strokeColor:"red", lineWidth: 2});
+      cgo.drawPath(["M", 0, 0, "L", 2, 0], vP.x, vP.y, {strokeColor:"gray", dashed:[5]});
+
+      cgo.drawPath(["M", 0, 0, "L", 4*Math.cos(Math.PI/2+delta), 4*Math.sin(Math.PI/2+delta)], 0, 0, {strokeColor:"lightgray", dashed:[5]});
+
+      cgo.drawShape(shapeDefs.circle(0.15), vO.x, vO.y, {fillColor:"black"});
+      cgo.drawHTMLtext("O&nbsp;(0,h)", 0.2,6.3, "black", 12);
+      cgo.drawHTMLtext("S", 4.5,3.8, "black", 10);
+      cgo.drawShape(shapeDefs.circle(0.15), vP.x, vP.y, {fillColor:"black"});
+      cgo.drawHTMLtext("P", 0.65,1.25, "black", 12);
+      // arcs
+      arcData = shapeDefs.arrowArc(2, tauDeg, tauDeg+phiDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&phi;", 1.0,3.8, "black", 10);
+      arcData = shapeDefs.arrowArc(2, sDeg, sDeg+phiDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&phi;", 2.1,3.3, "black", 10);
+      arcData = shapeDefs.arrowArc(1.4, 0, sDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&sigma;", 2.2,2.0, "black", 10);
+      arcData = shapeDefs.arrowArc(3.6, -90, -90+deltaDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, vO.x, vO.y, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&delta;", 0.2,2.4, "black", 10);
+      arcData = shapeDefs.arrowArc(0.6, 0, tauDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&tau;", 0.7,0.6, "black", 10);
+
+      arcData = shapeDefs.arrowArc(3.6, 90, 90+deltaDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&delta;", -0.3,3.4, "lightgray", 10);
+
+      cgo.drawText("elevation view", 2, -2, {lorg:7});
+
+      // draw plan view
+      cgo.setGridboxRHC(5, 2, 90, 90);
+      cgo.setWorldCoords(xmin, -2, xmax-xmin);
+      cgo.drawAxes(xmin, xmax, -2, 3, {
+        strokeColor: "gray",
+        xOrigin: 0,
+        yOrigin: 0,
+        xTickInterval:0,
+        yTickInterval:0 });
+
+      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+
+      cgo.drawShape(shapeDefs.circle(0.3*R), vP.x, 0, {fillColor:'gray'});
+      cgo.drawText("observer view", 2, -2, {lorg:7});
+    }
+
+    function hemiSphere(HWminorAxis, r)
+    {
+      // returns the outline shape of a hemisphere projected to 2D
+      // semi-circular edge is on the left with radius r
+      // right edge is a half ellipse with half length of minor axis =HW*r
+      // -ve HW gives concave crescent (like 1st qtr moon)
+      // +ve HW gives convex (like 3rd qtr moon)
+      var d = 2*r,
+          w = d*HWminorAxis;
+
+      return ["m", 0,-0.5*d,
+              "c", 0.27614*w,0, 0.5*w,0.22386*d,  0.5*w,0.5*d,
+              "c", 0,0.27614*d, -0.22386*w,0.5*d, -0.5*w,0.5*d,
+              "c", -0.27614*d,0, -0.5*d,-0.22386*d, -0.5*d,-0.5*d,
+              "c", 0,-0.27614*d, 0.22386*d,-0.5*d, 0.5*d,-0.5*d];
+    }
+
+    function shadowGeometry(cvsID)
+    {
+      var cgo = new Cango(cvsID),
+          xmin = -5,
+          xmax = 5,
+          ymin = -3,
+          ymax = 3,
+          R = 1.5,            // sphere radius
+          h = 6,              // independent variable
+          arcData;
+      var sDeg = 30,
+          sAng = Math.PI*sDeg/180,
+          vS = {x:5*Math.cos(sAng), y:5*Math.sin(sAng)};
+
+      // plot
+      cgo.clearCanvas();
+      cgo.setGridboxRHC(5, 50, 90, 90);
+      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.drawAxes(xmin, xmax, -2.5, ymax, {
+        strokeColor: "gray",
+        xOrigin: 0,
+        yOrigin: 0,
+        xTickInterval:0,
+        yTickInterval:0 });
+
+      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+
+      var ofs, t, x, obj;
+      var a1 = (sDeg+90)*Math.PI/180,
+          a2 = (sDeg-90)*Math.PI/180,
+          vP1 = {x:R*Math.cos(a1), y:R*Math.sin(a1)},
+          vP2 = {x:R*Math.cos(a2), y:R*Math.sin(a2)};
+
+      cgo.drawPath(["M", vP1.x, vP1.y, "L", vP2.x, vP2.y], 0, 0, {strokeColor:"black"});
+
+      ofs = -5*R/4;
+      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
+      cgo.render(obj, 0, 0, 1, sDeg);
+      ofs = -R;
+      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
+      cgo.render(obj, 0, 0, 1, sDeg);
+      for (ofs=-3*R/4; ofs<R; ofs+=R/4)
+      {
+        t = Math.asin(ofs/R);
+        x = R*Math.cos(t);
+        obj = new Cobj(["M", x, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
+        cgo.render(obj, 0, 0, 1, sDeg);
+      }
+      ofs = R;
+      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
+      cgo.render(obj, 0, 0, 1, sDeg);
+      ofs = 5*R/4;
+      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
+      cgo.render(obj, 0, 0, 1, sDeg);
+
+      // arcs
+      arcData = shapeDefs.arrowArc(1.4, 0, sDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, R, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&sigma;", 3.1,0.6, "black", 10);
+      arcData = shapeDefs.arrowArc(1.0, 90, 90+sDeg, false, 0.03, 7);
+      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      cgo.drawHTMLtext("&sigma;", -0.4,1.4, "black", 10);
+
+      cgo.drawText("elevation view", 2, -2, {lorg:4});
+
+      cgo.setGridboxRHC(5, 1, 90, 90);
+      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.drawAxes(xmin, xmax, ymin, ymax, {
+        strokeColor: "gray",
+        xOrigin: 0,
+        yOrigin: 0,
+        xTickInterval:0,
+        yTickInterval:0 });
+
+      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+
+      var hw = -Math.sin(sAng);
+      // draw outline of the hemisphere in shadow
+      cgo.drawShape(hemiSphere(hw, R), 0, 0, {fillColor:'gray'});
+      cgo.drawPath(shapeDefs.ellipse(2*R*hw, 2*R), 0, 0, {fillColor:'gray', dashed:[5]});
+
+      cgo.drawText("observer view", 2, -2, {lorg:4});
+    }
+  </script>
+
+  <script type="text/javascript">
+    function calcSpecularOffset(h, sAngDeg)
+    {
+      /* Given:
+         * a unit sphere at the origin,
+         * an observer on Y axis (height h)
+         * incoming (parallel) rays from S at an elevation angle sAngDeg
+         Find:
+         The x component of reflection point P that reflects a ray from S going through O.
+         Method:
+         Assume point of reflection P is at radius 1, angle to x axis 'tau'
+         1.Calcuate the maximum and minimum possible values for tau, set hi=max and lo=min
+         2.Set the test refection point P angle tau half way between hi and lo.
+           Calculate the angle of the reflected ray from P going through O
+           Calculate 'sigma' the angle of an incident ray which reflects at this angle
+           If the given sun elevation angle sAng > sigma then set lo = tau, else
+           set hi = tau, halving the search angle.
+         3.If the difference between the calculated incident angle sigma, and the sun angle sAng
+           is &lt; 0.01 rad this is close enough and we are done, otherwise go back to step 2.
+      */
+      var sAng = Math.PI*sAngDeg/180,
+          tau,                            // tau = angle of reflection point
+          tauMax = Math.PI/2,
+          tauMin = Math.asin(1/h),
+          sigma,                          // incident ray elevation
+          sigmaMax = tauMax,
+          sigmaMin = -Math.PI/2 + tauMin,
+          px = null,
+          hi, lo;                         // the limits of search arc
+
+      function vSubtract(v1, v2)
+      {
+        return {x:v1.x-v2.x, y:v1.y-v2.y};
+      }
+
+      function vDot(v1, v2)
+      {
+        return v1.x*v2.x + v1.y*v2.y;
+      }
+
+      function rayAngle(h, pAng) // observer Y coord, reflection point angle from X axis (radians)
+      {
+        // assume a sphere at the origin radius 1
+        // given observer at O and reflection point at P
+        // return the angle of elevation of the incident ray
+        var P = {x:Math.cos(pAng), y:Math.sin(pAng)},
+            O = {x:0, y:h},
+            PO = vSubtract(O, P),
+            lenOP = Math.sqrt(vDot(PO, PO)),
+            delta = Math.asin(P.x/lenOP),
+            angle = 2*pAng - Math.PI/2 - delta;
+
+        return angle;
+      }
+
+      if ((sAng <= sigmaMax) && (sAng >= sigmaMin))   // target angle must lie within hi and lo
+      {
+        lo = tauMin;
+        hi = tauMax;
+        do
+        {
+          tau = (hi + lo)/2;   // try tau in the middle of hi and lo
+          sigma = rayAngle(h, tau);
+          if (sAng > sigma)
+          {
+            lo = tau;
+          }
+          else
+          {
+            hi = tau;
+          }
+        }
+        while (Math.abs(sigma-sAng) > 0.01);
+
+        px = Math.cos(tau);        // px as a fraction of the radius
+      }
+
+      return px;
+    }
+
+    function ellipseHalfMinorAxis(sAngDeg)
+    {
+      // return ellipse half minor axis as fraction of radius
+      return -Math.sin(Math.PI*sAngDeg/180);
+    }
+
+    function moveSun()
+    {
+      var specOffset = calcSpecularOffset(obsHgt/R, sunElevDeg),  // returns fraction of radius
+          shadowOffset = ellipseHalfMinorAxis(sunElevDeg);
+
+      shadeBall("sphere1", 20, 145, 230, R, shadowOffset, specOffset, sunAzimDeg);   // works for elevations -90..90 deg
+    }
+
+    function newX()
+    {
+      sunElevDeg = 180*(s1.value-50)/100;
+      moveSun();
+    }
+
+    function newY()
+    {
+      sunAzimDeg = 360*(s2.value-50)/100;
+      moveSun();
+    }
+
+    function shadeBall(holderId, rVal, gVal, bVal, R, shadowOffset, specularOffset, azimDeg)
+    {
+      var holderNode = document.getElementById(holderId),
+          sphere = document.createElement("div"),
+          hemiSphere = document.createElement("div"),
+          lastNode,
+          dia = 2*R,
+          brightColor = "rgb("+rVal+","+gVal+","+bVal+")",
+          darkColor = "rgb("+Math.round(0.6*rVal)+","+Math.round(0.6*gVal)+","+Math.round(0.6*bVal)+")",
+          hw = Math.abs(shadowOffset)*R,
+          sx = specularOffset*R,
+          sphereTxt = "",
+          hemiTxt = "",
+          overlay = document.createElement("div");
+          overlayTxt = "";
+
+      // clear out the previous structure
+      while (lastNode = holderNode.lastChild)
+      {
+        holderNode.removeChild(lastNode);
+      }
+
+      sphereTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+      sphereTxt += "border-radius:"+R+"px;";
+      sphereTxt += "overflow: hidden;";
+      if (shadowOffset <= 0)
+      {
+        sphereTxt += "background-color:"+darkColor+";";
+
+        hemiTxt += "position:absolute; left:auto; right:0;";
+        hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+        hemiTxt += "border-top-left-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-bottom-left-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-top-right-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-bottom-right-radius:"+R+"px "+R+"px;";
+        hemiTxt += "background-color:"+brightColor+";";
+      }
+      else
+      {
+        sphereTxt += "background-color:"+brightColor+";";
+
+        hemiTxt += "position:absolute; left:0; right:auto;";
+        hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+        hemiTxt += "border-top-left-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-bottom-left-radius:"+R+"px "+R+"px;";
+        hemiTxt += "border-top-right-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "border-bottom-right-radius:"+hw+"px "+R+"px;";
+        hemiTxt += "background-color:rgba(0,0,0,0.4);";
+      }
+      overlayTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+      overlayTxt += "border-radius:"+R+"px;";
+      overlayTxt += "background-image:radial-gradient(circle "+R+"px at 50% 50%, \
+                                                      rgba(0,0,0,0.0) 40%, \
+                                                      rgba(0,0,0,0.05) 75%, \
+                                                      rgba(0, 0, 0, 0.15) 100%)";
+
+      if (specularOffset !== null)   // only draw a bright spot if sun above horizon
+      {
+        // bright spot
+        overlayTxt += ", radial-gradient(circle "+0.6*R+"px at "+(R+sx)+"px "+R+"px, \
+                                                        rgba(255,255,255,0.7) 8%, \
+                                                        rgba(255,255,255,0.15) 65%, \
+                                                        rgba(255,255,255,0.0) 100%);";
+        // feather edges of dark-bright boundary
+        if (shadowOffset <= 0)
+        {
+          hemiTxt += "box-shadow: inset "+(0.2*R)+"px 0px "+(0.3*R)+"px 0px "+darkColor+";";
+        }
+        else
+        {
+          hemiTxt += "box-shadow: "+(0.2*R)+"px 0px "+(0.3*R)+"px 0px "+darkColor+";";
+        }
+      }
+      sphere.style.cssText = sphereTxt;
+      hemiSphere.style.cssText = hemiTxt;
+      overlay.style.cssText = overlayTxt;
+
+      sphere.appendChild(hemiSphere);
+      sphere.appendChild(overlay);
+      holderNode.appendChild(sphere);
+
+      if (azimDeg)
+      {
+        sphere.style.transform = "rotate("+(-azimDeg)+"deg)";  // switch to CW positive
+      }
+    }
+
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    var s1, s2,
+        R = 80,
+        obsHgt = 120*R,
+        sunElevDeg = 30,
+        sunAzimDeg = 70;
+
+    addLoadEvent(function(){
+      buildMenu(indexData);
+
+      s1 = document.getElementById("slider-1");
+      s2 = document.getElementById("slider-2");
+
+      newX();   // draw the sphere according to slider positions
+      newY();
+
+      demo(1, "step1a", 20, 145, 230, 40, -0.3)
+      demo(1, "step1b", 20, 145, 230, 40, 0.3)
+      demo(2, "step2a", 20, 145, 230, 40, -0.3)
+      demo(2, "step2b", 20, 145, 230, 40, 0.3)
+      demo(3, "step3", 20, 145, 230, 40, -0.3)
+      demo(4, "step4", 20, 145, 230, 40, -0.3, 0.58)
+      demo(5, "step5", 20, 145, 230, 40, -0.3, 0.58, 60)
+      geometryDef('cvs1');
+      shadowGeometry('cvs2');
+
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Sphere Shading with CSS</h1>
+        <div class="text_01">
+
+<h2>Introduction</h2>
+
+<p>This article describes the use of CSS style rules to simulate the shading of a sphere in sunlight. The CSS border radius, gradient fill and box-shadow rules can to simulate the 3D shading of a sphere reasonably well for arbitrary positioning of the observer, the sphere and the sun.</p>
+
+<p>Fig 1 shows some photographs of a ball in sunlight, clearly showing the shadows and highlights that to be simulated with CSS properties.</p>
+
+<div class="figHolder">
+  <img src="Images/shadedBall.jpg" style="position: relative; width: 100%; border: 1px solid black;">
+  <div class="captionHolder"><p><b>Figure 1.</b> Photographs of a ball in direct sunlight.</p></div>
+</div>
+
+<p>Fig 2 shows the HTML/CSS simulation of the ball similar to that in Fig 1. The sliders allow the angle between the sun and observer to be varied along with the azimuthal angle of the sun.</p>
+
+<div style="position: relative; width: 420px;margin: 1em auto 0 auto;">
+  <div class="console" style="margin: 0 auto">
+     <div class="bezel">
+        <div class="scrnBevel" >
+          <div id="alphaArea" style="width:400px; height:250px; background-color:lightYellow">
+
+            <div id="sphere1" style="position: absolute; width: 160px; height: 160px; top:40px; left:120px;"></div>
+
+          </div>
+        </div>  <!-- scrnBevel -->
+
+          <table class="sliderHolder" cellspacing="0" cellpadding="0">
+            <tr align="center">
+              <td><input id="slider-1" class="slider" type=range min=0 max=100 value=50 step=1 onchange="newX()" oninput="newX()"></td>
+              <td><input id="slider-2" class="slider" type=range min=0 max=100 value=50 step=1 onchange="newY()" oninput="newY()"></td>
+            </tr>
+          </table>
+
+        </div>  <!-- bezel -->
+      <div style="clear: both"></div>
+    </div>    <!-- console -->
+  <div class="captionHolder"><p><b>Figure 2.</b> Simulation of sphere in sunlight, sliders vary sun elevation and azimuth.</p></div>
+</div>
+
+<p>The details of the CSS style rules to create the simulation are described below. How to calculate the position of the shadows and highlights for an arbitrary geometry of observer sphere and sun are also shown below.</p>
+
+<p>The sphere appears to the observer as a circle, shaded with three distinct features:</p>
+<ol>
+<li>
+<p><b>Bright and dark hemispheres.</b> Assuming that the light source is sun, the illuminating rays are essentially all parallel. This means that all points on the hemisphere facing the sun will be directly illuminated and will scatter some light toward the observer. The unilluminated hemisphere will receive no direct light to scatter and so appear dark.</p>
+<p>The dark and light hemispheres are delineated by a great circle, called the <b>terminator</b>, the normal to which will be in the direction of the sun. The observer sees the terminator as half an ellipse.</p>
+</li>
+<li><b>Ambient light scattering.</b> The center of the sphere will appear brighter, grading darker toward the limb. This is due to scattering of ambient light which increases in intensity as the normal to the surface approaches the direction of the observer.</li>
+<li><b>Specular reflection bright spot.</b> There will be a bright spot where the observer sees the reflected image of the sun. This is specular reflection, the incident and reflected rays are at equal angles to the surface normal at this point. The bright spot lies in the plane defined by the observer, the sphere's center and the sun.</li>
+<li><b>Azimuthal rotation.</b> The bright spot and the minor axis of the terminator ellipse, as seen by the observer, lie in a straight line. This line will have some azimuthal rotation relative to the X axis depending upon the direction to the sun.</li>
+</ol>
+
+<h3>Making the basic shapes with CSS</h3>
+<p>To create a 2D simulation of the shaded sphere we create a set of three DIV elements, representing the background circle, the dark-bright shadow shape and an overlay with semi-transparent shading. The background DIV and its child DIV elements will be created and styled with a JavaScript function so the parameters determined by a given geometry may be passed as variables.</p>
+
+<h4>Making a circle with CSS</h4>
+<p>To create the background circle of radius <b>R</b>, first create a square DIV element with width and height 2*R and set the border-radius for all 4 corners to <b>R</b>. The "overflow: hidden" rule is added to crop any child element box-shadows that may extend outside the circle. The background-color is set to the given red, green and blue values. </p>
+
+<h4>Dark and bright hemispheres</h4>
+<p>The 2D projection of the dark hemisphere is created by a DIV element with the border-radius values for the left side set to R, forming a semi-circle, then right side is half an ellipse, created by setting the border-radius-right values' Y components to R, but their X components are set to the half width of the terminator ellipse minor axis. This minor axis length is determined by the angle between the observer and the sun. The method for calculating the ellipse half width is shown below.</p>
+<p>If the angle between the observer and the sun is less than 90&deg; the dark side will appear crescent shaped and the terminator ellipse X radius values would be negative, since CSS border-radii can't be set to a negative value, the larger hemisphere with its convex outline must be used to set the elliptical boundary. If the bright hemisphere is the larger, then the background circle is set to the darker shadow color and the bright hemisphere is drawn over it. If the darker hemisphere is bigger then the background circle is set to the bright color and the dark hemisphere is drawn over it. Here is the source code for these basic shapes.</p>
+
+<div class="srcFmt" style="max-height:740px">
+  <div id="step1a" class="demoHolder" style="position:absolute; top:300px; right:60px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <div id="step1b" class="demoHolder" style="position:absolute; top:500px; right:60px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <pre style="margin-left:10px;">
+function demo1(holderId, rVal, gVal, bVal, R, shadowOffset) {
+  var holderNode = document.getElementById(holderId),
+      sphere = document.createElement("div"),
+      hemiSphere = document.createElement("div"),
+      dia = 2*R,
+      brightColor = "rgb("+rVal+","+gVal+","+bVal+")",
+      darkColor = "rgb("+Math.round(0.7*rVal)+","+Math.round(0.7*gVal)+","+Math.round(0.7*bVal)+")",
+      hw = Math.abs(shadowOffset)*R,
+      sphereTxt = "",
+      hemiTxt = "";
+
+  sphereTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+  sphereTxt += "border-radius:"+R+"px;";
+  sphereTxt += "overflow: hidden;";
+  if (shadowOffset &lt;= 0)
+  {
+    sphereTxt += "background-color:"+darkColor+";";
+
+    hemiTxt += "position:absolute; left:auto; right:0;";
+    hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+    hemiTxt += "border-top-left-radius:"+hw+"px "+R+"px;";
+    hemiTxt += "border-bottom-left-radius:"+hw+"px "+R+"px;";
+    hemiTxt += "border-top-right-radius:"+R+"px "+R+"px;";
+    hemiTxt += "border-bottom-right-radius:"+R+"px "+R+"px;";
+    hemiTxt += "background-color:"+brightColor+";";
+  }
+  else
+  {
+    sphereTxt += "background-color:"+brightColor+";";
+
+    hemiTxt += "position:absolute; left:0; right:auto;";
+    hemiTxt += "width:"+(R+hw)+"px; height:"+dia+"px;";
+    hemiTxt += "border-top-left-radius:"+R+"px "+R+"px;";
+    hemiTxt += "border-bottom-left-radius:"+R+"px "+R+"px;";
+    hemiTxt += "border-top-right-radius:"+hw+"px "+R+"px;";
+    hemiTxt += "border-bottom-right-radius:"+hw+"px "+R+"px;";
+    hemiTxt += "background-color:rgba(0,0,0,0.3);";
+  }
+  sphere.style.cssText = sphereTxt;
+  hemiSphere.style.cssText = hemiTxt;
+
+  sphere.appendChild(hemiSphere);
+  holderNode.appendChild(sphere);
+}</pre>
+</div>
+
+<h3>Add shading</h3>
+<h4>Feathering the terminator</h4>
+<p>The shadow terminator line most commonly appears feathered to some extent. This can be simulated by applying a box shadow to the hemisphere overlay. The feathering adds drop shadow to the edge of the bright hemisphere, the drop shadow will be the dark color and will be "inset" if the overlay hemisphere is bright and "outset" (the CSS default) if the overlay is dark. In this example the box shadow extends 30% of the radius and 20%offset.</p>
+
+<div class="srcFmt" >
+  <div id="step2a" class="demoHolder" style="position:absolute; top:20px; right:20px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <div id="step2b" class="demoHolder" style="position:absolute; top:120px; right:20px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <pre style="margin-left:10px;">
+if (shadowOffset &lt;= 0)
+{
+  ...
+  hemiTxt += "box-shadow:inset "+(0.2*R)+"px 0 "+(0.3*R)+"px 0px "+darkColor+";";
+}
+else
+{
+  ...
+  hemiTxt += "box-shadow: "+(0.2*R)+"px 0 "+(0.3*R)+"px 0px "+darkColor+";";
+}
+
+...
+</pre>
+</div>
+
+<h4>Scattered ambient light</h4>
+<p>Scattering of ambient light from the sphere surface is seen by the observer as a darkening toward the limb of the sphere. This effect is uniform around the sphere and so is best simulated by a second overlay with its background-image set to a black radial-gradient with varying transparency.</p>
+
+<div class="srcFmt" >
+  <div id="step3" class="demoHolder" style="position:absolute; top:150px; right:20px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <pre style="margin-left:10px;">
+function demo3(holderId, rVal, gVal, bVal, R, shadowOffset) {
+  var ...
+      overlay = document.createElement("div");
+      overlayTxt = "";
+
+  ...
+  overlayTxt += "position:absolute; width:"+dia+"px; height:"+dia+"px;";
+  overlayTxt += "border-radius:"+R+"px;";
+  overlayTxt += "background-image:radial-gradient(circle "+R+"px at 50% 50%, \
+                                                  rgba(0,0,0,0.0) 40%, \
+                                                  rgba(0,0,0,0.05) 75%, \
+                                                  rgba(0,0,0,0.15) 100%)";
+  sphere.style.cssText = sphereTxt;
+  hemiSphere.style.cssText = hemiTxt;
+  overlay.style.cssText = overlayTxt;
+
+  sphere.appendChild(hemiSphere);
+  sphere.appendChild(overlay);
+  holderNode.appendChild(sphere);
+}</pre>
+</div>
+
+<h4>Specular reflection bright spot CSS</h4>
+<p>The bright spot caused by specular reflection of the sun can be simulated by an additional radial gradient applied to the overlay div. The spot will be white at the center with transparency increasing with distance. The offset of the bright spot from the center of the circle can be calculated (see below) or estimated.</p>
+
+<div class="srcFmt" >
+  <div id="step4" class="demoHolder" style="position:absolute; top:130px; right:20px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <pre style="margin-left:10px;">
+function demo4(holderId, rVal, gVal, bVal, R, shadowOffset, specularOffset) {
+  var ...
+      sx = specularOffset*R,
+      ...
+  ...
+  if (specularOffset !== null)   // only draw a bright spot if sun above horizon
+  {
+    // bright spot
+    overlayTxt += ", radial-gradient(circle "+0.6*R+"px at "+(R+sx)+"px "+R+"px, \
+                                                    rgba(255,255,255,0.7) 8%, \
+                                                    rgba(255,255,255,0.15) 65%, \
+                                                    rgba(255,255,255,0.0) 100%);";
+    ...
+  }
+  ...
+}</pre>
+</div>
+
+<h3>Rotating the element to match sun azimuth</h3>
+
+<p>The simulation so far has assumed the observer, sphere and sun all lie in the X-Z plane with the sun to the right of the sphere. In general the plane containing the observer, the sphere center and the sun will have some rotation about the Z axis. This is easily handled with a CSS transform 'rotate' applied to the sphere element.</p>
+
+<div class="srcFmt" >
+  <div id="step5" class="demoHolder" style="position:absolute; top:20px; right:20px; width:80px; height:80px;">
+    <div style="position:absolute; width:80px; height:80px; background-color: #00bfff; border-radius: 40px; overflow: hidden;"></div>
+  </div>
+  <pre style="margin-left:10px;">
+function demo5(holderId, rVal, gVal, bVal, R, shadowOffset, specularOffset, azimDeg) {
+  ...
+
+  if (azimDeg)
+  {
+    sphere.style.transform = "rotate("+(-azimDeg)+"deg)";  // switch to CW positive
+  }
+}</pre>
+</div>
+
+
+<h2>Shading parameter calculations for arbitrary position of the sun</h2>
+
+<p>To write the CSS rules to make a good simulation of the shading a sphere the following parameters will be needed:
+  <ul>
+    <li><b>hw</b>: Half width of the elliptical boundary between the dark-bright hemispheres.</li>
+    <li><b>sx</b>:Distance to the center of the specular reflection bright spot.</li>
+    <li><b>az</b>: The Sun azimuth, i.e. the angle to X axis made by the projection onto the X-Y plane of a vector in the direction of the sun.</li>
+  </ul>
+</p>
+
+<p>The 3D arrangement assumes sphere is always assumed at to be at the origin of the X-Y plane (which will lie in the plane of the screen), the observer will be positioned somewhere on the Z axis (out of the screen directly above the sphere). 3D angles are measured using the right hand rule, so angles in the X-Y plane increase anti-clockwise from the X axis.</p>
+
+<p>In this analysis the 3D arrangement may be simplified into two 2D geometry calculations. The dark-bright boundary ellipse width and the offset of the bright spot may be calculated in 2D. Mapping this plane onto the X-Y plane allows the relatively simple calculation of 'hw' and 'sx'. Flipping this plane back to Z-X and then rotating about the Z axis restores all the 3D information. The angle of rotation is just the sun azimuth 'az'.</p>
+
+<h3>Calculation of specular reflection point</h3>
+<p>The coordinate system for the calculation assumes the sphere center is at the origin of the X-Y plane, the observer is at a distance 'h' up the Y axis and the sun is in the X-Y plane with elevation angle '&sigma;' to the X axis.</p>
+<p>The point of reflection P, is determined by Snell's law which requires that the angle between the incident ray and the surface normal at P to be equal to the angle between the reflected ray and the normal. The geometry of this specular reflection is shown in Fig 3.</p>
+
+  <div class="figHolder" style="float: right; width: 360px; margin: 1em 3em;" >
+    <canvas id="cvs1" width="360" height="470" style="border: 1px solid black"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 3.</b> A schematic diagram of the plane through source, center of a reflecting sphere and the observer showing the geometry that determines the location of the specular reflection bright spot.</p>
+    </div>  <!-- caption-holder -->
+  </div>
+
+<p>From the diagram:</p>
+$$ \begin {align}
+\tau &= \phi + \sigma \\
+\phi &= \delta + (\frac{\pi}{2} - \tau) \\
+Substi&tuting for \phi \\
+\sigma &= \tau - \delta - \frac{\pi}{2} + \tau \\
+      &= 2\tau - \frac{\pi}{2} - \delta \\
+Since, \\
+\delta &= sin^{-1}(\frac{P.x}{\lvert OP \rvert}) \\
+Hence, \\
+\sigma &= 2\tau - \frac{\pi}{2} - \frac{P.x}{\lvert OP \rvert} \\
+\end {align}
+$$
+
+<p>Given the elevation of the sun and the location of the observer the point of reflection can be calculated. An analytic solution is rather difficult [ref 1] and a simple binary search has been used to determine the coordinates radial offset of P.</p>
+
+<p style="clear: right">The JavaScript code to calculate find the radial offset of P is shown below. It assumes a unit sphere at the origin, an observer on Y axis at height h and an incoming parallel rays from S at an elevation angle sAng. The function returns X component of reflection point P that reflects a ray from S going through O.</p>
+<div class="srcFmt" style="max-height: 700px">
+<pre>
+function calcSpecularOffset(h, sAng)
+{
+  var tau,                            // tau = angle of reflection point
+      tauMax = Math.PI/2,
+      tauMin = Math.asin(1/h),
+      sigma,                          // incident ray elevation
+      sigmaMax = tauMax,
+      sigmaMin = -Math.PI/2 + tauMin,
+      hi, lo;                         // the limits of search arc
+
+  function rayAngle(h, pAng) // observer Y coord, reflection point angle (rads) from X axis
+  {
+    // assume a sphere at the origin radius 1
+    // given observer at O and reflection point at P
+    // return the angle of elevation of the incident ray
+    var P = {x:Math.cos(pAng), y:Math.sin(pAng)},
+        O = {x:0, y:h},
+        PO = vSubtract(O, P),
+        lenOP = Math.sqrt(vDot(PO, PO)),
+        delta = Math.asin(P.x/lenOP),
+        angle = 2*pAng - Math.PI/2 - delta;
+
+    return angle;
+  }
+
+  if ((sAng &lt;= sigmaMax) && (sAng >= sigmaMin))   // target angle must lie within hi and lo
+  {
+    lo = tauMin;
+    hi = tauMax;
+    do {
+      tau = (hi + lo)/2;   // try tau in the middle of hi and lo
+      sigma = rayAngle(h, tau);
+      if (sAng > sigma) {
+        lo = tau; }
+      else {
+        hi = tau; }
+    } while (Math.abs(sigma-sAng) > 0.01);
+  }
+  return Math.cos(tau);   // P.x as a fraction of the radius
+}
+</pre>
+</div>
+
+<h3>Calculation of dark hemisphere boundary ellipse</h3>
+
+<p>A sphere directly ill-fated by a distant source will have dark and light hemispheres, the boundary between the two will be a circle on the surface lying in the plane perpendicular to the direction of the source and whose center is at the center of the sphere.</p>
+
+  <div class="figHolder" style="float: right; width: 360px; margin: 1em 3em;" >
+    <canvas id="cvs2" width="360" height="400" style="border: 1px solid black"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 4.</b> A schematic diagram of the plane through source, center of a reflecting sphere and the observer showing the geometry of the dark-bright hemisphere dividing line.</p>
+    </div>  <!-- caption-holder -->
+  </div>
+
+<p>The observer sees this dividing circular line as half an ellipse. The length of the major axis will be the diameter of the sphere and the length of the minor axis will be determined by the angle between the observer and the source. The geometry to determine the length of the minor axis is shown in Fig 4.</p>
+
+<p style="clear:right">From the diagram:</p>
+<div class="srcFmt">
+<pre>
+hw  = -Math.sin(&sigma;);   //minor axis half length
+</pre>
+</div>
+<p style="font-size: 11px; clear:right">References:<br />
+  1. Eberly D, "Computing a Point of Reflection on a Sphere" </br>
+  <i style="margin-left:2em">http://www.geometrictools.com/Documentation/SphereReflections.pdf</i>.
+</p>
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

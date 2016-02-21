@@ -1,0 +1,324 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Index</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="underwater acoustics, sound level measurement, underwater sounds, sound in air and water, sound levels compared" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+
+    .pgThumb {
+      border: 1px solid #404040;
+      float:left;
+      margin:10px;
+    }
+
+    .pgThumb h3 {
+      color:white;
+      font-size:13px;
+      font-weight:300;
+      padding:3px 0 0 6px;
+      margin:0;height:20px;
+      border-bottom: 1px solid #808080;
+      background-color:#7888a0;
+    }
+
+    .fltRight {
+      float: right;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+  <script type="text/javascript">
+    var xRef = {
+      "p0": "CannonBallistics.html",
+      "p1": "Calendar.html",
+      "p2": "CanvasGraphics.html",
+      "p3": "Cannon.html",
+      "p4": "FilterDesign.html",
+      "p5": "Flintlock.html",
+      "p6": "GearDrawing.html",
+      "p7": "CanvasAnimation.html",
+      "p8": "Canvas3DGraphics.html",
+      "p9": "HelixDrawing.html",
+      "p10": "CanvasLayers.html",
+      "p11": "Ordnance1637.html",
+      "p12": "SpectrumAnalyser.html",
+      "p13": "ThreadDrawing.html",
+      "p14": "UWAcoustics.html",
+      "p15": "XEyes.html",
+      "p16": "ZoomFFT.html",
+      "p17": "ArmstrongPattern.html",
+      "p18": "SonarRayTracing.html"
+    };
+
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content" style="background-color: grey">
+        <div class="h1Bkg"></div>
+        <h1>Index</h1>
+        <div class="text_01">
+<p></p>
+<p></p>
+<div class="pgThumb" onclick="window.location = xRef['p0']">
+  <h3>Smooth Bore Ballistics</h3>
+  <img src="Thumbs/Ballistics.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p1']">
+  <h3>Calendar</h3>
+  <img src="Thumbs/Calendar.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb fltRight" onclick="window.location = xRef['p2']">
+  <h3>Canvas Graphics</h3>
+  <img src="Thumbs/Cango.jpg" style="display:block; height:170px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p3']">
+  <h3>Cannon</h3>
+  <img src="Thumbs/Cannon.jpg" style="display:block; height:150px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p4']">
+  <h3>FIR Filters</h3>
+  <img src="Thumbs/FilterDesign.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb fltRight" onclick="window.location = xRef['p6']">
+  <h3>Gear Drawing</h3>
+  <img src="Thumbs/GearDrawing.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p5']">
+  <h3>Flintlock</h3>
+  <img src="Thumbs/Flintlock.jpg" style="display:block; height:140px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p7']">
+  <h3>Canvas Animation</h3>
+  <img src="Thumbs/Graphics2D.jpg" style="display:block; width:170px" alt="">
+</div>
+
+<div class="pgThumb fltRight" onclick="window.location = xRef['p8']">
+  <h3>3D Graphics</h3>
+  <img src="Thumbs/Graphics3D.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p9']">
+  <h3>Helix Drawing</h3>
+  <img src="Thumbs/HelixDrawing.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p10']">
+  <h3>Canvas Layers</h3>
+  <img src="Thumbs/Layers.jpg" style="display:block; height:140px" alt="">
+</div>
+
+<div class="pgThumb fltRight" onclick="window.location = xRef['p11']">
+  <h3>Ordnance 1637</h3>
+  <img src="Thumbs/Ordnance1637.jpg" style="display:block; width:180px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p12']">
+  <h3>Spectrum Analyser</h3>
+  <img src="Thumbs/SpectrumAnalyser.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p13']">
+  <h3>Thread Drawing</h3>
+  <img src="Thumbs/ThreadDrawing.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p18']">
+  <h3>Ray Tracing</h3>
+  <img src="Thumbs/RayTracing.jpg" style="display:block; height:180px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p15']">
+  <h3>XEyes</h3>
+  <img src="Thumbs/XEyes.jpg" style="display:block; width:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p16']">
+  <h3>Zoom FFT</h3>
+  <img src="Thumbs/ZoomFFT.jpg" style="display:block; height:160px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p17']">
+  <h3>Armstrong Pattern</h3>
+  <img src="Thumbs/Armstrong.jpg" style="display:block; width:250px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p14']">
+  <h3>UW Acoustics</h3>
+  <img src="Thumbs/UWAcoustics.jpg" style="display:block; width:250px" alt="">
+</div>
+
+        </div>  <!-- text_01 -->
+      <div style="clear:both; height:0px; color:grey">.</div>
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

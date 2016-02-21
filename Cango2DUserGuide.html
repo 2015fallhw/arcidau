@@ -1,0 +1,2031 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Cango2D User Guide</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="JavaScript graphics, client-side graphics, canvas graphics, Cango2D, canvas graphics library, cross browser graphics, Cango2D Reference Manual, Cango2D User Guide" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="all">
+    @import "contentStyle-18.css";
+    @import "userManual-01.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango2D-7v01.js"></script>
+
+  <script type="text/javascript">
+    function testClip(cvsID)
+    {
+      var g,
+          clipper = new Obj2D(shapeDefs.circle(50), "CLIP"),
+          sqr = new Obj2D(shapeDefs.square(70), "SHAPE", {
+            fillColor: "red"}),
+          tri = new Obj2D(shapeDefs.triangle(70), "SHAPE", {
+            fillColor:"royalblue"}),
+          grp;
+
+      g = new Cango2D(cvsID);
+      g.setWorldCoords(-60, -60, 120);
+      grp = new g.createGroup2D(sqr, clipper, tri);
+
+      g.render(grp);
+    }
+
+    function sayHullo(cvsID)
+    {
+      var g,
+          hullo = new Obj2D("Hullo World", "TEXT", {
+            fillColor:"blue",
+            fontSize:16,
+            lorg:5}),
+          hulloData = {scl:[1, 2, 1],
+                       rot:[0, 360, 0]},
+          twnr = new Tweener(1000, 5000, 'loopAll');
+
+      function hulloPath(time, opts)
+      {
+        var sclVal = twnr.getVal(time, opts.scl),
+            rotVal = twnr.getVal(time, opts.rot);
+
+        this.obj.transform.scale(sclVal);
+        this.obj.transform.rotate(rotVal);
+      }
+
+      g = new Cango2D(cvsID);
+      g.setWorldCoords(-12, -12, 24);
+      g.animate(hullo, null, hulloPath, hulloData);
+      g.playAnimation();
+    }
+
+//==================================================================================
+
+    function animColor(cvsID)
+    {
+      var g,
+          ball = new Obj2D(shapeDefs.circle(50), "SHAPE", {fillColor:'rgb(255,0,0'}),
+          colData = { r:[255, 0,   0, 255],
+                      g:[0, 200,   0,   0],
+                      b:[0,   0, 255,   0] },
+          colTwnr = new Tweener(0, 3000, "loop");
+
+      function pathBall(time, opts)
+      {
+        var rVal = Math.round(colTwnr.getVal(time, opts.r)),
+            gVal = Math.round(colTwnr.getVal(time, opts.g)),
+            bVal = Math.round(colTwnr.getVal(time, opts.b));
+
+        ball.setProperty("fillColor", "rgb("+rVal+","+gVal+","+bVal+")");
+      }
+
+      g = new Cango2D(cvsID);
+      g.setWorldCoords(-50, -50, 100);
+      g.animate(ball, null, pathBall, colData);
+
+      g.playAnimation();
+    }
+
+//==================================================================================
+
+    function drawLorg(cvsID)
+    {
+      var g = new Cango2D(cvsID),
+          lg1, lg2,
+          data = ['M', -120, -50, 'L', 120, -50,
+                  'M', -120, 0, 'L', 120, 0,
+                  'M', -120, 50, 'L', 120, 50,
+                  'M', -100, -60, 'L', -100, 60,
+                  'M', 0, -60, 'L', 0, 60,
+                  'M', 100, -60, 'L', 100, 60];
+
+      g.clearCanvas("#eeeeee");
+      g.setWorldCoords(-140, -90, 280);
+      g.setPropertyDefault("fillColor", "#007700");
+      g.setPropertyDefault("fontSize", 20);
+
+      g.drawPath(data, 0, 0, {strokeColor:'#808080'});
+      g.drawText("Lorg 1", -100, 50, {lorg:1});
+      g.drawText("Lorg 2", 0, 50, {lorg:2});
+      g.drawText("Lorg 3", 100, 50, {lorg:3});
+      g.drawText("Lorg 4", -100, 0, {lorg:4});
+      g.drawText("Lorg 5", 0, 0, {lorg:5});
+      g.drawText("Lorg 6", 100, 0, {lorg:6});
+      g.drawText("Lorg 7", -100, -50, {lorg:7});
+      g.drawText("Lorg 8", 0, -50, {lorg:8});
+      g.drawText("Lorg 9", 100, -50, {lorg:9});
+
+      lg1 = new Obj2D("lorg 1", "TEXT", {lorg:1, fillColor:"red"});
+      lg1.transform.rotate(45);
+      lg1.transform.translate(-100, 50);
+      g.render(lg1);
+      lg2 = new Obj2D("lorg 2", "TEXT", {lorg:2, fillColor:"red"});
+      lg2.transform.rotate(45);
+      lg2.transform.translate(0, 50);
+      g.render(lg2);
+    }
+
+//==================================================================================
+
+    function dragBox(cvsID)
+    {
+      var g,
+          boxOutline = ['M', 0, 0, 'l', 40, 0, 0, 100, -40, 0, 'z'],
+          box = new Obj2D(boxOutline, "SHAPE", {
+            fillColor:'orange',
+            border:true,
+            strokeColor:"brown"});
+
+      function dragB1(mousePos)
+      {
+        var wPos = {x:mousePos.x - this.grabOfs.x,
+                    y:mousePos.y - this.grabOfs.y};
+
+        box.transform.translate(wPos.x, wPos.y);
+        g.render(this.target, true);    // true => clear canvas
+      };
+
+      g = new Cango2D(cvsID);
+      g.setWorldCoords(-100, -100, 400);
+
+      box.enableDrag(null, dragB1, null);
+
+      g.render(box);
+    }
+
+    function linGradDemo(cvsID)
+    {
+      var g = new Cango2D(cvsID);
+
+      var gradObj = new LinearGradient(-2,2, 2,-2);
+      gradObj.addColorStop(0, 'yellow');
+      gradObj.addColorStop(0.5, 'green');
+      gradObj.addColorStop(1, 'black');
+
+      g.setWorldCoords(-2, -2, 4);       // square pixels
+
+      g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:gradObj});
+    }
+
+    function radGradDemo(cvsID)
+    {
+      var g = new Cango2D(cvsID);
+
+      var grad = new RadialGradient(0, 0, .5, 1, 1, 2.5);
+      grad.addColorStop(0, '#aabbff');
+      grad.addColorStop(1, '#00f');
+
+      g.setWorldCoords(-2, -2, 4);       // square pixels
+
+      g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:grad});
+    }
+
+//=============================================================
+
+function zoomPanTest(cvsID)
+{
+  'use strict';
+  var g,
+      gL1,
+      xmin = -300,
+      ymin = -200,
+      xspan = 750,
+      Arc3 = "M0,50 h-150 a150,150 0 1,0 150,-150 z M-25,25 v-150 a150,150 0 0,0 -150,150 z",
+      ro, jane, txt, arcsObj;
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(xmin, ymin, xspan);
+
+  gL1 = new Cango2D(g.createLayer());
+  gL1.dupCtx(g);
+
+  jane = new Obj2D("Images/JaneAvril2.jpg", "IMG", {
+    imgHeight: 100,
+    border:true,
+    lineWidthWC:6,
+    strokeColor:'sienna',
+    shadowOffsetX:8,
+    shadowOffsetY:-8,
+    shadowBlur:4,
+    shadowColor:'grey' });
+  jane.scale(2);
+
+  txt = new Obj2D("Caption", "TEXT", {fillColor:"red", fontSize:20,
+  border:true,
+  lineWidth:1});
+
+  arcsObj = new Obj2D(svgToCgo2D(Arc3), "SHAPE", {
+    border:true,
+    strokeColor:"red",
+    lineWidth:2,       // pixels
+    fillColor:"yellow" });
+  arcsObj.scale(0.5);
+
+  function drawBits()
+  {
+    g.clearCanvas();
+    jane.transform.translate(100, 250);
+    g.render(jane);
+    txt.transform.translate(100, 20);
+    g.render(txt);
+    gL1.clearCanvas();
+    gL1.render(arcsObj);
+  }
+
+  drawBits();
+
+  initZoomPan(g.createLayer(), [g, gL1], drawBits);
+}
+
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+
+      testClip('cvsClip');
+      sayHullo('cvs1');
+      animColor('cvs1a');
+      drawLorg('cvsLorg');
+      dragBox('dragBox');
+      linGradDemo('lingrad');
+      radGradDemo('radgrad');
+      zoomPanTest('cgZP');
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Cango2D User Guide</h1>
+        <div class="text_01">
+<h2>Cango2D</h2>
+<p>Cango2D is a graphics library for the HTML5 canvas element. Cango2D's command set is quite small, relying on the SVG 'Path' syntax to define paths and shapes to be drawn on the canvas. User defined world coordinates, animation and drag-n-drop are integral features.</p>
+
+<p>The current version of Cango2D is 7v01, and the source code is available at <a href="Cango2D-7v01.js" download>Cango2D-7v01.js</a>. Version 7 makes some changes to the API so it is not source compatible with earlier versions.</p>
+
+<h3>New in Cango2D Version 7</h3>
+<ul>
+<li>
+<p>Version 7 makes major changes to the animation API, adopting the Timeline model. The <i>Cango2D</i>.<b>animate</b> method now takes as parameters; the object or group to be animated, an initialization function, a path function to be called prior to drawing every frame and an options object to hold parameters to be passed to these functions. Since the path function can apply movement transforms or change property values Cango2D can now achieve a wider range of animation effects.</p>
+<p>The basis of animation in earlier Cango2D versions was the <a href="#tweener">Tweener</a> interpolation object. This has been generalized to support an array of key times to match its key frame values. The Tweener <a href="#getval">getVal</a> method is now available for use in animation path functions.</p>
+<p>In version 7v00 the keyTimes were expressed as a fraction of the Tweener timeline duration. Version 7v01 expects the key time values to be expressed as a <b>percentage</b> of the duration interval. Hence they should now be a monotonically increasing array of values in the range 0 to 100.</p>
+<p>The Cango.playAnimation method now takes start and stop times, allowing arbitrary segments of a long timeline to be played.</p>
+<p>All Obj2D and Group2D soft transforms are now automatically reset after the object or group is rendered. This forces all transforms to be reapplied at each frame of an animation or drag event making the code far easier to debug.</p>
+</li>
+
+<li>
+<p>Version 7 changes the way a clipping path is defined and reset. An Obj2D may now be of type "CLIP" which can have the full set of matrix transforms applied and it can also inherit transforms applied to its parent group like any other Obj2D. The structure allows a clip path to be included in a Group2D to be animated and the clip region will track the movements of the group.</p>
+<p>The clip path is reset to the full canvas after every animation frame so that the excluded areas of the canvas don't aggregate.</p>
+</li>
+
+<li>
+<p>Version 7 provides support for adding a <b>Zoom-and-Pan</b> capability to a Cango2D canvas stack. The zoom and pan controls are set up by calling the global function <a href="#initzoompan">initZoomPan</a>.</p>
+</li>
+
+<li>
+<p>Version 7 adds the Obj2D property <b>lineWidthWC</b> which sets the line width and border widths in world coordinate units. In earlier Cango2D versions line width could only be set in pixel units using the <i>Obj2D</i>.<b>lineWidth</b> property, this is still supported. The two methods of setting the line width are provided to clarify the behaviour of path line width and object border width when the Obj2D is scaled.</p>
+
+<p>There are three methods of scaling the size of any Obj2D:</br>
+1. The <i>Obj2D</i>.scale method, which actually changes the coordinates values used to drawn the object.</br>
+2. The <i>Obj2D</i>.transform.scale method, which will scale the object as it is drawn. This dynamic re-size will not change the object definition, and can be cleared by the Obj2D.transform.reset method.</br>
+3. The Zoom-and-Pan utility can change the size of every Obj2D drawn on a canvas by changing the world coordinates of the Cango2D instance and then re-drawing all the objects.</p>
+
+<p>If an Obj2D's line width is assigned to the <b>lineWidthWC</b> property, the line width or border width will scale just like any other dimension of the object with all three scaling methods. If the <b>lineWidthWC</b> property is null or undefined and a line width value in pixels units has been assigned to the <b>lineWidth</b> property then the path outline or object border will have a fixed pixel width regardless of any type of scaling applied to the path or object.</p>
+<p>If both properties have been assigned a value then the <b>lineWidthWC</b> takes precedence. If neither has been specified, then the current default value of the <i>Cango2D</i><b>lineWidth</b> (pixel value) belonging to the Cango2D context used to render the object, is used. This default value may be changed with the <i>Cango2D</i>.<b>setPropertyDefault</b> method.</p>
+</li>
+
+</ul>
+
+<h3>Cango2D Architecture</h3>
+
+<h4>Cango2D coordinate system</h4>
+<p>Cango2D coordinate system is Right Handed Cartesian with X value increasing to the right and Y values increasing up the canvas. Angles increase anti-clockwise. Both axes have the same scale factor. This restriction to isotropic 2D space allows the efficiency of matrix transforms to be exploited, considerably enhancing animation performance.<br/>
+NOTE: This site also provides the <a href="CanvasGraphics.html">Cango</a> graphics library which has many of the same features as Cango2D, but Cango allows independent X and Y scaling, ideal for plotting graphs of data which invariably require different dimensions along X and Y axes.</p>
+
+<h4>Canvas Layers</h4>
+<p>Support for multiple canvas layers is provided by the Cango2D methods <i>cgo</i>.<b>createLayer</b> and <i>cgo</i>.<b>deleteLayer</b>. Only Cango2D contexts that are created on the original background canvas can create layers. Once a new canvas layer is created a new Cango2D context should be made to draw on that canvas. Layers can be drawn upon and cleared independent of the background canvas or other layers, so animations can run on a layer while drawing on other layers is unaffected. Drag and drop is not affected by which layer an object is drawn on. Drag and drop mouse event are applied as if they penetrate all layers.</p>
+
+<h4>Obj2D and Group2D objects</h4>
+<p>Everything drawn on the canvas by Cango2D is an <b>Obj2D</b>. An Obj2D can package drawing instructions for PATH, SHAPE, TEXT, IMG or CLIP type objects. Obj2Ds have properties and methods to define their appearance when rendered onto the canvas. Multiple objects can be grouped as the children of a <b>Group2D</b> object so that they can be handled as a single entity. A Group2D can have more Group2Ds as children as well as Obj2D, so objects within a Group2D form a tree structure of arbitrary depth.</p>
+
+<h4 id="drawingOrigin">Obj2D drawing origin</h4>
+<p>When an Obj2D is drawn onto the canvas at coordinates (x,y), the actual point within the Obj2D that is positioned at x,y is termed the object's drawing origin. A PATH or SHAPE type Obj2D's outline data is stored as canvas draw commands all referenced to the world coordinate origin (0,0). So if no 'translate' methods have been applied the Obj2D is drawn with its drawing origin at 0,0. Similarly, TEXT and IMG objects also have a drawing origin that would land at world origin (0,0) if no translate method has been applied. This drawing origin for IMAGE and TEXT Obj2D is set by the object's <b>lorg</b> (locate origin) property. The lorg property takes values 1 to 9 where 1 represents left-top, 2 center-top and so on to 9 which represents right-bottom.</p>
+
+<h4>Hard Transform Methods</h4>
+<p>The <i>Obj2D</i> object has 'hard' transform methods to modify the definition of the object. These are <i>obj</i>.<b>translate</b>, <i>obj</i>.<b>scale</b> and <i>obj</i>.<b>rotate</b> methods which move the object outline relative to its drawing origin. So the object is repositioned on the canvas but its drawing origin remains in the same spot, effectively moving the drawing origin to another point on the shape or image etc. These hard transforms are permanent, so all subsequent rendering of the object will have this rotation, translation or scaling.</p>
+
+<p>The Group2D object has the same hard rotate, scale and translate methods which just recursively call the corresponding method of its Obj2D descendants.</p>
+
+<h4>Soft Transform Methods</h4>
+<p>Both Obj2D and Group2D have a <b>transform</b> property which itself is an object with methods for applying various movements and distortions to the object. They are:</p>
+<p><i>obj</i>.<b>transform.translate</b>,<br/>
+<i>obj</i>.<b>transform.rotate</b>,<br/>
+<i>obj</i>.<b>transform.revolve</b>,<br/>
+<i>obj</i>.<b>transform.scale</b>,<br/>
+<i>obj</i>.<b>transform.skew</b><br/>
+<i>obj</i>.<b>transform.bend</b>.</p>
+<p>When applied to a Group2D they will be inherited by all the Group2D's children. Child Obj2D or Group2D may have <b>transform</b> methods applied to them directly, these are combined with the inherited transforms and the resulting net transform propagated to the children. The <b>transform.reset</b> method resets the offset transforms of the object or group on which it is called, it is not recursive. A Group2D's children retain their own transforms when the parent group transforms are cleared.</p>
+
+<p>Note that transform.<b>rotate</b>, transform.<b>skew</b>, transform.<b>scale</b> and transform.<b>bend</b> operations are always referenced to the object's drawing origin regardless of any operations which may have moved the drawing origin with respect to the world coordinate origin. The transform.<b>translate</b> and transform.<b>revolve</b> are always referenced to the world coordinate drawing origin.</p>
+
+<h3>Creating Obj2D and Group2D</h3>
+
+<p>Obj2D are JavaScript objects created by calling the constructor as follows:</p>
+
+<div class="srcFmt">
+<pre>
+obj = new Obj2D(<i>data</i>, <i>type</i>, <i>options</i>);
+</pre>
+</div>
+
+<p>An Obj2D returned from its constructor can be rendered to the canvas or grouped with other objects and groups and manipulated prior to rendering.</p>
+
+<p>An Obj2D can also be created by duplicating an existing Obj2D with the <i>sourceObj2D</i>.<b>dup()</b> method. This returns a new Obj2D whose properties are copied by value from the 'sourceObj2D' object, they do not reference the original.</p>
+
+<p>There are also four shortcut methods <b>drawPath</b>, <b>drawShape</b>, <b>drawText</b> and <b>drawImg</b> which construct a temporary Obj2D and render it onto the canvas in a single call. The object can be positioned anywhere in the world coordinate system when rendered.</p>
+
+<p>Group2D are also created by calling their constructor, all the initial members of the Group may be passed as parameters to the constructor as shown in the following code snippet which creates a SHAPE type Obj2D and a PATH type Obj2D and then forms a Group2D with the two objects as children.</p>
+
+<div class="srcFmt">
+<pre>
+var o1, o2, grp;
+o1 = new Obj2D(pathData1, "SHAPE");
+o2 = new Obj2D(pathData2, "PATH", {strokeColor:'blue'});
+grp = new Group2D(o1, o2);
+</pre>
+</div>
+
+<p>Further Obj2D may be added to an existing Group2D using the <i>Group2D</i>.<b>addObj</b> method or deleted using the <i>Group2D</i>.<b>deleteObj</b> method.</p>
+
+<h4>Cgo2D path definition syntax</h4>
+
+<p>The outlines for PATH and SHAPE objects are defined in <a href="#svgCmds">Cgo2D</a> format which comprises single letter draw commands and their associated coordinates. The syntax is borrowed from the SVG path drawing command set. Commands are single letter strings such as 'M' for move, 'L' for a line segment, 'C' for a cubic Bézier curve, etc and 'Z' for a close path instruction. Uppercase commands have absolute coordinates relative to the world coordinate origin (0,0). Lowercase command coordinates are relative to the current pen position (end point of previous command). The first command must always be a move command ('M' or 'm') followed by the x, y values of the starting point of the path in world coordinates. This is followed by an arbitrarily long set of commands and their associated parameters and coordinates.</p>
+
+<p>As an example, here is the array of commands to draw a unit square with the drawing origin (0,0) at its center.</p>
+<div class="srcFmt">
+<pre>
+var square = ['M', 0.5,-0.5, 'l',0,1, -1,0, 0,-1, 'z'];
+</pre>
+</div>
+
+<p>To simplify defining the most common shapes Cango2D provides the <a href=shapeDefs"">shapeDefs</a> utility. The shapeDefs object has methods to create the Cgo2D data arrays representing the outline path of many commonly used shapes. The methods take dimension parameters such as the width and height of the rectangle or the diameter of the circle.</p>
+
+<p>SVG path data may also be imported as a string copied from an SVG editor. SVG path data have their Y coordinate values increase DOWN the screen and the "A" segment arcs sweep clockwise. The <b>svgToCgo2D</b> utility to provided to convert the SVG coordinates to the Cango2D world coordinates by flipping the sign of all Y coordinates and flipping and arc x-axis-rotation angle and sweep direction. SVG editors usually have the drawing origin for PATH data at the top left of the screen which introduces a large offset in all coordinates. The parameters <i>xOfs, yOfs</i> are added to the SVG coordinates to correct this, moving the path's drawing origin to a more useful position. The xOfs and yOfs are added prior to flipping the Y coordinate values.</p>
+
+<div class="srcFmt">
+<pre>
+var pathdata = svgToCgo2D(<i>svgPathStr, xOfs, yOfs</i>);
+</pre>
+</div>
+
+<h4>Setting Obj2D properties</h4>
+<p>Obj2D properties are typically set at construction by passing all the property key-value pairs to the 'options' parameter of the Obj2D constructor. Changing the property values of existing Obj2D is done using the <i>Obj2D</i>.<b>setProperty</b> method which takes as parameters the name of the property and its new value.</p>
+
+<h4>Clipping path</h4>
+<p>Cango2D supports clipping paths by using the Obj2D type "CLIP". The clipping path is defined just like any PATH or SHAPE outline with Cgo2D data array or copying an SVG path string and converting with the svgToCgo2D utility. The path data is then used as the definition of a new Obj2D of type"CLIP" this object has all the methods of any Obj2D it can be transformed with hard and soft transforms. Attempts to set properties like fillColor or border etc are all ignored, just the outline path is significant.</p>
+<p>To apply a clipping path the CLIP type object must be a child of a Group2D, any other children of the Group2D that are drawn after the CLIP Obj2D is rendered will be clipped, only those parts of the object lying within the clipping path will be drawn. The clipping path is reset by the <b>render</b> method after all members of the Group2D are drawn. The order of adding objects to a Group2D determines which child Obj2D (or Group2D) will be clipped. Objects in the array of children of a Group2D before the CLIP object are not clipped, all those drawn after are clipped.</p>
+<p>Figure 1 shows an example of using a CLIP type Obj2D. A Group2D is created comprising a red square SHAPE, a circular CLIP object and a blue triangle. The square is rendered first and is not clipped, the clipping circle is then rendered which sets up the clipping path and then the triangle is rendered. Only the part of the triangle within the clipping path is drawn. The clipping path will be reset to the full canvas (ie. no clipping) after the last member of the Group2D is rendered.</p>
+
+<div style="margin: 1em; float:right;">
+  <canvas id="cvsClip" width="220" height="200" style="background-color:lightyellow"></canvas>
+  <div class="captionHolder" style="width: 220px">
+    <p class="caption"><b>Figure 1.</b> A demonstration of a clipping path. </p>
+  </div>
+</div>
+
+<div class="srcFmt" style="width: 490px">
+<pre>
+function testClip(cvsID)
+{
+  var g,
+      clipper = new Obj2D(shapeDefs.circle(50), "CLIP"),
+      sqr = new Obj2D(shapeDefs.square(70), "SHAPE", {
+        fillColor: "red"}),
+      tri = new Obj2D(shapeDefs.triangle(70), "SHAPE", {
+        fillColor:"royalblue"}),
+      grp;
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(-60, -60, 120);
+  grp = new g.createGroup2D(sqr, clipper, tri);
+
+  g.render(grp);
+}
+</pre>
+</div>
+
+
+
+<h3>Rendering</h3>
+<p>Cango2D has only one methods to actually draw Obj2D onto the canvas: <i>cgo</i>.<b>render</b>.</p>
+
+<p><a href="#render">render</a> takes a Group2D or Obj2D as a parameter a single Obj2D or Group2D to be rendered to the canvas. In the case of Group2D, the entire family of terminal Obj2D descendants is rendered. All transforms that have been accumulated by any of the Group2D or Obj2D in the family tree are applied. The Group2D transforms are propagated down the family tree structure to determine the final positions of the Obj2D which are then rendered to the canvas. <b>render</b> takes a second optional 'clear' parameter which, if it evaluates to <b>true</b> will cause the canvas to be cleared of all previous drawing prior to rendering the new scene.</p>
+
+<p>After the Obj2D or Group2D is rendered all 'soft' transforms applied to the object are reset. In the case of Group2D the transforms for the whole family tree are reset recursively. This requires all animation path functions to re-apply all transforms prior to each frame.</p>
+
+<h3>Drag-and-Drop</h3>
+<p><a href="#dragndrop">Drag-and-Drop</a> capability can be enabled and disabled on any Obj2D or Group2D by <i>obj</i>.<b>enableDrag</b> and <i>obj</i>.<b>disableDrag</b> methods. The 'enableDrag' method takes three user defined callback functions as parameters that run when mousedown, mousemove and mouseup events occur on the Obj2D. The 'enableDrag' method creates a JavaScript Object type <b>Drag2D</b> which is assigned to the <i>Obj2D</i>.dragNdrop property. Drag2D objects encapsulate the event handlers that do the event housekeeping and then call the user defined callbacks, passing them the current cursor coordinates. The callbacks are executed in the scope of the Drag2D object which has various properties such as <b>dwgOrg</b>, <b>grpDwgOrg</b>, <b>grabOfs</b> and so on, to assist in coding of callback handlers. Enabling drag-n-drop on a Group2D recursively enables the drag-n-drop on all the group's children.</p>
+
+<h3>Animation</h3>
+
+<p>Any Obj2D or Group2D can be animated by calling the Cango2D <a href="#animate">animate</a> method. </p>
+
+<div class="srcFmt" style="width: 480px">
+<pre>
+<i>cgo</i><b>.animate</b>(obj, initFn, pathFn, options);
+</pre>
+</div>
+
+<p>The parameter 'obj' is the Obj2D or Group2D to be animated, 'initFn', is an optional user defined function that can apply transforms to the object prior to the animation commencing, the object is rendered in this initial state. The 'pathFn' is a user defined function called for every frame to calculate the object's position, rotation etc. and apply the transforms to the object. The 'options' parameter is an optional object which can hold any user defined properties that may be required by the initFn and the pathFn.</p>
+
+<p>Each pathFn has independent control of its object's frame to frame behaviour, so objects may have independent delay and looping.</p>
+
+<p>All animations on a canvas are controlled by a master timeline with all animated objects transformed and rendered at each frame even if they are drawn on different layers. All path functions of all animated objects are passed the same frame time value ensuring the motion of different objects are synchronized. The animation control methods are:</p>
+<p><a href="#playAnimation"><i>cgo</i>.<b>playAnimation</b></a>,<br>
+<a href="#pauseAnimation"><i>cgo</i>.<b>pauseAnimation</b></a>,<br>
+<a href="#stepAnimation"><i>cgo</i>.<b>stepAnimation</b></a>,<br>
+<a href="#stopAnimation"><i>cgo</i>.<b>stopAnimation</b></a>.<br></p>
+<p>These methods may be called on any Cango2D context from the background canvas or any layer, they all refer to the same methods. The 'playAnimation' and 'stepAnimation' methods follow the same sequence for each frame for each animated object on all layers:</p>
+<ol>
+<li>
+Clear the object's canvas
+</li>
+<li>
+Call the animation's pathFn, passing the elapsed time along the timeline for this frame and the options object.
+</li>
+<li>
+Render the object or group onto the canvas, which also resets all the object's soft transforms.
+</li>
+<li>
+Swap the animation's nextState and currState objects and reset any clipping path.
+</li>
+</ol>
+
+<p>To remove the object and its animation specification use <a href="#deleteAnimation">deleteAnimation</a> or <a href="#deleteAllAnimations">deleteAllAnimations</a> methods.</p>
+
+<p>The animation frame rate is set by the 'requestAnimationFrame' utility, the time between frames will not be constant but will generally be around 17 msec (~60 frames/second).</p>
+
+<h3 id="Animation">The Animation object</h3>
+<p>To implement this animation model, the Cango <b>animate</b> method creates a JavaScript object of type <b>Animation</b> which encapsulates references to the object to be animated, the Cango context to render the object and state properties and so on. The <b>initFn</b> and the <b>pathFn</b> are called in the scope of the Animation object ie. within these functions 'this' will refer to the Animation object so all its properties are readily available.</p>
+
+<p>The pathFn may be of a type that needs to refer to the values used to drawn the frame currently on the screen and the time it was drawn, to calculate values for the next frame. To assist in such situations, Cango2D animation provides the <b>currState</b> and <b>nextState</b> objects. All the newly calculated values that the pathFn will need next frame should be stored in the object <b>this.nextState</b>. After playAnimation or stepAnimation renders the object to the canvas it swaps this.currState and this.nextState objects so that the 'as rendered' properties are always available in this.currState. As a rule always read from currState, make calculations and write to nextState then apply the transforms to the object or group.</p>
+
+<h4>Properties:</h4>
+
+<p><b style="color:blue">gc</b>: Cango graphics context - the graphics context that will render the object onto the canvas at each frame along the timeline. The pathFn can make use of this graphics context to call Cango methods such as clipPath or setDefaultProperty etc.</p>
+
+<p><b style="color:blue">obj</b>: Cobj or array of Cobj - the Cobj object (or array of Cobj) to be animated. Having access to the object to be rendered gives complete control to the initFn and the pathFn. For example the pathFn may create a new Cobj for each frame and have the new object drawn by simply assigning this.obj to a new Cobj (or array of Cobj).</p>
+
+<p><b style="color:blue">nextState</b>: Object - An object is created with the basic properties x, y, scl, and rot, with default values 0,0,1,0 respectively. These basic property values may be updated by the pathFn prior to drawing each frame of the animation the values are then passed to the render function as arguments. The initFn code may add any properties that may be useful to save the state of the animation between frames. Once the render function has been called the nextState is swapped with the currState object so the 'as rendered' values of the properties are available to the pathFn as a reference for the next time it is called when it will overwrite the nextState values with new values for the next frame and so on.</p>
+
+<p><b style="color:blue">currState</b>: Object - An object created as a copy of the nextState object after initFn is called. This object should be considered read-only as it will be swapped with the nextFrame object after each frame is rendered. This will free all the nextState properties to be over-written but preserves their values which were used to draw the frame currently on screen. The currState object will always have the property 'time' which hold the time (in milliseconds) at which the current frame was rendered. The this.currState.time is obtained from the JavaScript Date.now method. All other properties will be user defined 'nextState' properties.</p>
+
+<p><b style="color:blue">options</b>: Object - An object that is available the initFn and pathFn to hold values useful in generating the nextState typically used to store constants and parameters for pathFns. The <a href="#getval"><i>Tweener</i>.getValue</a> method often uses the 'this.options' object to specify the array of keyframe values to be interpolated.</p>
+
+<h4>Simple animated transform example</h4>
+<p>Here is the source code for an animation which rotates a TEXT Obj2D through 360 degrees then back again at the same time scaling the object to twice its size and back again. The animation starts after a 1 sec delay then repeats the movement and the delay period indefinitely.</p>
+
+<div style="margin: 1em; float:right;">
+  <canvas id="cvs1" width="220" height="200" style="background-color:lightyellow"></canvas>
+  <div class="captionHolder" style="width: 220px">
+    <p class="caption"><b>Figure 2.</b> "TEXT" Obj2D with animated transform.rotate and transform.scale.</p>
+  </div>
+</div>
+
+<div class="srcFmt" style="width: 490px">
+<pre>
+function sayHullo(cvsID)
+{
+  var g,
+      hullo = new Obj2D("Hullo World", "TEXT", {
+        fillColor:"blue",
+        fontSize:16,
+        lorg:5}),
+      hulloData = {scl:[1, 2, 1],
+                   rot:[0, 360, 0]},
+      twnr = new Tweener(1000, 5000, 'loopAll');
+
+  function hulloPath(time, opts)
+  {
+    var sclVal = twnr.getVal(time, opts.scl),
+        rotVal = twnr.getVal(time, opts.rot);
+
+    this.obj.transform.scale(sclVal);
+    this.obj.transform.rotate(rotVal);
+  }
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(-12, -12, 24);
+  g.animate(hullo, null, hulloPath, hulloData);
+  g.playAnimation();
+}
+</pre>
+</div>
+
+<h4>Simple animated property example</h4>
+<p>Here is the source code for an animation which changes the fillColor a circle from red to green then blue then back to red. The animation lasts 3 seconds and repeats the cycle indefinitely.</p>
+
+<div style="margin: 1em; float:right;">
+  <canvas id="cvs1a" width="220" height="200"></canvas>
+  <div class="captionHolder" style="width: 220px">
+    <p class="caption"><b>Figure 3.</b> "SHAPE" Obj2D with animated "fillColor" property.</p>
+  </div>
+</div>
+
+<div class="srcFmt" style="width: 490px">
+<pre>
+function animColor(cvsID)
+{
+  var g,
+      ball = new Obj2D(shapeDefs.circle(50), "SHAPE", {
+        fillColor:'rgb(255,0,0'}),
+      colData = { r:[255, 0,   0, 255],
+                  g:[0, 200,   0,   0],
+                  b:[0,   0, 255,   0] },
+      colTwnr = new Tweener(0, 3000, "loop");
+
+  function pathBall(time, opts)
+  {
+    var red = Math.round(colTwnr.getVal(time, opts.r)),
+        grn = Math.round(colTwnr.getVal(time, opts.g)),
+        blu = Math.round(colTwnr.getVal(time, opts.b));
+
+    ball.setProperty("fillColor", "rgb("+red+","+grn+","+blu+")");
+  }
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(-50, -50, 100);
+  g.animate(ball, null, pathBall, colData);
+  g.playAnimation();
+}
+</pre>
+</div>
+
+<h2>Getting Started</h2>
+<p>Cango2D requires the browser to support the HTML5 canvas element. To use the Cango2D, download the JavaScript file: <a href="Cango2D-7v01-min.js" download>Cango2D-7v01-min.js</a>. Store the file in a directory accessible to JavaScript code running in the web page, note the directory path, then add the following line to the web page header:</p>
+<div class="srcFmt">
+<pre>
+&lt;script type="text/javascript" src="<i>[directory path]</i>/Cango2D-7v01-min.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+<p>Within the body of the web page insert a canvas element. The only attribute required by Cango2D is a unique <b>id</b>.</p>
+<div class="srcFmt">
+<pre>
+&lt;canvas id="<i>canvasID</i>" width="500" height="300"&gt;&lt;/canvas&gt;
+</pre>
+</div>
+
+<p>Canvas pixel dimensions should be specified by the 'width' and 'height' attributes, as shown above. Specifying the canvas dimensions by CSS 'width' and 'height' style values is not the same in older browsers, these only set the size of the canvas box dimensions on the HTML page. If the dimensions are not identical, the browser will stretch the pixel size and shape to make the canvas pixels fill the HTML box size. <i>Cango2D</i> avoids this possibility by resetting the pixel dimensions to match the HTML canvas box dimensions, forcing a 1:1 mapping of canvas pixels to screen pixels.</p>
+
+<hr class="ugHr" />
+
+<h2>Cango2D Application Programming Interface</h2>
+
+<h3 id="Cango2DContructor">Cango2D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var cgo = <b>new Cango2D</b>(canvasID);</p>
+<h4>Description:</h4>
+<p>To start drawing an instance of the Cango2D graphics object must be created. This requires a canvas element to exist in the web page and for it to have a unique ID. Pass the canvas ID to the Cango2D constructor and the Cango2D graphics object is returned.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>canvasID</b>:String - The 'id' property of the canvas object on which the Cango2D library will draw.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cango2D object - An instance of the Cango2D graphics library which has all the following properties and methods.</p>
+
+
+<h3><i>Cango2D</i> properties</h3>
+
+<h4>Syntax:</h4>
+<p><b>var</b> <i>prop</i> = <i>cgo</i>.<b>property</b>;</p>
+<h4>Properties:</h4>
+<div style="padding-left:2em">
+  <p><b style="color:blue">ctx</b>: CanvasRenderingContext2D - the raw canvas drawing context. This is available to access the more esoteric canvas capabilities such as <i>cgo</i>.ctx.globalCompositeOperation etc.</p>
+  <p><b style="color:blue">aRatio</b>: Number - Aspect ratio of the canvas element, the canvas width divided by canvas height. If the canvas is square, <i>cgo</i>.aRatio == 1, if the canvas is 300px wide and 200px high, <i>cgo</i>.aRatio == 1.5.</p>
+  <p><b style="color:blue">xscl</b>:Number - the X axis scaling factor. Multiplying by cgo.xscl will convert world coordinate values to canvas pixel values. All Obj2D dimensions are scaled by cgo.xscl in the render method immediately prior to drawing on the canvas. If an application requires a dimension to be set in pixels, then dividing the desired pixel value by <b>this.xscl</b> will result in the equivalent pixel dimension being preserved when the object is rendered.</p>
+</div>
+
+<h2>Cango2D methods</h2>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="animate" href="#" class="itemName" onclick="return toggleSection(this)">animate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>animId = <i>cgo</i><b>.animate</b>(obj, initFn, pathFn, options);</p>
+<h4>Description:</h4>
+<p>The animate method creates an Animation object with properties that make everything required to control the animation available to the initFn and pathFn. Both these functions are called in the scope of this Animation object.</p>
+<p>The <b>initFn</b> is called immediately, it is designed to apply transforms to the object or group set place it in its initial position (prior to the animation starting). The <b>pathFn</b> is called for every frame of the animation. At each frame along the timeline the cgo context canvas is cleared and then the pathFn of all animated objects is called. The pathFn can then calculate the new movement transforms and apply them to 'obj'. If the previous values of these properties are required to make the next frame calculations the <b>this.currState</b> and <b>this.nextState</b> objects are provided. The calculated values of any properties that are required across frames should be saved in <b>this.nextState</b>, after rendering, this.nextState and this.currState are swapped so the 'as rendered' properties will be available when 'pathFn' is called for the next frame. If the time along the timeline is required for calculating the next frame properties currState.time property is provided. It always holds the time when the frame currently on screen was drawn. After pathFn returns all animated objects are then rendered. After rendering the currState and nextState objects are swapped, the currState.time property is updated and the cgo.resetClip is called.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>obj: Obj2D or Group2D - the Obj2D object (or Group2D) to be animated.</p>
+<p style='margin-left:2em'>initFn: Function - A function to be called to initialize or create additional properties of nextState (if required).</p>
+<p style='margin-left:2em'>pathFn: Function - A function to be called to update the object properties to the values to be used when drawing the next frame. When called pathFn is passed two parameters 'time' and the 'options' object. The time will be in the same format as 'this.currState.time so that the elapsed time since the last frame was drawn will be:
+<pre>
+var dt = time - this.currState.time;  // in miliseconds
+</pre>
+</p>
+<p style='margin-left:2em'>options: Object - An object storing any variables or constants that may be required by the initFn, or pathFn. The options object is passed as an argument to these functions.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="clearCanvas" href="#" class="itemName" onclick="return toggleSection(this)">clearCanvas</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.clearCanvas</b>(fillColor);</p>
+<h4>Description:</h4>
+<p>Clears the canvas, deleting all drawing, images and text. The canvas may be optionally filled with the color <i>fillColor</i>.  If 'clearCanvas' is called with no 'fillColor' parameter, or 'fillColor' is null, then the canvas is cleared back to its default color which is inherited from the canvas element style. All graphics drawing contexts are left intact. Listening for mousedown events on any draggable objects is canceled.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>fillColor</b>:String or canvasGradient- The fill color may be specified in any of the CSS color formats or if a gradient color is to be used a LinearGradient or RadialGradient object should be passed, see <a href="#colors">colors</a> section for detailed syntax.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="createGroup2D" href="#" class="itemName" onclick="return toggleSection(this)">createGroup2D</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>createGroup2D</b>(...);</p>
+<h4>Description:</h4>
+<p>Creates a Group2D object with a 'children' array property, designed to hold Obj2D and other Group2D objects. The Group2D object has transform matrix properties and methods to apply transforms to the coordinates of the Obj2D in the 'children' array, and recursively apply them to the children of Group2D objects in the 'children' array. The objects forming the group are passed as parameters, they may be Obj2D, Group2D or arrays of either. Elements of Arrays of objects are added individually to the 'children' array. More objects can be added to the group after creation, by using the Group2D <b>addObj</b> method.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b> . . . &nbsp;&nbsp;</b>:Obj2D, Group2D or arrays or either - The 'arguments' property is parsed to extract all Obj2D and Group2Ds and they are added to returned <i>Group2D</i>.children array.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Group2D object - an object holding references to Obj2Ds and/or Group2Ds to be manipulated as a single unit.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="createLayer" href="#" class="itemName" onclick="return toggleSection(this)">createLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>ovlID</i> = <i>cgo</i>.<b>createLayer</b>();</p>
+<h4>Description:</h4>
+<p>Creates a transparent canvas overlay above the background canvas. The overlay will be the same size as the Cango2D canvas and will be transparent. A new instance of Cango2D should be created to draw in the overlay. The properties of the background canvas can be readily copied to the new Cango2D context using the 'dupCtx' method.<br/>
+ Note 1: Obj2D on any layer will respond to Drag and Drop events.<br/>
+ Note 2: Only background canvases can create overlay canvases, 'createLayer' called by a Cango2D context attached to overlay canvas will not create a new canvas and return an empty string in place of an ID.
+ </p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>String - The unique ID string of the newly created canvas element. This string allows reference to the canvas overlay element by using document.getElementById. The ID string is also required by the Cango2D 'deleteLayer' method.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteAnimation" href="#" class="itemName" onclick="return toggleSection(this)">deleteAnimation</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.deleteAnimation</b>(animId);</p>
+<h4>Description:</h4>
+<p>All animations are paused and the animation whose ID is 'animId' is deleted. This ID value was returned when the animation was created by a call to 'animate' method. The animation definition is removed from the current array of animations. The animated object will remain frozen in the state drawn in the last frame. This method may be called on any Cango context on any layer in the stack and will still delete the nominated animation.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>animId: String - An ID string returned when the animation was created.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteAllAnimations" href="#" class="itemName" onclick="return toggleSection(this)">deleteAllAnimations</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.deleteAllAnimations</b>();</p>
+<h4>Description:</h4>
+<p>Deletes all the animations from the background layer and from any and all canvas layers. All the animations are stopped and animation definitions removed from the current array of animations, all the animated objects will remain frozen where they were last drawn. This method may be called on any Cango context on any layer and will still clear all animations on all layers.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>none.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteLayer" href="#" class="itemName" onclick="return toggleSection(this)">deleteLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>deleteLayer</b>(ovlID);</p>
+<h4>Description:</h4>
+<p>Deletes an existing canvas overlay. The ID string of each canvas layer is returned from the 'createLayer' method. Passing this string to 'deleteLayer' will remove  the canvas from the DOM. The canvas can be anywhere within the stack of canvases created but the background canvas can not be deleted with this method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>ovlID</b>:String - The ID attribute of the canvas element to be deleted. This is the same string that is returned when the layer was created with the 'createLayer' method.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawImg" href="#" class="itemName" onclick="return toggleSection(this)">drawImg</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawImg</b>(imgSpec[, x, y [, options]]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Obj2D constructor passing the 'imgSpec' as the data and "IMG" as the type. The imgSpec can be a URL string or a pre-loaded Image object. The 'options' object is also passed to the constructor's 'options' parameter. If x,y coordinates are supplied a soft translation transform, <i>Obj2D</i>.transform.translate(x, y) is then applied and <i>cgo</i>.render is then called, this will move the shape drawing origin to x,y in world coordinates as it is rendered.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>imgSpec</b>:Image or String - The pre-loaded Image object or the URL of the image to load.</p>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Numbers - X and Y coordinates of the point at which the drawing origin of the image is to be rendered.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Obj2D properties should be passed as key-value pairs in this object (see <a href='#setProperty'><i>Obj2D</i>.setProperty</a> method for the list of properties).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawPath" href="#" class="itemName" onclick="return toggleSection(this)">drawPath</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawPath</b>(pathData[, x, y [, options]]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Obj2D constructor passing the 'pathData' string as the data, the string "PATH" as the type, and passing the 'options' object as the 'options' parameter. This will covert the pathData to an array of 'DrawCmd' objects suitable for subsequent rendering as an outline path onto the canvas and set all the optional parameters as specified by the 'options' object. A soft translation, <i>Obj2D</i>.transform.translate(x, y), is then applied and <i>cgo</i>.render is then called, this will move the path drawing origin to x,y in world coordinates as it is rendered.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathData</b>:Array - An array of Cgo2D drawing commands and coordinates, (see <a href="#svgCmds">Cgo2D syntax</a> for the command descriptions).</p>
+  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y world coordinates of the position at which the drawing origin of the path will be located.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Obj2D properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Obj2D.setProperty</a> method for the list of properties).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawShape" href="#" class="itemName" onclick="return toggleSection(this)">drawShape</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawShape</b>(pathData[, x, y [, options]]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Obj2D constructor passing the 'pathData' string as the data, the string "SHAPE" as the type, and passing the 'options' object reference unchanged constructor's 'options' parameter. This will covert the pathData to an array of 'DrawCmd' objects suitable for subsequent rendering as a color filled shape onto the canvas and set all the optional parameters as specified by the 'options' object. A soft translation transform, obj.transform.translate(x, y) is then applied and <i>cgo</i>.render is then called, this will move the shape drawing origin to x,y in world coordinates as it is rendered.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathData</b>:Array - An array of Cgo2D drawing commands and coordinates, (see <a href="#svgCmds">Cgo2D syntax</a> for the command descriptions).</p>
+<p style='margin-left:2em'><b>x</b>, <b>y</b>:Numbers - X and Y coordinates of the position at which the drawing origin of the shape will be located, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Obj2D properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Obj2D.setProperty</a> method for the list of properties).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawText" href="#" class="itemName" onclick="return toggleSection(this)">drawText</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawText</b>(str[, x, y [, options]]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Obj2D constructor passing the 'str' string as the data, the string "TEXT" as the type, and passing the 'options' object reference unchanged to the constructor's 'options' parameter. This will store the string 'str' for subsequent rendering onto the canvas and set all the optional parameters as specified by the 'options' object. A soft translation transform, obj.transform.translate(x, y) is then applied and <i>cgo</i>.render is then called, this will move the text drawing origin to x,y in world coordinates as it is rendered.</p>
+<p>The obj.lorg property will determine which point within the text bounding box is designated as the object's drawing origin. The obj.fontWeight property will set the weight with which the text is rendered, the obj.fontFamily property will set the font to be used. If any of these properties is undefined then the current default values will be is used, see <a href="#setPropertyDefault">setPropertyDefault</a>.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>str</b>:String - The text string to be written.</p>
+  <p style='margin-left:2em'><b>x</b> <b>y</b>:Number - X and Y coordinates of the position at which the test drawing origin will be placed, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Obj2D properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Obj2D.setProperty</a> method for the list of properties).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="dupCtx" href="#" class="itemName" onclick="return toggleSection(this)">dupCtx</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.dupCtx</b>(sourceCtx);</p>
+<h4>Description:</h4>
+<p>Copy the graphics context properties from another Cango2D context into <i>cgo</i>. When drawing onto <a href="CanvasLayers.html">layers</a>, this method provides a quick way to copy the graphics context properties for use on the new layer so that the drawing there will all be in the same world coordinates. <i>cgo.dupCtx()</i> copies the properties, scale factors and so on, from the graphics context <i>sourceCtx</i>. Properties copied exclude the 'cvs' and 'cId' as these will have been set when the Cango2D calling instance 'cgo' was created. Properties are copied by value so that after the call changing the source properties will have no effect on 'cgo' properties.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>sourceCtx</b>:Cango2D - The source Cango2D from which the <i>cgo</i> properties are copied.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="playAnimation" href="#" class="itemName" onclick="return toggleSection(this)">playAnimation</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.playAnimation</b>([startTime[, stopTime]]);</p>
+<h4>Description:</h4>
+<p>Starts all animations that have been defined for Cango2D contexts on this canvas or stack of canvases (if overlay canvases have been created). At each frame the elapsed time along the timeline is passed to the pathFn of all animated objects so they can apply the movement transforms. By default, the timeline is traversed from time 0, but if a 'startTime' is passed then this will be the time initially passed to the pathFn. The animation timeline is traversed by drawing a frame and then making a call to 'requestAnimationFrame' to draw the next and so on until the 'stopAnimation' method is called or, if a 'stopTime' was passed then the animation will stop as soon as the elapsed time since starting equals or exceeds this stopTime.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>startTime: Number - Optional time in milliseconds along the timeline where the animation playing will commence.</p>
+<p style='margin-left:2em'>stopTime: Number - Optional time in milliseconds along the timeline where the animation will cease and the mode will be set to 'stopped'.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="pauseAnimation" href="#" class="itemName" onclick="return toggleSection(this)">pauseAnimation</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.pauseAnimation</b>();</p>
+<h4>Description:</h4>
+<p>Stops any current animation and saves the elapsed time since the start of the animation. When 'playAnimation' or 'stepAnimation' are called the animation will resume from the current time offset from the start. This differs from the 'stopAnimation' call which forces the animation to return to the start when 'playAnimation' or 'stepAnimation' is called.  The context 'cgo' may be attached to the background or any overlay canvas and will have the same effect.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>none.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="render" href="#" class="itemName" onclick="return toggleSection(this)">render</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>render</b>(obj, clear);</p>
+<h4>Description:</h4>
+<p>Renders an Obj2D or Group2D (actually all the Obj2D descendants of the Group2D) onto the canvas. Each Object to be rendered has been previously been converted to native canvas instructions which are stored in the object properties. The render method applies all the accumulated 'soft' transforms to the object.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>obj</b>:Obj2D or Group2D - The object or group of objects to be rendered to the canvas.</p>
+  <p style='margin-left:2em'><b>clear</b>:Boolean - If clear evaluates to 'true', the canvas is cleared before rendering the Group2D descendants (or single Obj2D), if it evaluates to 'false', or is omitted the canvas is not cleared.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="resetClip" href="#" class="itemName" onclick="return toggleSection(this)">resetClip</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.resetClip</b>();</p>
+<h4>Description:</h4>
+<p>Clears the current clip path by resetting it to the full canvas. The native drawing context is restored to the state when the resetClip was last called or if no resetClip call has been made it is restored to the state when the first call to 'clipPath' was made. If multiple calls to 'clipPath' are been made without a call to resetClip, then the clip area is the combination of all the clip paths.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setPropertyDefault" href="#" class="itemName" onclick="return toggleSection(this)">setPropertyDefault</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setPropertyDefault</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the default values for various system properties. The property whose default is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new default value is passed as 'value'. The value is restricted to be within the range of values appropriate to the property. If the property is not one of the string values listed or the value is an incorrect type or outside the reasonable range of values then the call is ignored and the current default value remains unaltered.</p>
+<p>If no call is made to 'setPropertyDefault' for a particular property, then the property value remains at its system default value listed in column 4.</p>
+
+<table class="txtTbl" style="width: 620px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th><th>Default</th>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color</td><td>-</td><td>'rgba(0, 0, 0, 1.0)'</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>-</td><td>'rgba(128, 128, 128, 1.0)'</td>
+</tr>
+<tr>
+<td>lineWidth</td><td>Number (pixels)</td><td>-</td><td>1</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td><td>'butt'</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>CSS font family definitions</td><td>"Consolas, Monaco, 'Andale Mono', monospace"</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (pixels)</td><td>&gt;0</td><td>12</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td><td>400</td>
+</tr>
+<tr>
+<td>stepTime</td><td>Number (msec)</td><td>16..500</td><td>50</td>
+</tr>
+</table>
+<p><b>NB: fontSize</b> pixel value is converted to the equivalent world coordinate value at instantiation so that fontSize can be scaled with transform methods.</p>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>:String- The name of the property whose default value is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>- The new default value for the property. Its type should match the type listed in column 2 of the table above and the range of values must fall within the range listed in column 3.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setWorldCoords" href="#" class="itemName" onclick="return toggleSection(this)">setWorldCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setWorldCoords</b>(lowerleftX, lowerleftY, spanX);</p>
+<h4>Description:</h4>
+<p>Defines a world coordinate system for subsequent drawing operations with this graphics context. 'setWorldCoords' sets x and y offsets and scaling factors to map world coordinate values to canvas drawing pixel values. The world coordinate values of the lower left corner of the canvas and the width of the canvas in world coordinate units as passed as parameters.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>lowerleftX</b>:Number - World coordinate value of the left edge of the canvas.</p>
+  <p style='margin-left:2em'><b>lowerleftY</b>:Number - World coordinate value of the bottom edge of the canvas.</p>
+  <p style='margin-left:2em'><b>spanX</b>:Number - Width of the canvas in world coordinates.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="stepAnimation" href="#" class="itemName" onclick="return toggleSection(this)">stepAnimation</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.stepAnimation</b>();</p>
+<h4>Description:</h4>
+<p>If the animation is currently playing this call does nothing. If paused or stopped the animation will request a frame to be drawn on the background canvas and all overlay layers with the elapsed time of the animation advanced by the current value of 'stepTime'. One frame will be drawn and the animation put into the 'paused' state. The value of 'stepTime' may be set by <a href="#setPropertyDefault">setPropertyDefault</a>, the default value is 50 msec. The context 'cgo' may be attached to the background or any overlay canvas and will have the same effect.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>none.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="stopAnimation" href="#" class="itemName" onclick="return toggleSection(this)">stopAnimation</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i><b>.stopAnimation</b>();</p>
+<h4>Description:</h4>
+<p>Stops any current animation and reset the elapsed time into the animation back to 0. When 'playAnimation' or 'stepAnimation' is subsequently called the animation will resume from the beginning of the animation timeline. This differs from the 'pauseAnimation' call which restart the animation from the current elapsed time along the animation timeline.  The context 'cgo' may be attached to the background or any overlay canvas and will have the same effect.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'>none.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="toPixelCoords" href="#" class="itemName" onclick="return toggleSection(this)">toPixelCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toPixelCoords</b>(x, y);</p>
+<h4>Description:</h4>
+<p>This method converts the coordinates (x, y) of a point expressed in world coordinates to an object with x and y properties that hold the raw canvas pixel coordinates of the point. The canvas pixel coordinates are set to be equal to the screen pixels when the Cango2D graphics context is created. So <i>toPixelCoords</i> always returns the canvas pixel coordinates which map 1 to 1 with screen pixels.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Number - X and Y coordinates of a point measured in world coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with two properties:</p>
+  <p style='margin-left:2em'><b>x</b>:Number - X coordinate of the point measured in canvas pixel coordinates, equal to screen pixels.</p>
+  <p style='margin-left:2em'><b>y</b>:Number - Y coordinate of the point measured in canvas pixel coordinates, equal to screen pixels.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="toWorldCoords" href="#" class="itemName" onclick="return toggleSection(this)">toWorldCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toWorldCoords</b>(x, y);</p>
+<h4>Description:</h4>
+<p>This method converts the coordinates (x, y) of a point expressed in canvas pixels coordinates to an object with x and y properties that hold the world coordinates of the point. There can be more than one Cango2D graphics context on a canvas, the world coordinates of the point in the calling graphics context are returned. </p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Number - X and Y coordinates of a point measured in world coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with two properties:</p>
+  <p style='margin-left:2em'><b>x</b>:Number - X coordinate of the point measured in world coordinates</p>
+  <p style='margin-left:2em'><b>y</b>:Number - Y coordinate of the point measured in world coordinates.</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<h2>Obj2D</h2>
+
+<p>The Obj2D constructor allows Obj2D to be made independent of a specific instance of Cango2D graphics context.</p>
+
+<h3 id="obj2d">Obj2D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Obj2D</b>(data, type, options);</p>
+<h4>Description:</h4>
+<p>This function returns an Obj2D object suitable to be passed to the render method of a Cango2D instance.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>data</b>:various types - The 'type' parameter will determine how the 'data' parameter is interpreted it is expected to be an array of Cgo2D drawing commands for types 'PATH', 'CLIP' or 'SHAPE', the URL of an image or an Image object, for type 'IMG' or a String object for type 'TEXT'.</p>
+<p style='margin-left:2em'><b>type</b>:String - The only values recognized are 'PATH', 'SHAPE', 'IMG', 'TEXT' or 'CLIP'. If 'type' is undefined or any other value then 'PATH' type is assumed by default.</p>
+<p style='margin-left:2em'><b>options</b>:Object - This object may contain key-value pairs to pre-set the properties of the Obj2D returned. The keys and value restrictions are identical to those described in the <a href="#setProperty">setProperty</a> method.</p>
+<h4>Example</h4>
+<p>The following two line code snippet will create a 'SHAPE' type Obj2D with outline path a square with width and height 4 units in the world coordinates of the Cango2D context used to render it. It will be filled with the color red.</p>
+<div class="srcFmt">
+<pre>
+var obj = new Obj2D(['M',2,-2,'l',0,4,-4,0,0,-4,'z'], 'SHAPE', {'fillColor':'red'});
+</pre>
+</div>
+
+<!-- ======================================  Obj2D  Methods ==============================================  -->
+
+
+<h3>Obj2D methods</h3>
+
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="appendPath" href="#" class="itemName" onclick="return toggleSection(this)">appendPath</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj1</i>.<b>appendPath</b>(obj2, delMove);</p>
+<h4>Description:</h4>
+<p><b>appendPath</b> extends the array of draw commands defining the outline of <i>obj1</i> by appending the drawCmds of <i>obj2</i>. If the optional 'delMove' parameter is 'true', then the initial 'moveTo' command is deleted. This command applies only to SHAPE, PATH and CLIP type objects, for Obj2D types TEXT or IMG the command does nothing.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>obj2</b>:Obj2D - The object whose drawCmd array elements are to be appended to the drawCmd array of obj1. The obj2.drawCmds are cloned ie. new javascript objects are made that are copies of the originals not references to the originals.</p>
+<p style='margin-left:2em'><b>delMove</b>:Boolean - If 'true' the initial 'moveTo' command of <i>obj2</i> is deleted. This results in the outline path of <i>obj1</i> being join to the outline of <i>obj2</i>. If 'delMove' evaluates to false, then the 'moveTo' command and its coordinates just become the next command in the outline of <i>obj1</i> which means there will be a break in the outline.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="disableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>disableDrag</b>();</p>
+<h4>Description:</h4>
+<p>Sets the <i>obj</i>.dragNdrop property to 'null' and removes the reference to <i>obj</i> from the array of objects to be checked for a hit on mousedown events.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+   </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="dup" href="#" class="itemName" onclick="return toggleSection(this)">dup</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>dup</b>();</p>
+<h4>Description:</h4>
+<p><b>dup</b> creates a new <i>Obj2D</i> object and copies all its properties and methods into the new object. The properties are copies of the values not references to the original. This method is useful in creating complex objects made from similarly shaped components.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Obj2D - An new object with its properties set to be copies of 'obj' properties.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="enableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i><b>.enableDrag</b>(grabCallback, dragCallback, dropCallback);</p>
+<h4>Description:</h4>
+<p>This method creates a JavaScript Object type <b>Drag2D</b> which is assigned to the <i>obj</i>.<b>dragNdrop</b> property. Drag2D objects encapsulate the event handlers that run when mousedown, mousemove and mouseup events occur within the outline of the Obj2D as drawn on the canvas. The event handlers call the user defined callback functions passed to 'enableDrag'. 'grabCallback' is called on a <b>mousedown</b> events, 'dragCallback' and 'dropCallback' functions are called on subsequent <b>mousemove</b> and <b>mouseup</b> or <b>mouseout</b> events. The current cursor location is passed to the callback functions as an object with properties 'x' and 'y' holding the cursor coordinates measured in world coordinates. The <i>obj</i> will have drag and drop capability enabled whenever it is rendered to the canvas.</p>
+<p>Callback functions are called in the scope of a Drag2D object which provides the various properties for the convenience of writing callback code.</p>
+<p>When drag-n-drop is enabled on 'obj' the canvas mousedown event listener is armed to check for mousedown events within its outline. As long as the <i>obj</i>.dragNdrop property is not 'null', the mousedown listener is activated every time 'obj' is rendered to the canvas. The drag-n-drop is de-activated if the canvas is cleared by a call to <i>cgo</i>.clearCanvas, or by calling the <i>obj</i>.disableDrag method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>grabCallback</b>:Function or null - This function to be called when a 'mousedown' event occurs within the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dragCallback</b>:Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dropCallback</b>:Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+   </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="revWinding" href="#" class="itemName" onclick="return toggleSection(this)">revWinding</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>revWinding</b>();</p>
+<h4>Description:</h4>
+<p><b>revWinding</b> re-arranges the order of the draw commands and their coordinates that define the outline path of this object so that they are draw by traversing the path in the reverse direction. This command is provided to enable shapes with holes to be color filled correctly ie, without the hole being filled too. The canvas specifications describe the behaviour as follows: "if two overlapping but otherwise independent subpaths have opposite windings, they cancel out and result in no fill. If they have the same winding, that area just gets painted once". A good explanation of the effects of winding rules is given at <a href="http://www.bit-101.com/blog/?p=3702">BIT-101.com</a>.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+<h4>Example</h4>
+<p>As an example, the following code attempts (and fails) to draw a triangle with a circular hole at the center: </p>
+<img src="Images/winding.png" style="float:right; width: 150px; margin:10px 0px 10px 10px" alt="" />
+<div class="srcFmt" style="width: 530px">
+<pre>
+function winding(cvsID) {
+  var clipBkg, tri, hole,
+      g = new Cango2D(cvsID);
+
+  g.setWorldCoords(0, 0, 500, 300);
+  g.clearCanvas('white');
+
+  clipBkg = new Obj2D(["M",0,100,500,100,500,200,0,200,"z"], "CLIP");
+  tri = new Obj2D(shapeDefs.triangle(300), "SHAPE", {
+    fillColor:'black'});
+  hole = new Obj2D(shapeDefs.circle(140), "PATH");
+  tri.appendPath(hole);
+  tri.translate(250, 100);
+
+  g.render(clipBkg);
+  g.clearCanvas("red");
+  g.render(tri);
+  g.resetClip();
+}
+</pre>
+</div>
+<p>If the winding direction of the hole is reversed before appending to the triangle, the hole is not filled: </p>
+<img src="Images/revWinding.png" style="float:right; width: 150px; margin:10px 0px 10px 10px" alt="" />
+<div class="srcFmt" style="width: 530px">
+<pre>
+...
+  clipBkg = new Obj2D(["M",0,100,500,100,500,200,0,200, "z"], "CLIP");
+  tri = new Obj2D(shapeDefs.triangle(300), "SHAPE", {
+    fillColor:'black'});
+  hole = new Obj2D(shapeDefs.circle(140), "PATH");
+  <b>hole.revWinding();</b>  // reverse winding for this object
+  tri.appendPath(hole);
+  tri.translate(250, 100);
+
+  g.render(clipBkg);
+  g.clearCanvas("red");
+  g.render(tri);
+  g.resetClip();
+</pre>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setProperty" href="#" class="itemName" onclick="return toggleSection(this)">setProperty</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>setProperty</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the values for various Obj2D properties. The property whose value is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new value is passed as 'value'. The value must be of an appropriate type and fall within the useful range of values for the property, and the types are listed in column 2 and range of values is listed in column 3. If the property is not one of the string values listed or the value is an incorrect type then the call is ignored and the current value remains unaltered.</p>
+<p>Each property has a Cango2D default value, so that if the property has not been set prior to rendering, then the object will be rendered using the Cango2D default value, see <a href="#setPropertyDefault">setPropertyDefault</a>.</p>
+
+<table class="txtTbl" style="width: 520px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color</td><td>valid color or gradient</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>valid color or gradient</td>
+</tr>
+<tr>
+<td>lineWidthWC</td><td>Number (World Coordinates)</td><td> > 0</td>
+</tr>
+<tr>
+<td>lineWidth</td><td>Number (pixels)</td><td> > 0</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td>
+</tr>
+<tr>
+<td>dashed</td><td>Array</td><td> </td>
+</tr>
+<tr>
+<td>dashOffset</td><td>Number</td><td> </td>
+</tr>
+<tr>
+<td>border</td><td>Boolean</td><td>true or false</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (pixels)</td><td> &gt;0</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td> </td>
+</tr>
+<tr>
+<td>imgWidth</td><td>Number</td><td> &gt;0</td>
+</tr>
+<tr>
+<td>imgHeight</td><td>Number</td><td> &gt;0</td>
+</tr>
+<tr>
+<td>lorg</td><td>Number</td><td> 1..9 (see <a href="#lorg">lorg</a>) </td>
+</tr>
+<tr>
+<td>shadowOffsetX</td><td>Number</td><td> </td>
+</tr>
+<tr>
+<td>shadowOffsetY</td><td>Number</td><td> </td>
+</tr>
+<tr>
+<td>shadowBlur</td><td>Number</td><td> </td>
+</tr>
+<tr>
+<td>shadowColor</td><td>CSS Color</td><td>see <a href="colors">Colors</a></td>
+</tr>
+</table>
+<p><b>NB: fontSize</b> pixel value is converted to the equivalent world coordinate value at instantiation so that fontSize can be scaled with transform methods.</p>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>: String- The name of the Obj2D property the value of which is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>: (various types) - The new value for the property. Its type should match the type listed in column 2 of the table and its range should fall with the range set out in column 3 of the table above.</p>
+   </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<!-- ======================================  Group2D Methods ==============================================  -->
+
+<h2>Group2D</h2>
+
+<p>The Group2D constructor allows Obj2D to be made independent of a specific instance of Cango2D graphics context.</p>
+
+<h3 id="group2d">Group2D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Group2D</b>(...);</p>
+<h4>Description:</h4>
+<p>This function returns an Group2D object suitable to be manipulated and passed to the render method of a Cango2D instance.</p>
+<h4>Parameters:</h4>
+<p><b> . . . &nbsp;&nbsp;</b>:Obj2D, Group2D or arrays or either - The 'arguments' property is parsed to extract all Obj2D and Group2Ds and they are added to returned <i>grp</i>.children array.</p>
+
+<h3>Group2D methods</h3>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="addObj" href="#" class="itemName" onclick="return toggleSection(this)">addObj</a>
+  <dt class="itemBody">
+<h3 style="color:blue">addObj</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>addObj</b>(...);</p>
+<h4>Description:</h4>
+<p>The method adds Obj2Ds or Group2Ds to the Group2D, grp. The arguments can be single Obj2Ds or Group2Ds or arrays of either. The array structure is discarded and the individual Obg2Ds or Group2Ds are added to the grp.children array.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b> . . . &nbsp;&nbsp;</b>:Obj2D, Group2D or arrays or either - The arguments variable is parsed to extract all Obj2D and Group2Ds and they are added to grp's children array.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteObj" href="#" class="itemName" onclick="return toggleSection(this)">deleteObj</a>
+  <dt class="itemBody">
+<h3 id="deleteObjGrp2D" style="color:blue">deleteObj</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>deleteObj</b>(obj);</p>
+<h4>Description:</h4>
+<p>If 'obj' is a child of the Group2D 'grp' then it is removed from the array of children.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>obj</b>:Obj2D or Group2D - The child to be removed from the Group2D.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="disableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i><b>.disableDrag()</b>;</p>
+<h4>Description:</h4>
+<p>Sets the <i>grp</i>.dragNdrop property to 'null' and removes the reference to grp's children from the array of objects to be checked for a hit on mousedown events.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="enableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i><b>.enableDrag(grabCallback, dragCallback, dropCallback)</b>;</p>
+<h4>Description:</h4>
+<p>Calls the <i>Obj2D</i>.enableDrag method on all grp's Obj2D children, and also calls the method on all the Obj2D children of grp's Group2D children and so on recursively for its descendants. The three user defined call back functions 'grabCallback', 'dragCallback', 'dropCallback' are passed to the <i>Obj2D</i>.enableDrag method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>grabCallback</b>:Function or null - This function to be called when a 'mousedown' event occurs within the outline of the grp's descendent Obj2D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dragCallback</b>:Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of the grp's descendent Obj2D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dropCallback</b>:Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<!-- ======================================  Common Methods  ==============================================  -->
+
+
+<h2>Group2D and Obj2D transform methods</h2>
+
+<p>Both Obj2D and Group2D have a 'transform' property which is an object with the following methods:</p>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="rotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>rotate</b>(degs);</p>
+<h4>Description:</h4>
+<p>Applies a translate rotate to the 'hard' transform matrix of 'obj'. Effectively rotating all the draw commands coordinates of the object by 'degs' degrees centered on the current drawing origin of the object. This is a 'hard' transform, the orientation of the object becomes the reference orientation for subsequent transforms and rendering.</p>
+<p>When 'obj' is a Group2D this method calls the <i>Obj2D</i>.rotate method on all the group's Obj2D children, and also calls the method on all the Obj2D children of obj's Group2D children and so on recursively for its descendants.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>degs</b>:Number - The angle of rotation measured in degrees +ve anti-clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="scale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>scale</b>(xScl, yScl);</p>
+<h4>Description:</h4>
+<p>Applies a scale transform to the 'hard' transform matrix of 'obj', effectively multiplying the Cobj width or path X coordinates by 'xScl' and multiplying the height or Y path coordinates by 'yScl'. If yScl is omitted or null, then yScl is set equal to xScl and an isotropic scaling is applied. This scaling permanently changes the size of the object as it will be rendered to the canvas.</p>
+<p>Note scaling by (-1, 1) flips the object horizontally and scaling by (1, -1) flips the object vertically.</p>
+<p>When 'obj' is a Group2D this method calls the <i>Obj2D</i>.scale method on all the group's Obj2D children, and also calls the method on all the Obj2D children of obj's Group2D children and so on recursively for its descendants.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>xScl</b>: Number - A number >0 by which the object's X coordinates or width are scaled.</p>
+<p style='margin-left:2em'><b>yScl</b>: Number - A number >0 by which the object's Y coordinates or height are scaled.</p>
+   </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="translate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>translate</b>(x, y);</p>
+<h4>Description:</h4>
+<p>Applies a translate transform to the 'hard' transform matrix of 'obj'. Effectively making a permanent shift of the object by x and y from its drawing origin. This is a 'hard' transform the change relative to the drawing origin becomes the reference position for future transform or rendering. The center of rotation and scaling will be this new drawing origin.</p>
+<p><b>translate</b> can be applied to IMG and TEXT type objects the drawing origin of these objects is initially set by the 'lorg' parameter to a restricted number of positions on the image or text, translate allows the object to be arbitrarily offset from the drawing origin.</p>
+<p>When 'obj' is a Group2D this method calls the <i>Obj2D</i>.translate method on all the group's Obj2D children, and also calls the method on all the Obj2D children of obj's Group2D children and so on recursively for its descendants.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>x, y</b>:Numbers - X and Y offsets of the object from the current drawing origin.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformBend" href="#" class="itemName" onclick="return toggleSection(this)">transform.bend</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.bend</b>(deg);</p>
+<h4>Description:</h4>
+<p>The object will be bent by applying a rotation to each node defining the object's outline. The node most distant from the drawing origin will be rotated by this 'deg'. All intermediate outline nodes are rotated in proportion to their distance from the drawing origin.</p>
+<p>When applied to a Group2D this bend transform is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>deg</b>: Number - A value in degrees by which the most remote node of the object outline will be rotated. The center of rotation is the object's drawing origin.</p>
+<h4>NOTE:</h4>
+<p>The transform.bend method is experimental. The bending effect is best when the bend angle is small (&lt;20&deg;). There must be several nodes between drawing origin and the object extremity, the more nodes the better the effect. Applying transform.bend on straight lines, ie. without intermediate nodes, is equivalent to transform.rotate.</p>
+  </dt>
+</div>
+
+
+<div class="sectClosed">
+  <a id="transformRevolve" href="#" class="itemName" onclick="return toggleSection(this)">transform.revolve</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>a</i>.<b>transform.revolve</b>(deg);</p>
+<h4>Description:</h4>
+<p>Applies a transform to the 'soft' transform matrix which revolves the object by 'degs' degrees centered on the world coordinate origin (not the object's drawing origin). If no transform.translate has been applied prior to this method being called, transform.revolve behaves identically to transform.rotate, since the object drawing origin has not been moved from the world coordinate origin, but if the object has been translated, this method revolves the object around the world coordinate origin now some distance from the object, like the earth revolving around the sun.</p>
+<p>When applied to a Group2D this transform matrix is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>deg</b>:Number - The angle of revolution measured in degrees +ve anti-clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformRotate" href="#" class="itemName" onclick="return toggleSection(this)">transform.rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>a</i>.<b>transform.rotate</b>(deg);</p>
+<h4>Description:</h4>
+<p>Applies a transform to the 'soft' transform matrix which rotates the object by 'deg' degrees centered on the object's drawing origin. This rotation is independent of any transform.translate calls that may have moved the drawing origin from the world coordinate origin. It is equivalent to the earth rotating on its axis independent of where it is relative to the sun.</p>
+<p>When applied to a Group2D this transform matrix is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>deg</b>:Number - The angle of revolution measured in degrees +ve anti-clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformScale" href="#" class="itemName" onclick="return toggleSection(this)">transform.scale</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>a</i>.<b>transform.scale</b>(scl);</p>
+<h4>Description:</h4>
+<p>Applies a transform to the 'soft' transform matrix which scales the size of the object by a factor 'scl'. The object's dimensions enlarge or contract relative to the object's drawing origin, independent of any transform.translate that may have been applied.</p>
+<p>When applied to a Group2D this transform matrix is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>scl</b>:Number - A number >0 by which the objects dimensions relative to it's drawing origin are scaled.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformSkew" href="#" class="itemName" onclick="return toggleSection(this)">transform.skew</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.skew</b>(skewX, skewY);</p>
+<h4>Description:</h4>
+<p>Applies a transform to the 'soft' transform matrix which distorts the shape of the object by offsetting the outline X coordinates progressively up to a value of skewX, and progressively offsetting the Y coordinates up to a value of 'skewY'.</p>
+<p>When applied to a Group2D this transform matrix is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>skewX, skewY</b>: Numbers - These X axis offset and Y axis offset values will be converted to a skew matrix to be applied to the object when rendered.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformTranslate" href="#" class="itemName" onclick="return toggleSection(this)">transform.translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>a</i>.<b>transform.translate</b>(x, y);</p>
+<h4>Description:</h4>
+<p>Both Obj2D and Group2D have a 'transform' property which is an object with methods that apply transforms to the Obj2D's 'soft' transform matrix. This 'transform.translate' method applies a translation transform to the matrix. The center of rotation and scaling will be not be affected by this translation of the object's drawing origin, but revolve transform is affected.</p>
+<p>When applied to a Group2D this transform matrix is applied to all the children of the Group2D and to the children of any Group2D children recursively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>x, y</b>:Numbers - The distance in the X and Y directions respectively that the object will be moved relative to the world coordinate origin.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="transformReset" href="#" class="itemName" onclick="return toggleSection(this)">transform.reset</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>a</i>.<b>transform.reset</b>();</p>
+<h4>Description:</h4>
+<p>Resets the 'soft' transform matrix to the identity matrix and clears all the transforms that have been previously accumulated to be applied by the soft transform matrix property of the Obj2D or Group2D. If an Obj2D is rendered immediately after a transform.reset it will be rendered with its drawing origin at the world coordinate origin (0,0).</p>
+<p>When applied to a Group2D transform.reset will clear the transforms accumulated to for that Group2D only i.e. its children and their children will only inherit an identity matrix from this Group2D. Children of a Group2D may have had transforms applied independently to them, these will not be cleared by a transform.reset applied to an ancestor Group2D.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+
+<hr class="ugHr" />
+
+<h3 id="dragndrop">Cango2D Drag and Drop architecture</h3>
+
+<p>Drag and Drop can be enabled on any Obj2D object by calling the <i>Obj2D</i>.<b>enableDrag</b> method passing as parameters references to the event handlers to be called when mousedown, mousemove and mouseup events occur. Drag and Drop can be disabled by calling the <i>Obj2D</i>.<b>disableDrag</b> or by clearing the canvas on which the Obj2D was drawn.</p>
+
+<p>The 'enableDrag' method creates a JavaScript Object type <b>Drag2D</b> which is assigned to the <i>Obj2D</i>.<b>dragNdrop</b> property. Drag2D objects encapsulate the event handlers that run when mousedown, mousemove and mouseup events occur within the outline of the Obj2D as drawn on the canvas. When a mousedown event occurs the handler enables listening for mousemove, mouseup and mouseout event, it then updates the values the Drag2D properties and calls the user defined 'grabHandler' callback. Subsequent mousemove events will similarly update the Drag2D properties and call the user defined 'dragHandler'. The 'dropHandler' callback is called when either a mouseup event occurs or the cursor moves off the canvas generating a mouseout event. The callbacks are passed the current position of the cursor on the canvas in world coordinates. The callback functions are executed in the scope of the <i>Obj2D</i>.dragNdrop object.</p>
+
+<p>Enabling drag-n-drop on a Group2D recursively enables the drag-n-drop on all the group's children. Pre-existing dragNdrop properties of child objects are not over-written when a parent group is enabled for drag'n'drop. So and object in the group will move when its parent is dragged but will also move independent of the group if it was enabled for drag'n'drop before the group was.</p>
+
+<h4 id="Drag2D">Drag2D Object properties</h4>
+
+<p> The obj.dragNdrop is a Drag2D object which has as properties several variables often required when writing event handlers, such as 'grabOfs', the X and Y offset of the cursor from the drawing origin of the Obj2D when the mousedown event occurred. Since the callbacks are executed in the scope of the obj's <b>dragNdrop</b> object, 'this' will refer to the Drag2D object and its properties are accessed as follows:</p>
+
+<p><b>var</b> <i>localVar</i> = this.<i>property name</i>;</p>
+
+<h4>Properties:</h4>
+  <p><b style="color:blue">cgo</b>:Cango2D graphics object - this makes the Cango2D methods such as this.cgo.clearCanvas() readily accessible from the scope of the Drag2D object.</p>
+  <p><b style="color:blue">target</b> - a reference to the Group2D or Obj2D actually being dragged, the object whose 'enableDrag' method added this Drag2D to its descendant objects.</p>
+  <p><b style="color:blue">parent</b>:Obj2D - this is the object on which the initial mousedown event occurred and so its 'dragNdrop property (a Drag2D) holds all the callBack functions called by the event handlers etc.</p>
+  <p><b style="color:blue">dwgOrg</b>:Object - Object with properties x:, y: holding the 'as rendered' X,Y coordinates of the drawing origin (measured in world coordinates) of the target.</p>
+  <p><b style="color:blue">grabOfs</b>:Object - Object with properties x, y, z effectively holding the cursor offset from the target drawing origin at the time of the mousedown (grab) event, measured in world coordinates. It is actually 'grabCsrPos - dwgOrgOfs'.</p>
+  <p><b style="color:blue">dwgOrgOfs</b>:Object - Object with properties x, y, z holding the target's dwgOrg offsets from it's parent Group2D's drawing origin.</p>
+  <p><b style="color:blue">grabCsrPos</b>:Object - Object with properties x, y, z holding the cursor coordinates saved at grab time, measured in world coordinates.</p>
+
+<h4>Example</h4>
+<p>As an example of the drag-n-drop method, here is a code snippet that simply moves an Obj2D with the cursor: </p>
+
+<div style="float:right; margin:10px 10px 10px 0">
+  <canvas id="dragBox" width="200" height="200" style="background-color:lightyellow"></canvas>
+  <div class="captionHolder" style="width: 200px">
+    <p class="caption"><b>Figure 4.</b> Simple drag and drop example.</p>
+  </div>
+</div>
+
+<div class="srcFmt" style="width: 520px">
+<pre>
+function dragBox(cvsID)
+{
+  var g,
+      boxOutline = ['M', 0, 0, 'l', 40, 0, 0, 100, -40, 0, 'z'],
+      box = new Obj2D(boxOutline, "SHAPE", {
+        fillColor:'orange',
+        border:true,
+        strokeColor:"brown"});
+
+  function dragB1(mousePos)
+  {
+    var wPos = {x:mousePos.x - this.grabOfs.x,
+                y:mousePos.y - this.grabOfs.y};
+
+    box.transform.translate(wPos.x, wPos.y);
+    g.render(this.target, true);    // true => clear canvas
+  };
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(-100, -100, 400);
+
+  box.enableDrag(null, dragB1, null);
+
+  g.render(box);
+}
+</pre>
+</div>
+
+<hr class="ugHr" />
+
+<h3 id="svgCmds">Cgo2D Data Syntax</h3>
+<p>Outline path data is defined in Cgo2D format, comprising an array of one letter string commands and two number sets of x,y coordinates. The command set is borrowed directly from SVG (Scaler Vector Graphics).</p>
+<p>Path commands are case-sensitive, an uppercase command's coordinates use absolute positioning and a lowercase command's coordinates are relative the last point. The first point must always be a 'M' (move) command or an X,Y coordinate pair which will be assumed to be the parameters of an "M" command.</p>
+<table class="txtTbl" style="width: 630px; margin: 2em auto">
+<tr>
+  <th width="10%"><div class="tblTitle">Command</div></th>
+  <th width="20%"><div class="tblTitle">Parameters</div></th>
+  <th><div class="tblTitle">Description</div></th>
+</tr>
+<tr>
+  <td><div class="tblAtt">M</div></td>
+  <td><div class="tblExp">x,y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">moveto</span>: Moves the pen to a new location. No line is drawn. All path data must begin with a 'moveto' command.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Line Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">L</div></td>
+  <td><div class="tblExp">x,y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">lineto</span>: Draws a line from the current point to the point (x,y).</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">H</div></td>
+  <td><div class="tblExp">x</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">horizontal lineto</span>: Draws a horizontal line from the current point to x.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">V</div></td>
+  <td><div class="tblExp">y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">vertical lineto</span>: Draws a vertical line from the current point to y.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Cubic Bezier Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">C</div></td>
+  <td><div class="tblExp">x1 y1 x2 y2 x y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">curveto</span>: Draw a cubic Bezier curve to the point (x,y) where the points (x1,y1) and (x2,y2) are the start and end control points, respectively.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">S</div></td>
+  <td><div class="tblExp">x2 y2 x y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">shorthand/smooth curveto</span>: Draw a curve to the point (x,y) where the point (x2,y2) is the end control point and the start control point is the reflection of the last point's end control point.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Quadratic Bezier Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">Q</div></td>
+  <td><div class="tblExp">x1 y1 x y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">quadratic Bezier curveto</span>: Draw a quadratic Bezier between the last point and point (x,y) using the point (x1,y1) as the control point.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">T</div></td>
+  <td><div class="tblExp">x y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">shorthand/smooth quadratic Bezier curveto</span>: Draw a quadratic Bezier between the last point and point (x,y) using the reflection of the last control point as the control point.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Elliptical Arc Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">A</div></td>
+  <td><div class="tblExp">rx, ry,<br/> x-rotation,<br/> large-arc-flag,<br/> sweep-flag,<br/> x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">elliptical arc</span>: Draws and arc starting from the current point and ending at (x, y). The ellipse has the two radii (rx, ry). The x-axis of the ellipse is rotated by 'x-axis-rotation' relative to the x-axis of the world coordinate system. The 'large-arc-flag' and the 'sweep-flag' together define which way the arc joins to start and end point.<br/><br/>
+The 'x-axis-rotation' coordinate is measured anti-clockwise and 'sweep-flag = 1' may be interpreted as the arc sweeping in an anti-clockwise direction.<br/><br/>
+NOTE: For SVG coordinates which need to be converted to Cgo2D by the 'svgToCgo2D' utility function, the 'x-axis-rotation' is measured clockwise and 'sweep-flag = 1' flag may be interpreted as the arc sweeping in a clockwise direction.</div>
+</td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">End Path Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">z</div></td>
+  <td><div class="tblExp">-</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">closepath</span>: Closes the path. A line is drawn from the last point to the first.</div></td>
+</tr>
+</table>
+
+<h4>Relative coordinates:</h4>
+<p>To use path end point and control point coordinates relative to the last pen position use a lowercase letter for the command, eg. 'a' rather than 'A'.</p>
+
+<p style='margin-left:2em'>Cgo2D syntax allows a concession to the SVG command format, by accepting an array of data values with no command strings as a valid path definition. In such a case the initial 'M' command to move to the location of the first x,y pair is assumed, and the succeeding pairs are assumed to be preceded by an 'L' command. An example of storing coordinates values in this format:</p>
+<div class="srcFmt">
+<pre>
+  var i, data = [];
+  for (i=0; i&lt;n; i++)
+  {
+    data[2*i] = xFn(i);   // function returning x values
+    data[2*i+1] = yFn(i); // some function returning y values
+  }
+  g.drawPath(data);   // draw line starting at data[0],data[1] then n straight line segments
+</pre>
+</div>
+
+<hr class="ugHr" />
+
+<h3 id="lorg">lorg (locate origin):</h3>
+  <p style='margin-left:2em'>Location of the drawing origin within the bounding box of a TEXT or IMG type Obj2D is set by the parameter 'lorg'. The 'lorg' property can take integer values 1..9, lorg>=1 locates the top,left of the text box or image at the (x, y) position, lorg=2 locates the top, center of the box at the (x, y) position, and so on. Fig 5 shows the effect of each 'lorg' value on where a text object is drawn. Each text object in the figure is drawn at the x,y coordinates of the adjacent grid intersection, the text string itself specifies which lorg value was used when drawing the text.</p>
+
+<div class="figHolder" style="width: 550px">
+  <canvas id="cvsLorg" class="cvsEg" width="400" height="250"></canvas>
+<div class="captionHolder" style="">
+  <p class="caption"><b>Figure 5.</b> Examples of the 9 possible values of lorg. Each label states its lorg value. Each label is drawn at the coordinates of its nearest grid intersection. The red labels demonstrate that the lorg position is also the center of rotation.</p>
+</div>  <!-- captionHolder -->
+</div>
+
+
+<hr class="ugHr" />
+<h3 id="colors">Colors:</h3>
+<p>Fill color or stroke color parameters may be specified either by a reference to a <i>canvasGradient</i> object or by a string specifying the a color in one of the CSS color formats.</p>
+<h4>CSS Color formats</h4>
+<p>There are five different formats that can be used to define a color for use in the canvas:<br/>
+- 6 Digit RGB hex notation, '#rrggbb', where 'rr' sets the Red level (00 to ff), 'gg' sets the Green and 'bb' sets the Blue level.<br/>
+- 3 Digit RGB hex notation '#rgb', this is converted into six-digit form (#rrggbb) by replicating digits, not by adding zeros. For example, #fb0 expands to #ffbb00.
+- RGBA notation 'rgba(r, g, b, a)' where r, g and b are decimal numbers in the range 0 to 255 representing the Red, Green and Blue levels respectively and a is the Alpha or transparency value, 0 being fully transparent and 1.0 fully opaque.<br/>
+- RGB notation "rgb(r, g, b)" where r, g and b are decimal numbers in the range 0 to 255 representing the red, green and blue levels respectively. This is a suitable format for entering dynamic color values. The calculated r, g and b values may be passed to drawing methods by the string 'rgb('+r+','+g+','+b+')'.<br/>
+- Predefined colors names specified by the <a href="http://www.w3.org/TR/css3-color/#svg-color">Extended CSS Color List</a> eg. 'red', 'blue', 'maroon', 'palegoldenrod', 'wheat' etc.  There are 143 standard colors named in the list.</p>
+
+<h4>LinearGradient and RadialGradient Objects</h4>
+<p>The LinearGradient and RadialGradient objects encapsulates the instructions from making canvasGradient objects just as if ctx.createLinearGradient or ctx.createRadialGradient had been called. The difference is that they expect the coordinates passed as parameters to be in world coordinates not pixels. If the 'fillColor' property of a Obj2D is assigned to be a LinearGradient or RadialGradient object then the coordinates defining the gradient are relative to the drawing origin of the Obj2D, so if the Obj2D position is translated then the gradient fill will move with the object. The LinearGradient fill will also scale and rotate with the object</p>
+<p>The LinearGradient and RadialGradient constructors are globals and are independent of any particular Cango2D instance.</p>
+
+<p>LinearGradient or RadialGradient objects may be used as the fill color for cgo.clearCanvas methods. The world coordinates passed to the constructor are relative to the current world coordinate drawing origin 0,0.</p>
+
+<h4>Example 1:</h4>
+<p>An example of the LinearGradient is: </p>
+
+<div style="float:right; margin:10px 10px 10px 0">
+  <canvas id="lingrad" width="150" height="150"></canvas>
+</div>
+
+<div class="srcFmt" style="width: 520px">
+<pre>
+var gradObj = new LinearGradient(-2,2, 2,-2);
+gradObj.addColorStop(0, 'yellow');
+gradObj.addColorStop(0.5, 'green');
+gradObj.addColorStop(1, 'black');
+
+g.setWorldCoords(-2, -2, 4);  // 4x4 square, 0,0 in center
+
+g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:gradObj});
+</pre>
+</div>
+
+<h4>Example 2:</h4>
+<p>An example of the RadialGradient is :</p>
+
+<div style="float:right; margin:10px 10px 10px 0">
+  <canvas id="radgrad" width="150" height="150"></canvas>
+</div>
+
+<div class="srcFmt" style="width: 520px">
+<pre>
+var grad = new RadialGradient(0, 0, .5, 1, 1, 2.5);
+grad.addColorStop(0, '#aabbff');
+grad.addColorStop(1, '#00f');
+
+g.setWorldCoords(-2, -2, 4);  // 4x4 square, 0,0 in center
+
+g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:grad});
+</pre>
+</div>
+<p style="clear:both; height:0; color: white">.</p>
+
+<!-- ==============================================================================================   -->
+
+<hr class="ugHr" />
+
+<h2 id="tweener">Tweener interpolation utility</h2>
+
+<p>When writing a Cango2D animation 'pathFn' functions, the aim is to generate values of position, scale, rotation etc or some style property that can be set for the object being animated. New values need to be generated for each frame so the 'pathFn' is called prior to each frame. If the property is specified as an array of key values then the next frame values can be obtained by interpolating between these keyframe values. The <b>Tweener</b> object is provided to simplify this task. A Tweener holds the basic parameters of a timeline and has just one method: <b>getVal</b> which will do the interpolation calculations based on key frame values and the next frame time along the timeline.</p>
+
+<h3>Tweener constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var twnr  = <b>new Tweener</b>(delay, dur, loopStr);</p>
+<h4>Description:</h4>
+<p>This utility is provided to simplify interpolation between elements in an array of key values. Creating a Tweener object sets up a timeline of length 'dur' milliseconds which optional 'delay' to the start of the animation and whether the animation repeats specified by the 'loop' parameter.</p>
+<p>NOTE: The constructor should not be called inside a path function, this would create a new timeline at every frame effectively restarting the interpolation every time.</p>
+
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>delay</b>:Number - A time in milliseconds that must be exceeded before interpolating key values begins. When a Cango2D animation is started by a call to the 'playAnimation' method times starting at 0 msec are passed to path functions.</p>
+<p style='margin-left:2em'><b>dur</b>:Number - The duration of the animation starting after 'delay' milliseconds and lasting 'dur' milliseconds. Interpolated values will be returned for time between delay msec and delay+dur msec.</p>
+<p style='margin-left:2em'><b>loopStr</b>:String - The 'loopStr' parameter can take two values that will cause animation looping: 'loop' and 'loopAll'. After the initial delay (if delay is non-zero) 'loop' will cause the animated sequence that is 'dur' msec long to be repeated without repeating the delay. 'loopAll' will cause the delay and the animation to repeat, so the repeat interval will be delay+dur msec long. Either value will repeat its sequence indefinitely or until 'stopAnimation' or 'pauseAnimation' stops more calls being made to animation path functions. If the delay = 0 there is no difference in behaviour between 'loop' and 'loopAll'.</p>
+
+<h3>Tweener methods</h3>
+<div class="manualItems">
+<div class="sectOpen">
+  <a id="getval" href="" class="itemName" onclick="return false;" style="background-image:none">getVal</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var val = twnr.<b>getVal</b>(time, keyValues[, keyTimes]);</p>
+<h4>Description:</h4>
+<p>The <b>getVal</b> method is designed to be used in an animation pathFn which will be called immediately prior to each animation frame being rendered. It returns a value for some property at time 'time' along a timeline of duration twnr.dur by interpolating between elements in an array of key values. The keyframe values are specified in the <b>keyValues</b> array. It is assumed that the first key value represents the property at the beginning of the Tweener timeline 'dur' period and the last key value is the value at the end of 'dur' period.</p>
+
+<p>The key frame times corresponding to the key values may be passed to 'getVal' in a separate <b>keyTimes</b> array. If no 'keyTimes' array is passed to the 'getVal' method then the key values are assumed to be equally spaced over the 'dur' time.</p>
+
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>time</b>:Number - Elapsed time along the Tweener timeline, measured in milliseconds when getVal is called. The value starts at 0 and continues incrementing until <i>Cango2D</i>.<b>stopAnimation</b> is called, which will reset the elapsed time to 0. The 'getVal' method will not start interpolating until the time exceeds the Tweener 'delay' time. It then commences interpolating the value of the properties based on the time elapsed since starting as a percentage of the 'duration' parameter. The animation will last for 'dur' milliseconds. It will continue to return the last keyValue for all times exceeding delay+dur unless the timeline has looping enabled.</p>
+
+<p style='margin-left:2em'><b>keyValues</b>:Number or Array of Numbers - A single number will represent the static value for the entire animation. If 'keyValues' is an array then its elements represent the key values in the animation. If the array of values has 2 or more elements, the first will be the initial value returned after time 'delay' milliseconds. The last value will be the value at the finish of the animation after time interval 'delay+dur'.</p>
+
+<p style='margin-left:2em'><b>keyTimes</b>:Array of Numbers - An array holding the keyframe times corresponding to the keyValues. The keyTimes array must have the same number of elements as its matching values array. Time values are specified as a percentage of the Tweener.dur property so the values are limited to the range 0 to 100. If keyTimes is undefined then the key values are assumed to be equally spaced over the 'dur' time.</p>
+  </dt>
+</div>
+</div>  <!-- manualItems -->
+
+<!-- ==============================================================================================   -->
+
+<h2>Zoom and Pan Utility</h2>
+<p>Support for zoom and pan of Cango2D drawings is provided by the global function <b>initZoomPan</b>. This function should be called after any canvas drawing layers have been created ensuring that the zoom and pan controls will be on the top layer of the stack and thus giving priority to then for any mouse click events.</p>
+
+<div class="manualItems">
+<div class="sectOpen">
+  <a id="initzoompan" href="" class="itemName" onclick="return false;" style="background-image:none">initZoomPan</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><b>initZoomPan</b>(zpLayerId, gc, reDraw);</p>
+<h4>Description:</h4>
+<p>This function creates an overlay canvas and draws Zoom and Pan controls in the top right corner of a canvas element with ID 'zpLayerId'. Any or all the Cango2D contexts defined on any of the canvases in the stack can be zoomed and panned by clicking on these controls. The Cango2D contexts to be affected by zooming and panning are set by the 'gc' parameter. 'gc' may be a single Cango2D context or an array of contexts. Clicking the zoom controls will re-scaling the world coordinates of these contexts by 20% per click. Clicking the pan controls will add or subtract 50 pixels per click to the corresponding coordinate offset. When the scaling or position offsets have been applied, the Cango2D drawings on the canvas must be re-drawn to show the effect. The callback function to do this re-draw is also passed as the 'reDraw' argument.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>zpLayerId</b>:String - This is the string ID of the canvas layer that will hold the zoom and pan control buttons. This is the ID returned from a call to <i>Cango2D</i>.createLayer() method, so a call to this method may be used in place of the string.</p>
+<p style='margin-left:2em'><b>gc</b>:Cango2D context or Array of Cango2D contexts - This is the Cango2D graphics context that will have all its drawing zoomed or panned. If several Contexts are present on the background canvas or any canvas layer they may be passed as an array of Cango2D contexts, all will be zoomed or panned together as the control buttons are clicked.</p>
+<p style='margin-left:2em'><b>reDraw</b>:Function - The user defined function 'redraw' will be called to redraw all the Obj2Ds on all the canvases in their new zoomed or panned size or position.</p>
+
+<h4>Zoom and Pan Example</h4>
+
+<canvas id="cgZP" class="cvsEg" width="500" height="350"></canvas>
+
+<div class="captionHolder" style="width: 500px">
+  <p class="caption"><b>Figure 6.</b> Example of zoom and pan controls, click on the buttons in the top right corner to zoom or pan the drawing. Clicking on the 'X' button returns the drawing to its original size and position.</p>
+</div>  <!-- captionHolder -->
+
+<p>The code for the zoom and pan example in Fig. 6 is shown below. Note that the line width of the IMG border is set in world coordinates using the 'lineWidthWC' property so the border scales with zooming, whereas the border width of the yellow shape is set in pixels using the 'lineWidth' property and so doesn't scale with zooming.</p>
+
+<div class="srcFmt" style="max-height:850px">
+<pre>function zoomPanTest(cvsID)
+{
+  'use strict';
+  var g,
+      gL1,
+      xmin = -300,
+      ymin = -200,
+      xspan = 750,
+      Arc3 = "M0,50 h-150 a150,150 0 1,0 150,-150 z M-25,25 v-150 a150,150 0 0,0 -150,150 z",
+      ro, jane, txt, arcsObj;
+
+  g = new Cango2D(cvsID);
+  g.setWorldCoords(xmin, ymin, xspan);
+
+  gL1 = new Cango2D(g.createLayer());
+  gL1.dupCtx(g);
+
+  jane = new Obj2D("Images/JaneAvril2.jpg", "IMG", {
+    imgHeight: 140,
+    border:true,
+    lineWidthWC:6,
+    strokeColor:'sienna',
+    shadowOffsetX:8,
+    shadowOffsetY:-8,
+    shadowBlur:4,
+    shadowColor:'grey' });
+
+  txt = new Obj2D("Caption", "TEXT", {fillColor:"red", fontSize:12});
+
+  arcsObj = new Obj2D(svgToCgo2D(Arc3), "SHAPE", {
+    border:true,
+    strokeColor:"red",
+    lineWidth:2,       // pixels
+    fillColor:"yellow" });
+  arcsObj.scale(0.5);
+
+  function drawBits()
+  {
+    g.clearCanvas();
+    jane.transform.translate(100, 200);
+    g.render(jane);
+    txt.transform.translate(100, 40);
+    g.render(txt);
+    gL1.clearCanvas();
+    gL1.render(arcsObj);
+  }
+
+  drawBits();
+
+  initZoomPan(g.createLayer(), [g, gL1], drawBits);
+}
+</pre>
+</div>
+  </dt>
+</div>
+</div>
+
+
+<h3 id="shapeDefs">shapeDefs Methods</h3>
+<p>Cango2D makes available the <b>shapeDefs</b> object which has methods to create the Cgo2D data defining the outline path of many commonly used shapes.</p>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="circle" href="#" class="itemName" onclick="return toggleSection(this)">circle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>circle</b>(d);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a circle with diameter 'd'. The returned array is suitable as input parameter for the Obj2D constructor for PATH or SHAPE types objects. The Obj2D drawing origin will be at the center of the circle.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>d</b>:Number - Diameter of the circle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the circle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ellipse" href="#" class="itemName" onclick="return toggleSection(this)">ellipse</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>ellipse</b>(w, h);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a ellipse with width (X axis) 'w' and height (Y axis) 'h'. The returned array is suitable as input parameter for the Obj2D constructor for PATH or SHAPE types objects. The Obj2D drawing origin will be at the center of the ellipse.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>w</b>:Number - The width (X dimension) of the ellipse measured in the world coordinates.</p>
+<p><b>h</b>:Number - The height (Y dimension) of the ellipse measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the ellipse.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="square" href="#" class="itemName" onclick="return toggleSection(this)">square</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>square</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a square with sides of length 's'. The returned array is suitable as input parameter for the Obj2D constructor for PATH or SHAPE types objects. The Obj2D drawing origin will be at the center of the square.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - Side length of the square measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the square.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="rectangle" href="#" class="itemName" onclick="return toggleSection(this)">rectangle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>rectangle</b>(w, h);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a rectangle with width 'w' and height 'h'. The returned array is suitable as input parameter for the Obj2D constructor for PATH or SHAPE types objects. The Obj2D drawing origin will be at the center of the rectangle.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>w</b>:Number - The width (X dimension) of the rectangle measured in the world coordinates.</p>
+<p><b>h</b>:Number - The height (Y dimension) of the rectangle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the rectangle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="triangle" href="#" class="itemName" onclick="return toggleSection(this)">triangle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>triangle</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of an equilateral triangle with sides of length 's'. The returned array is suitable as input parameter for the Obj2D constructor for PATH or SHAPE types objects. The Obj2D drawing origin will be at the center of the triangle.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each side of the triangle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the triangle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="cross" href="#" class="itemName" onclick="return toggleSection(this)">cross</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs.<b>cross</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a cross with horizontal and vertical arms of length 's'. The returned array is suitable as input parameter for the Obj2D constructor for PATH type object. The Obj2D drawing origin will be at the center of the cross.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of the horizontal and vertical arms of the cross, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the cross.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ex" href="#" class="itemName" onclick="return toggleSection(this)">ex</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs.<b>ex</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a ex with arm lengths 's'. The returned array is suitable as input parameter for the Obj2D constructor for PATH type object. The Obj2D drawing origin will be at the center of the ex.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each arm of the ex, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the ex.</p>
+  </dt>
+</div>
+
+</div> <!-- manualItems -->
+
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>British Cannonball Sizes</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="cannon caliber, cannon calibre, cannonballs, round shot, Royal Navy guns" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>British Cannonball Sizes</h1>
+        <div class="text_01">
+
+          <h2>Borgard's standardised ordnance</h2>
+
+          <p>In 1712, Colonel Albert Borgard was appointed Chief Firemaster and later, in 1718, Assistant Surveyor of Ordnance. He rationalized the multitude of gun types then in the Royal Ordnance and specified a complete system of artillery. His designs were accepted in 1716. Few of his gun designs were successful and they were redesigned when Armstrong was appointed Surveyor of Ordnance in 1722. But Borgard's effort to standardize the Ordnance had long lasting effect.</p>
+
+<p>Borgard dispensed with the historic names for the types of guns, such as Falcon, Minion, Saker, Demi-Culverin etc. and specified each type by the weight of the round shot (cannonball) they fired. He further limited the number of cannonball weights to a strict set of values:</p>
+<p>The large gun values were&nbsp;&nbsp;<b>4, 6, 9, 12, 18, 24, 32</b> and <b>42</b> pounds (<i>lb</i>), where 1 <i>lb</i> = 0.45<i> kg</i>.</p>
+   <p>The values were based of the various cannonball sizes in use, but some simple calculations shed light as to why these particular weights of cannonball came to be chosen.</p>
+
+          <h2>Round shot diameter vs mass</h2>
+
+          <p>Working in Imperial units of inches (<i>in</i>) and pounds (<i>lb</i>) the diameters of the various weight cannonballs can be calculated as follows:</p>
+          <p>If <i>d</i> is the diameter of a sphere, then the volume <i>V</i> is given by:</p>
+
+$$\begin{array}{l} V = \displaystyle\frac{4}{3} \pi \left( \displaystyle\frac{d}{2}\right)^3 \\
+ \quad \, = \displaystyle\frac{\pi}{6} d^3 \end{array}$$
+
+          <p>If the density of cast iron is D, the mass<i> m </i>of a cast iron sphere of diameter<i> d </i>is given by</p>
+
+$$\begin{array}{l} m = DV \\
+ \quad \, = D \displaystyle{\frac{\pi}{6}} d^3 \end{array}$$
+
+          <p>The density <i>D,</i> of cast iron used<sup>[1]</sup> was 0.2682 lb/in<sup>3</sup>, therefore</p>
+
+$$\begin{array}{l} m = 0.2682\ \displaystyle{\frac{\pi}{6}} d^3 \\
+\quad \, = 0.1405\ d^3 \end{array}$$
+
+          <p>where \(m\) is in pounds and \(d\) in inches.</p>
+          <p>Similarly the diameter <i>d</i>, of a cast iron ball of mass <i>m</i> is given by</p>
+
+          $$d = 1.9237\ m^{1/3}$$
+
+          <p>Table 1 shows the diameter of each of the round shot sizes with weights specified by Borgard: 4<i>lb</i>, 6<i>lb</i> and so on.</p>
+          <table class="txtTbl" style="width: 270px" cellpadding="1" cellspacing="1" border="1">
+            <colgroup span="2" width="50%"></colgroup>
+            <thead>
+            <tr>
+              <th>Mass of Cast Iron ball<br/>(<i>lb</i>)</th>
+              <th>Diameter<br/>(<i>in</i>)</th>
+            </tr>
+            </thead>
+            <tbody align="center">
+            <tr> <td>&nbsp;4</td>  <td>3.05</td></tr>
+            <tr> <td>&nbsp;6</td>  <td>3.49</td></tr>
+            <tr> <td>&nbsp;9</td>  <td>4.00</td></tr>
+            <tr> <td>12</td>  <td>4.40</td></tr>
+            <tr> <td>18</td>  <td>5.04</td></tr>
+            <tr> <td>24</td>  <td>5.55</td></tr>
+            <tr> <td>32</td>  <td>6.10</td></tr>
+            <tr> <td>42</td>  <td>6.68</td></tr>
+            </tbody>
+          </table>
+          <div class="captionHolder" style="width: 270px">
+            <p><b>Table 1.</b>&nbsp;&nbsp;Cast iron sphere mass and corresponding diameter.</p>
+          </div>  <!-- captionHolder -->
+
+          <p>From Table 1 it is apparent that many of the Borgard set of round shot weights had diameters very close to whole numbers of inches. This leads to the assumption that the diameter of the cannonballs used in the earlier part of the 17th century were chosen to have a 'nice' numbers of inches dfiameter, 3", 3&frac12;", 4", 4&frac12;", 5" etc. and the resulting round shot weights happened to be close to the values 4, 6, 9, 12, 18 <i>lb</i>. Borgard just rounded the weights to the nearest pound, meaning the shot diameters varied somewhat from their original 'nice' values.</p>
+
+
+          <h3>16th century gun calibres</h3>
+
+          <p>The obvious method to verify this theory is to find the calibre of any existing examples of early (pre Borgard) cannon to see if they were indeed 'nice' values. The Museum of Artillery (Woolwich) has several examples, but it also holds a "Gunners Rule" dated at c.1590. On it is written a table of shot weight, powder charges etc. to be used for the various guns in use during that era: Saker, Culverin, ... etc. Clearly there was no tight standard for these gun types, as the table shows values for small, average and large versions of most types. The detailed dimensions of the gun were left to the skill of the gun founder. Boring a long smooth barrel was difficult and the final calibre of the guns must have varied a great deal. Hence the need for gunners to have a ready reference to know the appropriate shot and powder charge to use once he had measured the calibre of his gun.</p>
+
+<p>Table 2 shows values taken from the table on the "Gunner Rule" giving the round shot diameter, weight and the calibre for each of the early gun types. The shot sizes that Albert Borgard appears to have used as the basis of his standard set are highlighted in yellow.</p>
+
+<table class="txtTbl" style="width: 540px" cellpadding="1" cellspacing="1" border="1">
+  <colgroup span="4" width="25%"></colgroup>
+  <thead>
+  <tr>
+   <th>Gun Type</th><th>Round Shot diameter<br/>(<i>in</i>)</th> <th>Shot Weight<br/>(<i>lb</i>)</th><th>Cannon Bore<br/>(<i>in</i>)</th>
+  </tr>
+  </thead>
+  <tbody align="center">
+
+  <tr> <td rowspan="2">Minion</td>  <td>2<sup>7</sup>/<sub>8</sub></td>  <td>&nbsp;3<sup>1</sup>/<sub>4</sub></td>  <td>3</td> </tr>
+  <tr>                              <td class="hilight">3</td> <td class="hilight">&nbsp;3<sup>3</sup>/<sub>4</sub></td>  <td>3<sup>1</sup>/<sub>4</sub></td></tr>
+
+  <tr> <td rowspan="3">Saker</td>   <td>3<sup>1</sup>/<sub>4</sub></td>  <td>&nbsp;4<sup>3</sup>/<sub>4</sub></td>  <td>3<sup>1</sup>/<sub>2</sub></td> </tr>
+  <tr>                              <td class="hilight">3<sup>1</sup>/<sub>2</sub></td>  <td class="hilight">&nbsp;6</td>  <td>3<sup>3</sup>/<sub>4</sub></td> </tr>
+  <tr>                              <td>3<sup>3</sup>/<sub>4</sub></td>  <td>&nbsp;7<sup>1</sup>/<sub>2</sub></td>  <td>4</td> </tr>
+
+  <tr> <td rowspan="3">Demi Culverin</td>   <td class="hilight">4</td>   <td class="hilight">&nbsp;9</td>           <td>4<sup>1</sup>/<sub>4</sub></td> </tr>
+  <tr>                              <td>4<sup>1</sup>/<sub>4</sub></td>  <td>&nbsp;10<sup>3</sup>/<sub>4</sub></td> <td>4<sup>1</sup>/<sub>2</sub></td> </tr>
+  <tr>                              <td class="hilight">4<sup>1</sup>/<sub>2</sub></td>  <td class="hilight">&nbsp;12<sup>3</sup>/<sub>4</sub></td> <td>4<sup>3</sup>/<sub>4</sub></td> </tr>
+
+  <tr> <td rowspan="3">Culverin</td> <td>4<sup>3</sup>/<sub>4</sub></td> <td>&nbsp;15</td>                          <td>5</td> </tr>
+  <tr>                              <td class="hilight">5</td>           <td class="hilight">&nbsp;17<sup>1</sup>/<sub>2</sub></td> <td>5<sup>1</sup>/<sub>4</sub></td> </tr>
+  <tr>                              <td>5<sup>1</sup>/<sub>4</sub></td>  <td>&nbsp;20</td>                          <td>5<sup>1</sup>/<sub>2</sub></td> </tr>
+
+  <tr> <td rowspan="3">Demi Cannon</td>   <td>6</td>                     <td>&nbsp;30</td>                          <td>6<sup>1</sup>/<sub>4</sub></td> </tr>
+  <tr>                              <td class="hilight">6<sup>1</sup>/<sub>8</sub></td>  <td class="hilight">&nbsp;32</td> <td>6<sup>1</sup>/<sub>2</sub></td> </tr>
+  <tr>                              <td>6<sup>3</sup>/<sub>8</sub></td>  <td>&nbsp;36</td>                          <td>6<sup>3</sup>/<sub>4</sub></td> </tr>
+
+  </tbody>
+</table>
+<div class="captionHolder" style="width: 540px">
+  <p><b>Table 2.</b>&nbsp;&nbsp;Round shot diameter, weight and cannon bore values for various British cannon types taken from the "Gunners Rule" c. 1590 [Museum of Artillery].</p>
+</div>  <!-- captionHolder -->
+
+            <h3>Cannon calibre and windage</h3>
+
+          <p>The bore of the cannon were made larger to allow for the rough casting and rusting of the cannonballs, as well as the irregularities in the casting and boring of the gun. The difference in diameter is termed "windage". The final bore diameter and hence the windage of earlier 16th and 17th century guns was a matter for the skill of the gunfounder. A value of 0.2 to 0.25 inches was typical.</p>
+<p>Albert Borgard specified that along with the weight of cannonballs the windage of the guns should be standardised. He specified that the bore diameter should be <sup>21</sup>/<sub>20</sub> of the gun's round shot diameter. This gives a windage value of 0.2" for a 4 <i>lb</i> cannon but gives a rather large 0.33" for a 42 pounder. To increase the efficiency of the guns the windage was reduced to <sup>25</sup>/<sub>24</sub> in the Blomefield pattern guns (1787).</p>
+
+          <p>Table 3 shows the cannon calibre values for both these windage standards.</p>
+
+          <table class="txtTbl" style="width: 540px" cellpadding="1" cellspacing="1" border="1">
+            <colgroup span="4" width="25%"></colgroup>
+            <thead>
+            <tr>
+             <th>Round Shot Weight<br/>(<i>lb</i>)</th><th>Round Shot Diameter<br/>(<i>in</i>)</th> <th><sup>21</sup>/<sub>20</sub> Calibre<br/>(<i>in</i>)</th> <th><sup>25</sup>/<sub>24</sub> Calibre<br/>(<i>in</i>)</th>
+            </tr>
+            </thead>
+            <tbody align="center">
+            <tr> <td>&nbsp;4</td>  <td>3.05</td>   <td>3.20</td>     <td>3.18</td>  </tr>
+            <tr> <td>&nbsp;6</td>  <td>3.50</td>   <td>3.67</td>     <td>3.65</td>  </tr>
+            <tr> <td>&nbsp;9</td>  <td>4.00</td>   <td>4.20</td>     <td>4.17</td>  </tr>
+            <tr> <td>12</td>  <td>4.40</td>   <td>4.62</td>    <td>4.58</td>  </tr>
+            <tr> <td>18</td>  <td>5.04</td>   <td>5.29</td>    <td>5.25</td>  </tr>
+            <tr> <td>24</td>  <td>5.55</td>   <td>5.82</td>    <td>5.78</td>  </tr>
+            <tr> <td>32</td>  <td>6.10</td>   <td>6.41</td>    <td>6.36</td>  </tr>
+            <tr> <td>42</td>  <td>6.68</td>   <td>7.02</td>    <td>6.96</td>  </tr>
+            </tbody>
+          </table>
+          <div class="captionHolder" style="width: 540px">
+            <p><b>Table 3.</b>&nbsp;&nbsp;Round shot diameter, <sup>21</sup>/<sub>20</sub> cannon calibre and <sup>25</sup>/<sub>24</sub> cannon calibre for the standard British cannonball weights.</p>
+          </div>  <!-- captionHolder -->
+
+<h3>Carronade windage</h3>
+<p>The late 18th century saw the development of a new class of cannon, the Carronade, which fired the standard size cannonballs but had a shorter barrel and lighter weight, making them easier to handle aboard ship.  Their shorter barrel meant that they could be bored more accurately. As a result the Carron Co. that produced them, was able to reduce the windage by using a bore <sup>35</sup>/<sub>34</sub> of the shot diameter.</p>
+
+          <p>Table 4 shows the Carronade calibre values<sup>[3]</sup> for the various cannonball sizes.</p>
+
+          <table class="txtTbl" style="width: 400px" cellpadding="1" cellspacing="1" border="1">
+            <colgroup span="3" width="33%"></colgroup>
+            <thead>
+            <tr>
+             <th>Round Shot Weight<br/>(<i>lb</i>)</th><th>Round Shot Diameter<br/>(<i>in</i>)</th> <th>Carronade Bore <sup>35</sup>/<sub>34</sub><br/>(<i>in</i>)</th>
+            </tr>
+            </thead>
+            <tbody align="center">
+            <tr> <td>12</td>  <td>4.40</td>   <td>4.52</td>  </tr>
+            <tr> <td>18</td>  <td>5.04</td>   <td>5.16</td>  </tr>
+            <tr> <td>24</td>  <td>5.55</td>   <td>5.68</td>  </tr>
+            <tr> <td>32</td>  <td>6.10</td>   <td>6.25</td>  </tr>
+            <tr> <td>42</td>  <td>6.68</td>   <td>6.84</td>  </tr>
+            </tbody>
+          </table>
+          <div class="captionHolder" style="width: 400px">
+            <p><b>Table 4.</b>&nbsp;&nbsp;Round shot diameter, Carronade bore values for various British cannon sizes c. 1800<sup>[4]</sup>.</p>
+          </div>  <!-- captionHolder -->
+
+
+          <p style="font-size: 11px">References:<br />
+           1. Muller. J, <i>A Treatise of Artillery</i> 1768.<br/>
+           2. LeFroy. J. H, <i>Official Catalogue of Museum of Artillery -Woolwich</i> 1864.<br />
+           3. Douglas. H, <i>A Treatise on Naval Gunnery</i> 1829.<br />
+           4. Henry. C, <i>Napoleonic Naval Armaments 1792-1815</i> 2004.</p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

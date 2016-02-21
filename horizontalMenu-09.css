@@ -1,0 +1,87 @@
+/*==================================================
+	Filename: horizontalMenu-09.css
+
+	Style sheet for horizonatlly aligned menus
+	menu. Menu list may be floated to right or left in
+	their container.
+
+	Date		Description														By
+	-------------------------------------------------
+	23Apr06 First release supporting both right
+					and left floats												ARC
+	01May06	Bug fixes															ARC
+	12Jun06	Made 'current' a class for multi use	ARC
+	09Aug06	Revamped colors etc 									ARC
+	26Feb07	Darker (#202020) text color						ARC
+  15Jul07 Added right border to right float and
+          added left border to left float ul    ARC
+  08Jul08 made li more specific                 ARC
+  30Sep09 Expicitly define horizMenu container  ARC
+ ==================================================*/
+
+.horizMenuRgt, .horizMenuLft    /* style for a div inside the target element */
+{
+  position: relative;
+  width: 100%;
+}
+
+.horizMenuRgt ul, .horizMenuLft ul
+{
+  height: 2em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: normal;
+  background-color: transparent;
+}
+
+.horizMenuRgt ul
+{
+  float: right;
+  border-right: 1px #606060 solid;
+}
+.horizMenuLft ul
+{
+  float: left;
+  border-left: 1px #606060 solid;
+}
+
+.horizMenuRgt ul li
+{
+  float: right;
+  border-left: 1px #606060 solid;
+  margin: 0;
+  padding: 0;
+}
+.horizMenuLft ul li
+{
+  float: left;
+  border-right: 1px #606060 solid;
+  margin: 0;
+  padding: 0;
+}
+
+.horizMenuRgt ul li a, .horizMenuLft ul li a
+{
+  display: block;
+	line-height: 1.2em;
+  color: #202020;
+  text-decoration: none;
+  background-color: transparent;
+  padding: 0.35em 0.3em  0.45em 0.3em;
+  margin: 0;
+  outline: 0;
+}
+
+.horizMenuRgt ul li a:hover, .horizMenuLft ul li a:hover
+{
+  color: white;
+  background-color: #868074;    /*medium grey */
+}
+
+li.current a
+{
+  background-color: #868074;
+  color: white;
+}
+

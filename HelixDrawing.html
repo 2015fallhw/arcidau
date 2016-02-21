@@ -1,0 +1,1051 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Helix Drawing</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="Helix drawing, helix approximation, Bezier curve approximation to a helix, 3D helix drawing, 3D canvas drawing, javascript 3D graphics, 3D spiral, helical thread drawing" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango3D-7v10.js"></script>
+  <script type="text/javascript" src="helixUtils-02.js"></script>
+  <script type="text/javascript" src="sprintf.js"></script>
+
+  <script type="text/javascript">
+
+    function distanceFromCurve(pt, bezNodes)
+    {
+      /* Calculates distance from point (pt) to the closest point on cubic Bezier curve (bez)
+       * Algoritm suggested by Mike Kamermans http://pomax.github.io/bezierinfo/
+       * Note: this is designed for well behaved Bezier curves only (no kinks)
+       */
+      var mu = 0.5,
+          dMu = 1.0,
+          dMuMin = 0.000001,
+          testPt, testLft, testRgt;
+
+      function pointOnBezier(p)
+      {
+        var x1 = bezNodes[0].x,
+            y1 = bezNodes[0].y,
+            z1 = bezNodes[0].z,
+            x2 = bezNodes[1].x,
+            y2 = bezNodes[1].y,
+            z2 = bezNodes[1].z,
+            x3 = bezNodes[2].x,
+            y3 = bezNodes[2].y,
+            z3 = bezNodes[2].z,
+            x4 = bezNodes[3].x,
+            y4 = bezNodes[3].y,
+            z4 = bezNodes[3].z,
+            f1 = function(t) { return (t*t*t); },
+            f2 = function(t) { return (3*t*t*(1-t)); },
+            f3 = function(t) { return (3*t*(1-t)*(1-t)); },
+            f4 = function(t) { return ((1-t)*(1-t)*(1-t)); },
+            /* p from 0 to 1 */
+            bezX = function() { return x1*f1(p) + x2*f2(p) + x3*f3(p) + x4*f4(p); },
+            bezY = function() { return y1*f1(p) + y2*f2(p) + y3*f3(p) + y4*f4(p); },
+            bezZ = function() { return z1*f1(p) + z2*f2(p) + z3*f3(p) + z4*f4(p); };
+
+        return {x:bezX(), y:bezY(), z:bezZ()};
+      }
+
+      function calcDist(p, u)
+      {
+        var bezPt = pointOnBezier(u),
+            distVal = Math.sqrt((bezPt.x-p.x)*(bezPt.x-p.x)+(bezPt.y-p.y)*(bezPt.y-p.y)+(bezPt.z-p.z)*(bezPt.z-p.z));
+
+        return {distance: distVal, x: bezPt.x, y: bezPt.y, z: bezPt.z};
+      }
+
+      do
+      {
+        testPt = calcDist(pt, mu);
+        // half distance
+        dMu /= 2;
+        testLft = calcDist(pt, mu-dMu);
+        testRgt = calcDist(pt, mu+dMu);
+        if (testLft.distance<testPt.distance)
+        {
+          mu -= dMu;
+          if (mu<0) { mu = 0; }
+        }
+        if (testRgt.distance<testPt.distance)
+        {
+          mu += dMu;
+          if (mu>1) { mu = 1; }
+        }
+      }
+      while (dMu>dMuMin)
+
+      return testPt;   // object {distance:, x:, y:, z:}
+    }
+
+    function simpleHelix(cvsID)
+    {
+      'use strict'
+      var g = new Cango3D(cvsID),
+          hlxData = createHelix(100, 90, 4.75),
+          hlx = g.compilePath3D(hlxData, "brown", 3),
+          axes = genAxes(200),
+          hlxNaxes = g.createGroup3D(hlx, axes);
+
+      function genAxes(span)
+      {
+        var axis = [],
+            lbl = [];
+
+        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'gray');     // X axis
+        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'gray');     // Y axis
+        axis[2] = g.compilePath3D(['M',0,0,0, 'L',2.2*span,0,0], 'gray'); // Z = copy X
+        axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
+
+        lbl[0] = g.compileText3D("X", "gray", 10, 500, 9);
+        lbl[0].translate(span, 10, 0);
+        lbl[1] = g.compileText3D("Y", "gray", 10, 500, 9);
+        lbl[1].translate(span, 10, 0);       // draw on X axis
+        lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
+        lbl[1].rotate(0, 1, 0, 90);       // rotate to Y
+        lbl[2] = g.compileText3D("Z", "gray", 10, 500, 9);
+
+        lbl[2].rotate(0, 1, 0, 180);
+        lbl[2].rotate(0, 0, 1, 90);
+
+        lbl[2].translate(2.2*span, 10, 0);       // draw on X axis
+        lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
+        lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
+
+        return  g.createGroup3D(axis, lbl);
+      }
+
+      hlxNaxes.rotate(100,20,30,-70);
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-175, -100, 400);
+      g.setFOV(20);
+
+      g.render(hlxNaxes);
+    }
+
+    function arcFit(cvsID)
+    {
+      'use strict'
+      var g = new Cango3D(cvsID),
+          incAng = 120,
+          halfAng = 0.5*incAng*Math.PI/180.0,
+          arcData, arc, axes, arcNaxes,
+          dot, cp = [], trk, angle,
+          angData, ang1,
+          b0, b1, b2, b3,
+          lb = [], aLbl;
+
+      function createArc(r, incAngle)
+      {
+        /*--------------------------------------------------------------
+          References:
+          A. Riskus, "Approximation of a Cubic Bezier Curve by
+                            Circular Arcs and Vice Versa"
+          Description:
+          Create Cgo3D data array defining a cubic Bezier approximation
+          to a circular arc centered at origin, start angle -incAngle/2
+          end angle incAngle/2.
+          Parameters: radius, included angle (degrees) <=120
+          NB: this is a 2D arc with all z values = 0;
+         ---------------------------------------------------------------*/
+        var alpha = incAngle*Math.PI/360.0,  // half included angle
+            ax = r*Math.cos(alpha),
+            ay = r*Math.sin(alpha);
+
+        b0 = {x:ax, y:-ay, z:0},
+        b1 = {x:(4*r - ax)/3, y:-(r - ax)*(3*r - ax)/(3*ay), z:0},
+        b2 = {x:(4*r - ax)/3, y:(r - ax)*(3*r - ax)/(3*ay), z:0},
+        b3 = {x:ax, y:ay, z:0};
+
+        return ["M",b0.x,b0.y,b0.z, "C", b1.x,b1.y,b1.z, b2.x,b2.y,b2.z, b3.x,b3.y,b3.z];
+      }
+
+      function genAxes(span)
+      {
+        var axis = [],
+            lbl = [];
+
+        axis[0] = g.compilePath3D(['M',-span/3,0,0, 'L',span,0,0], 'gray');      // X axis
+        axis[1] = g.compilePath3D(['M',0,-0.75*span,0, 'L',0,0.75*span,0], 'gray');    // Y axis
+
+        lbl[0] = g.compileText3D("X", "gray", 10, 500, 9);
+        lbl[0].translate(span, 10, 0);
+        lbl[1] = g.compileText3D("Y", "gray", 10, 500, 1);
+        lbl[1].translate(10, 0.75*span, 0);       // draw on X axis
+
+        return  g.createGroup3D(axis, lbl);
+      }
+
+      // draw the arc
+      arcData = createArc(100, incAng),
+      arc = g.compilePath3D(arcData, "black", 1.5),
+      axes = genAxes(150),
+      arcNaxes = g.createGroup3D(arc, axes);
+
+      // draw a red dot at each bezier control point
+      dot = g.compileShape3D(shapes3D.circle(6), 'red', 'red');
+      cp[0] = dot.dup();
+      cp[0].translate(b0.x, b0.y, b0.z);
+      cp[1] = dot.dup();
+      cp[1].translate(b1.x, b1.y, b1.z);
+      cp[2] = dot.dup();
+      cp[2].translate(b2.x, b2.y, b2.z);
+      cp[3] = dot.dup();
+      cp[3].translate(b3.x, b3.y, b3.z);
+      arcNaxes.addObj(cp);
+
+      // label the nodes
+      lb[0] = g.compileText3D(" b0", "black", 9, 400, 1);
+      lb[0].translate(b0.x, b0.y, b0.z);
+      lb[1] = g.compileText3D(" b1", "black", 9, 400, 4);
+      lb[1].translate(b1.x, b1.y, b1.z);
+      lb[2] = g.compileText3D(" b2", "black", 9, 400, 4);
+      lb[2].translate(b2.x, b2.y, b2.z);
+      lb[3] = g.compileText3D(" b3", "black", 9, 400, 7);
+      lb[3].translate(b3.x, b3.y, b3.z);
+      arcNaxes.addObj(lb);
+
+      // draw tracks to the control pts
+      trk = g.compilePath3D(["M", b0.x, b0.y, b0.z, "L", b1.x, b1.y, b1.z, b2.x, b2.y, b2.z, b3.x, b3.y, b3.z], "blue");
+      arcNaxes.addObj(trk);
+
+      // draw angle
+      angle = g.compilePath3D(["M", 0, 0, 0, "L", b3.x, b3.y, b3.z], "magenta");
+      arcNaxes.addObj(angle);
+      angData = svgToCgo3D(["M", 35, 0, "A", 35, 35, 0, 0, 1, 35*Math.cos(halfAng), 35*Math.sin(halfAng)]);
+      ang1 = g.compilePath3D(angData, "magenta");
+      arcNaxes.addObj(ang1);
+
+      aLbl = g.compileText3D("\u03B1", "black", 10, 400, 5); // &alpha;
+      aLbl.translate(20, 12, 0);
+      arcNaxes.addObj(aLbl);
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-75, -130, 250);
+      g.setFOV(20);
+
+      g.render(arcNaxes);
+    }
+
+    function matchPlanes(cvsID)
+    {
+      'use strict'
+      var g = new Cango3D(cvsID),
+          r = 200, phi = 120, p = 1100,
+          phiRad = phi*Math.PI/180,
+          arc1Data, arc2Data, arc1, arc2,
+          circ, b0, b1, b2, b3, b0d, b1d, b2d, b3d, m,
+          dot, cp = [], lb = [], ln1, ln2, ln3,
+          axes, hlx, hlxNaxes;
+
+      function genAxes(span)
+      {
+        var axis = [],
+            lbl = [];
+
+        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'gray');      // X axis
+        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'gray');    // Y axis
+        axis[2] = g.compilePath3D(['M',0,0,0, 'L',1.3*span,0,0], 'gray');   // Z = copy X
+        axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
+
+        lbl[0] = g.compileText3D("X", "gray", 10, 300, 9);
+        lbl[0].translate(span, 10, 0);
+        lbl[1] = g.compileText3D("Y", "gray", 10, 300, 9);
+        lbl[1].translate(span, 10, 0);       // draw on X axis
+        lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
+        lbl[2] = g.compileText3D("Z", "gray", 10, 300, 9);
+
+        lbl[2].rotate(0, 1, 0, 180);
+        lbl[2].rotate(0, 0, 1, 90);
+
+        lbl[2].translate(1.3*span, 10, 0);       // draw on X axis
+        lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
+        lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
+
+        return  g.createGroup3D(axis, lbl);
+      }
+
+      arc1Data = createHelicalArc(r, p, phi),
+      arc1 = g.compilePath3D(arc1Data, "black", 1),
+      arc2 = arc1.dup();
+      arc2.rotate(0, 0, 1, phi);
+      arc2.translate(0, 0, p*phi/360);  // each 120deg segment rises 200
+      circ = g.compilePath3D(shapes3D.circle(400), 'gray', 1);
+      axes = genAxes(400),
+
+      b0 = {x:arc1.drawCmds[0].ep.x, y:arc1.drawCmds[0].ep.y, z:arc1.drawCmds[0].ep.z};
+      b1 = {x:arc1.drawCmds[1].cPts[0].x, y:arc1.drawCmds[1].cPts[0].y, z:arc1.drawCmds[1].cPts[0].z};
+      b2 = {x:arc1.drawCmds[1].cPts[1].x, y:arc1.drawCmds[1].cPts[1].y, z:arc1.drawCmds[1].cPts[1].z};
+      b3 = {x:arc1.drawCmds[1].ep.x, y:arc1.drawCmds[1].ep.y, z:arc1.drawCmds[1].ep.z};
+      b0d = {x:arc2.drawCmds[0].ep.x, y:arc2.drawCmds[0].ep.y, z:arc2.drawCmds[0].ep.z};
+      b1d = {x:arc2.drawCmds[1].cPts[0].x, y:arc2.drawCmds[1].cPts[0].y, z:arc2.drawCmds[1].cPts[0].z};
+      b2d = {x:arc2.drawCmds[1].cPts[1].x, y:arc2.drawCmds[1].cPts[1].y, z:arc2.drawCmds[1].cPts[1].z};
+      b3d = {x:arc2.drawCmds[1].ep.x, y:arc2.drawCmds[1].ep.y, z:arc2.drawCmds[1].ep.z};
+      m = {x:b2.x, y:b2.x*Math.tan(phiRad/2), z:b3.z};
+
+      ln1 = g.compilePath3D(['M',b0.x,b0.y,b0.z, 'L',b1.x,b1.y,b1.z, b2.x,b2.y,b2.z, b3.x,b3.y,b3.z, b0d.x,b0d.y,b0d.z, b1d.x,b1d.y,b1d.z, b2d.x,b2d.y,b2d.z, b3d.x,b3d.y,b3d.z], "blue", 1),
+      ln2 = g.compilePath3D(['M',b2.x,b2.y,b2.z, 'L',m.x,m.y,m.z, b1d.x,b1d.y,b1d.z], "gray", 1),
+      ln3 = g.compilePath3D(['M',b2.x,0,0, 'L',m.x,m.y,0, m.x,m.y,m.z, 'M', b2.x,b2.y,0, 'L',b2.x,b2.y,b2.z], "pink", 1),
+
+      // draw a red dot at each bezier control point
+      dot = g.compileShape3D(shapes3D.circle(10), 'red', 'red');
+      dot.rotate(1,0,0, 90);
+      cp[0] = dot.dup();
+      cp[0].translate(b0.x, b0.y, b0.z);
+      cp[1] = dot.dup();
+      cp[1].translate(b1.x, b1.y, b1.z);
+      cp[2] = dot.dup();
+      cp[2].translate(b2.x, b2.y, b2.z);
+      cp[3] = dot.dup();
+      cp[3].translate(b3.x, b3.y, b3.z);
+      cp[4] = dot.dup();
+      cp[4].translate(b1d.x, b1d.y, b1d.z);
+      cp[5] = dot.dup();
+      cp[5].translate(b2d.x, b2d.y, b2d.z);
+      cp[6] = dot.dup();
+      cp[6].translate(m.x, m.y, m.z);
+
+      // label the nodes
+      lb[0] = g.compileText3D(" b0", "black", 9, 300, 1);
+      lb[0].rotate(1,0,0,90);
+      lb[0].translate(b0.x, b0.y, b0.z);
+      lb[1] = g.compileText3D(" b1", "black", 9, 300, 4);
+      lb[1].rotate(1,0,0,90);
+      lb[1].translate(b1.x, b1.y, b1.z);
+      lb[2] = g.compileText3D(" b2", "black", 9, 300, 4);
+      lb[2].rotate(1,0,0,90);
+      lb[2].translate(b2.x, b2.y, b2.z);
+      lb[3] = g.compileText3D(" b3=b0'", "black", 9, 300, 7);
+      lb[3].rotate(1,0,0,90);
+      lb[3].translate(b3.x, b3.y, b3.z);
+      lb[4] = g.compileText3D(" b1'", "black", 9, 300, 7);
+      lb[4].rotate(1,0,0,90);
+      lb[4].translate(b1d.x, b1d.y, b1d.z);
+      lb[5] = g.compileText3D("b2' ", "black", 9, 300, 3);
+      lb[5].rotate(1,0,0,90);
+      lb[5].translate(b2d.x, b2d.y, b2d.z);
+      lb[6] = g.compileText3D(" m", "black", 10, 300, 7);
+      lb[6].rotate(1,0,0,90);
+      lb[6].translate(m.x, m.y, m.z);
+      lb[7] = g.compileText3D(" \u03B1p", "black", 10, 300, 7);
+      lb[7].rotate(1,0,0,90);
+      lb[7].translate(m.x, m.y, m.z/2);
+
+      hlxNaxes = g.createGroup3D(arc1, arc2, circ, cp, ln1, ln2, ln3, lb, axes);
+      hlxNaxes.rotate(200,20,30,-80);
+      hlxNaxes.rotate(0,1,0,-10);
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-250, -300, 700);
+      g.setFOV(20);
+
+      g.render(hlxNaxes);
+    }
+
+    function Helix3D(cvsID)
+    {
+      'use strict'
+      var g = new Cango3D(cvsID),
+          hlxData, hlx, axes, hlxNaxes,
+          sPos = {x:0, y:0, z:0, xRot:0, yRot:0, zRot:0},
+          savPos = {x:0, y:0, z:0, xRot:0, yRot:0, zRot:0},
+          dxRot, dyRot, dzRot,
+          s1, s2, s3;
+
+      function genAxes(span)
+      {
+        var axis = [],
+            lbl = [];
+
+        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'red');      // X axis
+        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'green');     // Y axis
+        axis[2] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'blue');      // copy X
+        axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
+
+        lbl[0] = g.compileText3D("X", "red", 10, 500, 9);
+        lbl[0].translate(span, 10, 0);
+        lbl[1] = g.compileText3D("Y", "green", 10, 500, 9);
+        lbl[1].translate(span, 10, 0);       // draw on X axis
+        lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
+        lbl[1].rotate(0, 1, 0, 90);       // rotate to Y
+        lbl[2] = g.compileText3D("Z", "blue", 10, 500, 9);
+        lbl[2].translate(span, 10, 0);       // draw on X axis
+        lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
+        lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
+
+        return  g.createGroup3D(axis, lbl);
+      }
+
+      this.newXrot = function()
+      {
+        var dxRot;
+
+        sPos.xRot = s1.value;
+        dxRot = sPos.xRot - savPos.xRot;
+        savPos.xRot = sPos.xRot;
+        hlxNaxes.rotate(1, 0, 0, dxRot);
+        g.renderFrame(hlxNaxes);
+      }
+
+      this.newYrot = function()
+      {
+        var dyRot;
+
+        sPos.yRot = s2.value;
+        dyRot = sPos.yRot - savPos.yRot;
+        savPos.yRot = sPos.yRot;
+        hlxNaxes.rotate(0, 1, 0, dyRot);
+        g.renderFrame(hlxNaxes);
+      }
+
+      this.newZrot = function ()
+      {
+        var dzRot;
+
+        sPos.zRot = s3.value;
+        dzRot = sPos.zRot - savPos.zRot;
+        savPos.zRot = sPos.zRot;
+        hlxNaxes.rotate(0, 0, 1, dzRot);
+        g.renderFrame(hlxNaxes);
+      }
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-400, -200, 800);
+      g.setLightSource(-100, 100, 300);
+
+      hlxData = createHelix(100, 70, 3.5);
+      hlx = g.compilePath3D(hlxData, "brown", 3);
+      axes = genAxes(250);
+      hlxNaxes = g.createGroup3D(hlx, axes);
+
+      s1 = document.getElementById("slider-1");
+      s2 = document.getElementById("slider-2");
+      s3 = document.getElementById("slider-3");
+      // make start pos agree with sliders
+      this.newXrot();
+      this.newYrot();
+      this.newZrot();
+      // draw the group in the start position
+      g.renderFrame(hlxNaxes);
+    }
+
+    function helixArcErrors(r)
+    {
+      'use strict'
+      var bez, err, tableNum, row, col, pitch, incAngle;
+
+      function calcBezierNodes(rd, pch, inc)
+      {
+        var b = createHelicalArc(rd, pch, inc),
+            bz = [];
+
+        bz[0] = {x:b[1], y:b[2], z:b[3]};   // b[0] = 'M'
+        bz[1] = {x:b[5], y:b[6], z:b[7]};   // b[4] = 'C'
+        bz[2] = {x:b[8], y:b[9], z:b[10]};
+        bz[3] = {x:b[11], y:b[12], z:b[13]};
+
+        return bz;
+      }
+
+      function genHelixPt(rad, pch, a)
+      {
+        // given a (angle in deg), return the x, y, z of the helix
+        var aRad = a*Math.PI/180,
+            hx = rad*Math.cos(aRad),
+            hy = rad*Math.sin(aRad),
+            hz = pch*a/360;
+
+        return {x:hx, y:hy, z:hz};
+      }
+
+      function genErrSet(rad, pch, phi)
+      {
+        var bez = calcBezierNodes(rad, pch, phi),
+            pt, errAry = [], theta;
+
+        for (theta=-phi/2; theta<=phi/2; theta+=phi/8)   // step along curve
+        {
+          pt = genHelixPt(rad, pch, theta);
+          errAry.push(distanceFromCurve(pt, bez));
+        }
+
+        return errAry;
+      }
+
+      function updateErrors(tbl, rowNum, colNum, str)
+      {
+        var rowId = "t"+tbl+"row"+rowNum,
+            rowNode = window.document.getElementById(rowId),
+            tds = rowNode.getElementsByTagName("TD");   // array of TD elements
+
+        tds[colNum].childNodes[0].nodeValue = str;      // text node of TD element
+      }
+
+      // =========== start here =====================================
+      // write the errors for 90deg arc in table 1
+      incAngle = 90;
+      tableNum = 1;
+      col = 0;
+      for (row=0; row<9; row++)
+      {
+        updateErrors(tableNum, row, col, sprintf("%7.3g", row*12.5));
+      }
+      for (col=1, pitch=r/8; col<6; col++, pitch*=2)
+      {
+        err = genErrSet(r, pitch, incAngle);
+        for (row=0; row<9; row++)
+        {
+          updateErrors(tableNum, row, col, sprintf("%7.5f", err[row].distance/r));
+        }
+      }
+
+      // write the worst case errors for 120deg arc in table 2
+      incAngle = 120;
+      tableNum = 2;
+      row = 0;
+      col = 0;
+      updateErrors(tableNum, row, col, sprintf("%7.3g", 25));
+      for (col=1, pitch=r/8; col<6; col++, pitch*=2)
+      {
+        err = genErrSet(r, pitch, incAngle);
+        updateErrors(tableNum, row, col, sprintf("%7.5f", err[2].distance/r));
+      }
+    }
+
+    var consoleBtns1 =
+    {
+      f1:function(){involuteDemo1.pan(-50,0)},
+      f2:function(){involuteDemo1.pan(50,0)},
+      f3:function(){involuteDemo1.pan(0,-50)},
+      f4:function(){involuteDemo1.pan(0,50)},
+      f5:function(){involuteDemo1.zoom(1.2)},
+      f6:function(){involuteDemo1.zoom(1/1.2)}
+    };
+
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      styles: {".MathJax": { color: "#404040" }},
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    var hlx;
+
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      simpleHelix('cvs1');
+      arcFit('cvs2');
+      matchPlanes('cvs3');
+      hlx = new Helix3D('cvs4');
+      helixArcErrors(100);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>3D Helix Drawing using Bézier Curves</h1>
+        <div class="text_01">
+
+<h2>Properties of the Helix</h2>
+<p>The paper describes a method of drawing a good approximation to a cylindrical helix using cubic Bézier curves. A helix defines a path in three dimensional space, all parts of the helix are self similar, the curve may be fabricated from a short arc segment copies of which can be rotated and translated and appended to extend the desired length of the helix. Hence only one cubic Bézier curve that forms a good approximation to a sector of the helix, needs to be described for the whole helix to be approximated with equal accuracy.</p>
+
+<p>The advantage of using the Bézier curve approximation is that 3D Bézier curves may be projected onto a 2D surface by just projecting their control points. The 2D Bézier curve projection will still match the 2D projection of the helix. The computational effort required to do draw a projected helix is reduced to projecting just a few control points. The advantage of restricting the approximation to cubic Bézier curves rather than higher order Bézier curves, is that the HTML canvas element has native support for drawing 2D cubic Bézier curves given the coordinates of their control points.</p>
+
+<p>The derivation of the approximation is described and the JavaScript code examples are presented. All the example 3D coordinate transformations and projection to the 2D canvas are handled by the <i><b>Cango3D</b></i> graphics library.</p>
+
+<h3>Helix definition</h3>
+
+<canvas id="cvs1" width="200" height="350" style="float:right;margin:10px;border:1px solid gray;background-color: aliceblue"></canvas>
+
+<p>A helix is a type of smooth curve in three-dimensional space. It has the property that the tangent line at any point makes a constant angle with a fixed line called the axis. Helices can be either right-handed or left-handed. With the line of sight along the helix's axis, if a clockwise screwing motion moves the helix away from the observer, then it is called a right-handed helix; if towards the observer, then it is a left-handed helix. A right-handed helix cannot be turned or flipped to look like a left-handed one. Most machine screw threads are right-handed helices.</p>
+
+<p>The pitch of a helix is the vertical separation of points on the helix as it moves through 2π, a full circle in the x,y plane.</p>
+
+<p>A cylindrical helix may be described by the following parametric equations:</p>
+\begin{aligned}
+x	&= r\cos(t)\\
+y	&= r\sin(t)\\
+z	&= pt, \quad\quad for \; t\; in \; [0,2\pi),
+\end{aligned}
+
+<p>where the <b>radius</b> of the helix is \(r\) and the <b>pitch</b> \(= 2\pi p\).</p>
+
+<p>As the parameter \(t\) increases, the point \(( x(t), y(t), z(t) )\) traces a right-handed helix about the z-axis (in a right-handed coordinate system). Except for rotations, translations, and changes of scale, all right-handed helices are equivalent. The equivalent left-handed helix can be constructed by negate any one of the x, y or z components.</p>
+
+<h2>Method of fitting Bézier curves to a circular helix</h2>
+
+<p>The method used to fit Bézier curves to the helix is based on the fact that all parts of the helix are self similar, any section of the curve which sweeps out an angle of &phi; may be rotated by &phi; and translated by &phi;*p and will lie along the curve of the helix. Hence only one cubic Bézier curve that forms a good approximation to a sector of the helix, needs to be described for the whole helix to be approximated with equal accuracy.</p>
+
+<p>Since the projection of the circular helix onto the XY plane is always a circle, the x,y coordinates of the Bézier approximation will be those that approximate a 2D circle. The z coordinate of the nodes can then be raised to match the linear increase in the helical curve's z coordinate.</p>
+
+<h4>Fitting a cubic Bézier curve to a circular arc</h4>
+<p>One of the most accurate methods for fitting a cubic Bézier to a circular arc is given by Ri&scaron;kus [1] and summarised at [2].  This method calculates the Bézier nodes as follows:</p>
+
+<p>Let the arc start at point \(b0\), with control points \(b1\) and \(b2\) and end at point \(b3\), placed in the XY plane at equal distances above and below the x-axis, spanning an arc of angle \(\phi =2\alpha\).</p>
+
+<canvas id="cvs2" width="200" height="200" style="float:right;margin:10px;border:1px solid gray;background-color: aliceblue"></canvas>
+
+$$  \begin{aligned}
+    b3_x &= r\cos(\alpha) \\
+    b3_y &= r\sin(\alpha)\\
+    b0_x &= b3_x \\
+    b0_y &= -b3_y
+    \end{aligned} $$
+
+<p>The control points may be written as: [2]</p>
+
+$$  \begin{aligned}
+    b2_x &= {\frac {4r - b3_x}{3}}\\
+    b2_y &= {\frac {(r- b3_x)(3r- b3_x)}{3 b3_y}}\\
+    b1_x &= b2_x \\
+    b1_y &= -b2_y
+    \end{aligned} $$
+
+<p>The Bézier nodes must now be raised in the Z dimension to track the helix. The \(z\) coordinate of the start point \(b0\) and end point \(b3\) are set by the value helix pitch, and by symmetry \(b1_z = -b2_z\), hence</p>
+
+$$\begin{aligned}
+b3_z &= \alpha p\\
+b2_z &= b\\
+b1_z &= -b\\
+b0_z &= -b3_z
+\end{aligned}$$
+
+<h4>Fitting a cubic Bézier curve to a circular helical arc</h4>
+
+<p>It remains to calculate the free parameter \(b\). The method follows that described by Juhasz [3] where \(b\) is constrained so that the osculating plane of the Bézier curve at end of the initial segment be common with the osculating plane at the beginning of the next Bézier segment. An osculating plane is defined by three points on the curve in the limit as the points converge. The osculating plane will contain the normal to the curve at that point. This will achieve second order (G2) continuity, ie. the following G2 requirements will be met:</p>
+
+<ul>
+<li>The end point of the first segment and the and start point of the next segment are coincident (G0).</li>
+<li>The tangents to the curves at the junction are equal (G1).</li>
+<li>The curvature of the segments at the junction are equal (G2).</li>
+</ul>
+
+<p>Define the initial segment of the Bézier curve to have nodes \(b0,b1,b2,b3\) and the succeeding segment to have nodes \(b0',b1',b2',b3'\). These two curves will have common osculating planes at the junction point \(b3 = b0'\) if \(b1,b2,b3(=b0'),b1',b2'\) are co-planar. Fig 3. shows the lines \(b1,b2\) and \(b2',b1'\) extrapolated, if they are coplanar they will meet at point \(m\) which will be normal to the curve at the junction point. From the symmetry of the points and the fact that \(b2_x = m_x\) the lines will be coplanar if the Z component of \(b2\) and \(m\) increase in the same ratio as the Y components, ie:</p>
+
+<canvas id="cvs3" width="350" height="450" style="float:right;margin:10px;border:1px solid gray;background-color: aliceblue"></canvas>
+
+$$\frac{\alpha p}{b2_z} = \frac{m_y}{b2_y}$$
+
+<p>since \(b2_z= b\)</p>
+
+$$ \begin{aligned}
+
+  m_y &= b2_x\tan(\alpha) \\
+      &= \frac{4r - r \cos(\alpha) }{3}\tan(\alpha) \\
+\\
+  b &= \frac{b2_y \alpha p}{m_y}\\
+    &= \frac{(r - r \cos(\alpha) )(3r - r\cos(\alpha) ) \alpha p}{r\sin(\alpha) (4r - r\cos(\alpha) ) \tan(\alpha) }
+   \end{aligned} $$
+
+<p>Hence the 3D nodes of the cubic Bézier approximation to the helical arc are given by:</p>
+
+$$ \begin{aligned}
+b0_z &= -\alpha p\\
+b1_z &= -\frac{(r - r\cos(\alpha) )(3r - r\cos(\alpha) ) \alpha p}{r\sin(\alpha)  (4r - r\cos(\alpha) ) \tan(\alpha) }\\
+b2_z &= \frac{(r - r\cos(\alpha) )(3r - r\cos(\alpha) ) \alpha p}{r\sin(\alpha)  (4r - r\cos(\alpha) ) \tan(\alpha) }\\
+b3_z &= \alpha p
+\end{aligned} $$
+
+<h3 style="clear:right">JavaScript code to draw a helical arc</h3>
+
+<div class="srcFmt">
+<pre>
+createHelicalArc = function(r, pitch, incAngle)
+{
+  // References:
+  // 1. A. Riskus, "Approximation of a Cubic Bezier Curve by Circular Arcs and Vice Versa"
+  // 2. Imre Juhasz, "Approximating the helix with rational cubic Bezier curves"
+
+  var alpha = incAngle*Math.PI/360.0,  // half included angle
+      p = pitch/(2*Math.PI),    // helix height per radian
+      ax = r*Math.cos(alpha),
+      ay = r*Math.sin(alpha),
+      b = p*alpha*(r - ax)*(3*r - ax)/(ay*(4*r - ax)*Math.tan(alpha)),
+      b0 = {x:ax, y:-ay, z:-alpha*p},
+      b1 = {x:(4*r - ax)/3, y:-(r - ax)*(3*r - ax)/(3*ay), z:-b},
+      b2 = {x:(4*r - ax)/3, y:(r - ax)*(3*r - ax)/(3*ay), z:b},
+      b3 = {x:ax, y:ay, z:alpha*p};
+
+  return ["M", b0.x,b0.y,b0.z, "C", b1.x,b1.y,b1.z, b2.x,b2.y,b2.z, b3.x,b3.y,b3.z];
+}
+</pre>
+</div>
+
+<h2>Constructing a multi-turn helix approximation</h2>
+<p>Given that we have the formula to generate the coordinates of the Bézier curve approximating a helical arc, the method of creating a helix with an arbitrary number of turns is as follows.</p>
+
+<ol>
+<li> Chose an arc length \(phi\) such that an integer number of arcs create the desired length helix. The code to generate the Bézier curve is valid for arc length less than 180&deg;. The smaller the arc the more accurate the approximation but the more segments need to draw the helix. A good compromise is to use an arc length between 90&deg and 120&deg;.</li>
+
+<li>Calculate the helical arc given the radius, pitch and chosen included angle.</li>
+
+<li>Start constructing the array of Bézier curve segments approximating the helix with the initial arc.</li>
+
+<li>Duplicate the Bézier curve node points of the initial arc. Rotate the duplicate by the arc length and then translate it along the Z axis by \(\phi p\) where \(p\) (pitch per radian) is given by:
+$$ p = \frac{pitch}{2\pi} $$
+Append this to the array of Bézier curve segments defining the helix.</li>
+
+<li>Repeat the previous step for each arc segment required to create the full helix.</li>
+</ol>
+
+<h3>JavaScript code to draw a multi-turn helix</h3>
+
+<p>Here is the code implementing the construction technique, the code use the Cango3D library to provide 3D curve manipulation methods. The object returned is suitable for rendering using the Cango3D <i>render</i> method. Note the helix color and line width are hard coded for simplicity (set as 'brown' and '3' pixels).</p>
+
+<div class="srcFmt">
+<pre>
+createHelix = function(r, pitch, turns)
+{
+  var incAngle, arcsPerTurn, nArcs,
+      seg, i,
+      s, c1, c2, e,
+      arcData, arc, helix,
+      alpha, theta, dz;
+
+  function XYrotate(v, degs)
+  {
+    // rotate a 3D vector around the Z axis
+    var A = Math.PI*degs/180.0,   // radians
+        sinA = Math.sin(A),
+        cosA = Math.cos(A);
+
+    return {x: v.x*cosA - v.y*sinA, y: v.x*sinA + v.y*cosA, z:v.z};
+  }
+
+  function Ztranslate(v, d)
+  {
+    // translate a 3D vector along z axis
+    return {x:v.x , y:v.y , z:v.z+d};
+  }
+
+  // find integer number of segments needed with 90&lt;incAngle&lt;120 deg
+  nArcs = turns &lt; 1? Math.ceil(3*turns): Math.floor(4*turns);
+  arcsPerTurn = nArcs/turns;
+  incAngle = 360/arcsPerTurn;
+
+  arcData = createHelicalArc(r, pitch, incAngle);
+  alpha = incAngle/2;
+  dz = pitch/(2*arcsPerTurn);
+  // rotate to 1st quadrant and translate to start in XY plane
+  s = {x:arcData[1], y:arcData[2], z:arcData[3]};
+  s = XYrotate(s, alpha);
+  s = Ztranslate(s, dz);
+  c1 = {x:arcData[5], y:arcData[6], z:arcData[7]};
+  c1 = XYrotate(c1, alpha);
+  c1 = Ztranslate(c1, dz);
+  c2 = {x:arcData[8], y:arcData[9], z:arcData[10]};
+  c2 = XYrotate(c2, alpha);
+  c2 = Ztranslate(c2, dz);
+  e = {x:arcData[11], y:arcData[12], z:arcData[13]};
+  e = XYrotate(e, alpha);
+  e = Ztranslate(e, dz);
+
+  arc = ["M", s.x,s.y,s.z, "C", c1.x,c1.y,c1.z, c2.x,c2.y,c2.z, e.x,e.y,e.z];
+
+  // start helix data array with first segment
+  helix = arc.slice(0);
+  // copy, rotate and translate successive curve segments and append to helix array
+  for (i = 1; i&lt;nArcs; i++)
+  {
+    theta = incAngle*(i % arcsPerTurn);
+    dz = i*pitch/arcsPerTurn;
+
+    c1 = XYrotate({x:arc[5], y:arc[6], z:arc[7]}, theta);
+    c1 = Ztranslate(c1, dz);
+    c2 = XYrotate({x:arc[8], y:arc[9], z:arc[10]}, theta);
+    c2 = Ztranslate(c2, dz);
+    e = XYrotate({x:arc[11], y:arc[12], z:arc[13]}, theta);
+    e = Ztranslate(e, dz);
+
+    helix.push(c1.x,c1.y,c1.z, c2.x,c2.y,c2.z, e.x,e.y,e.z);
+  }
+
+  return helix;
+}
+</pre>
+</div>
+
+<h3>Interactive 3D helix example</h3>
+<p>Here is a 3D drawing using the code presented above the helix may be rotated about any of the 3 axes using the 3 sliders.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+      <div class="scrnBevel" >
+        <canvas id="cvs4" width="640" height="400" style="background-color: aliceblue"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      <table class="sliderHolder" cellspacing="0" cellpadding="0">
+        <tr align="center">
+          <td><input id="slider-1" class="slider" type=range min=-180 max=180 value=-20 step=1 onchange="hlx.newXrot()" oninput="hlx.newXrot()"></td>
+          <td><input id="slider-2" class="slider" type=range min=-180 max=180 value=-20 step=1 onchange="hlx.newYrot()" oninput="hlx.newYrot()"></td>
+          <td><input id="slider-3" class="slider" type=range min=-180 max=180 value=0 step=1 onchange="hlx.newZrot()" oninput="hlx.newZrot()"></td>
+        </tr>
+      </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div>  <!-- console -->
+</div>  <!-- consoleHolder -->
+
+
+
+<h2>Cubic Bézier approximation errors</h2>
+
+<p>To determine the approximation's deviation from the true helix, it is valid to consider only an arc since the helix is made from multiple identical arcs simply rotated and appended. Table 1 shows the approximation errors for the cubic Bézier approximation to a 90&deg; circular helical arc with various values of pitch to radius ratios. The errors are calculated at uniform intervals along the helix. Column 1 shows the distance along the arc in degrees. Columns 2,3,4,5 and 6 show the error measured as the distance of a point on the true helix to the closest point on the approximation. Each column is calculated as the error relative to the radius for different values of helix pitch.</p>
+
+<table class="txtTbl" style="width:550px;text-align: center" cellspacing="0" cellpadding="0" border="1">
+  <thead>
+    <tr>
+        <th style="width:20%">Distance along<br />90&deg; arc (%)</th>
+        <th style="width:15%">Error/R<br/>pitch=R/8</th>
+        <th style="width:15%">Error/R<br/>pitch=R/4</th>
+        <th style="width:15%">Error/R<br/>pitch=R/2</th>
+        <th style="width:15%">Error/R<br/>pitch=R</th>
+        <th style="width:15%">Error/R<br/>pitch=2*R</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="t1row0">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row1">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row2">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row3">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row4">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row5">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row6">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row7">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+    <tr id="t1row8">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="captionHolder" style="width: 550px">
+<p><b>Table 1.</b> Approximation errors for a cubic Bézier curve approximation to the 90&deg; helical arc shown in Fig. 3. Each error is the distance from the point on the true helix to the closest point on the approximation.</p>
+</div>
+
+<p>To show the effect of using longer arc length, Table 2 show similar error calculations but using a 120&deg; arc. For brevity only the maximum error value is shown. From Table 1 it is clear that the maximum error occurs 25% along the arc.</p>
+
+<table class="txtTbl" style="width:550px;text-align: center" cellspacing="0" cellpadding="0" border="1">
+  <thead>
+    <tr>
+        <th style="width:20%">Distance along<br />120&deg; arc (%)</th>
+        <th style="width:15%">Error/R<br/>pitch=R/8</th>
+        <th style="width:15%">Error/R<br/>pitch=R/4</th>
+        <th style="width:15%">Error/R<br/>pitch=R/2</th>
+        <th style="width:15%">Error/R<br/>pitch=R</th>
+        <th style="width:15%">Error/R<br/>pitch=2*R</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="t2row0">
+      <td>xx</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td><td>zz</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="captionHolder" style="width: 550px">
+<p><b>Table 2.</b> Maximum error for a cubic Bézier curve approximation to a 120&deg; helical arc. Each error is the distance from the point on the true helix to the closest point on the approximation.</p>
+</div>
+
+<p>From the tables above it can be seen that using a 3D cubic Bézier curve to approximate the helix results in normalised errors of less than 10<sup>-3</sup> for pitch values up to twice the radius. These errors are achieved for approximations that use 90&deg; arc segments. The code provided will use 90&deg; segments unless then angular length of the helix is not a multiple of 90&deg; when slightly larger segment length is used not exceeding 120&deg;.</p>
+
+<h4>References:</h4>
+<ol style="font-size: 11px">
+  <li>A. Ri&scaron;kus, "Approximation of a Cubic Bézier Curve by Circular Arcs and Vice Versa", <i>Information Technology and Control</i>, 2006</li>
+  <li>Wikipedia article, <a href="http://en.wikipedia.org/wiki/B%C3%A9zier_spline"><i>Bézier spline</i></a></li>
+  <li>I. Juh&aacute;sz, "Approximating the helix with rational cubic Bézier curves" <i>Computer-Aided Design</i>, 1995.</li>
+</ol>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

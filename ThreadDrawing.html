@@ -1,0 +1,1177 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Screw Thread Drawing</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="thread drawing, srew drawing, CAD drawing with canvas, Bézier approximation to sine, Bézier curve drawing" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+
+    .console select, .console input {
+      border-width: 2px;
+      border-radius: 3px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
+  <script type="text/javascript" src="threadUtils-03.js"></script>
+
+  <script type="text/javascript">
+    function metricProfile(cvsID)
+    {
+      'use strict'
+      var g = new Cango(cvsID),
+          xmin = 0,
+          xmax = 1.8,
+          ymin = 2.0,
+          ymax = 3.6,
+          pitch = 1,
+          diameter = 6,
+          p = pitch,
+          h = 0.86603*pitch,
+          dc = diameter,                // diameter across thread crests
+          dr = 2*(diameter/2-17*h/24),  // diameter across thread at the root
+          t0, t1, t2, t3, t4, t5, t6,
+          b1, b2, b3, b4, b5, b6,
+          dot,
+          topLeftData, topRightData, topCrestData,
+          botLeftData, botRightData, botCrestData,
+          topLeft, topRight, topCrest,
+          botLeft, botRight, botCrest,
+          threadV, arcData;
+
+      g.setGridboxRHC(15, 0, 80, 55);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin);
+      g.setPropertyDefault("strokeColor", "black");
+      // calculate the nodes of thread profile
+      // start profile at top of left flank, thread axis along X axis
+      t0 = {x:-p/16, y:dc/2};
+      t1 = {x:p/16, y:dc/2};
+      t2 = {x:3*p/8, y:dc/2-5*h/8};  // t1 to t2 is thread flank
+      t3 = {x:p/2, y: dc/2-17*h/24}; // t3 is the bottom of the thread root
+      // right flank
+      t4 = {x:p-3*p/8, y:dc/2-5*h/8};  // t4 is t2 flipped about root
+      t5 = {x:p-p/16, y:dc/2};         // t5 is t1 flipped about root
+      t6 = {x:p+p/16, y:dc/2};       // t5, t6 is the flat crest
+      // now flip sign of y values and shift right by p/2 to form the bottom profile
+      b1 = {x:p/2+p/16, y:-dc/2};
+      b2 = {x:p/2+3*p/8, y:-dc/2+5*h/8};  // t1 to t2 is thread flank
+      b3 = {x:p, y:-dc/2+17*h/24}; // t3 is the bottom of the thread root
+      // right flank
+      b4 = {x:3*p/2+3*p/8, y:-dc/2+5*h/8};  // t4 is t2 flipped about root
+      b5 = {x:3*p/2+p/16, y:-dc/2};         // t5 is t1 flipped about root
+      b6 = {x:3*p/2+3*p/16, y:-dc/2};       // t5, t6 is the flat crest
+
+      // join t2 to t3 by half the root arc with radius h/6
+      topLeftData = ["M", t0.x, t0.y, "L", t1.x, t1.y, t2.x, t2.y, "A", h/6, h/6, 0, 0, 1, t3.x, t3.y];
+      topRightData = ["M", t3.x, t3.y, "A", h/6, h/6, 0, 0, 1, t4.x, t4.y, "L", t5.x, t5.y];
+      topCrestData = ["M", t5.x, t5.y, "L", t6.x, t6.y];
+      // similar for the bottom profile
+      botLeftData = ["M", b1.x, b1.y, "L", b2.x, b2.y, "A", h/6, h/6, 0, 0, 1, b3.x, b3.y];
+      botRightData = ["M", b3.x, b3.y, "A", h/6, h/6, 0, 0, 1, b4.x, b4.y, "L", b5.x, b5.y];
+      botCrestData = ["M", b5.x, b5.y, "L", b6.x, b6.y];
+
+      // create the path segments for the top
+      topLeft = new Cobj(topLeftData, "PATH");
+      topRight = new Cobj(topRightData, "PATH");
+      topCrest = new Cobj(topCrestData, "PATH");
+      // create the path segments for the bottom
+      botLeft = new Cobj(botLeftData, "PATH");
+      botRight = new Cobj(botRightData, "PATH");
+      botCrest = new Cobj(botCrestData, "PATH");
+
+      // draw construction lines
+      threadV = [0, dc/2+h/8, p/2,dc/2-7*h/8, p,dc/2+h/8, 3*p/2,dc/2-7*h/8];
+      g.drawPath(threadV, 0, 0, {strokeColor:"orange"});
+      g.drawPath([-0.2,dc/2+h/8,     1.7,dc/2+h/8], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2,         1.7,dc/2], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-5*h/8,   1.7,dc/2-5*h/8], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-17*h/24, 1.6,dc/2-17*h/24], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-7*h/8,   1.7,dc/2-7*h/8], 0, 0, {strokeColor:"#cccccc"});
+
+      // pitch verticals
+      g.drawPath([0,dc/2+h/2,   0,dc/2+h/16], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([1,dc/2+h/2,   1,dc/2+h/16], 0, 0, {strokeColor:"#cccccc"});
+      // pitch dimension arrows
+      g.drawShape(shapeDefs.arrow(0.35,dc/2+h/3, 0,dc/2+h/3, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\( \\mbox{P (pitch)}\\)", 0.4,dc/2+h/3+0.04, "black", 10);
+      g.drawShape(shapeDefs.arrow(0.65,dc/2+h/3, 1,dc/2+h/3, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      // diameter dimension
+      g.drawShape(shapeDefs.arrow(0,dc/2-7*h/16, 0,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(Dc\\)", 0-0.02,dc/2-7*h/16-0.02, "black", 10);
+      g.drawPath([0,dc/2-h,   0,dc/2-9*h/16], 0, 0, {strokeColor:"#aaaaaa"});
+
+      // crest verticals and dimensions
+      g.drawPath([1-p/16,dc/2-0.02,   1-p/16,dc/2-0.15], 0, 0, {strokeColor:"#cccccc"});
+      g.drawHTMLtext("\\(\\frac{1}{8}P\\)", 1-0.04,dc/2-0.04, "black", 10);
+      g.drawPath([1+p/16,dc/2-0.02,   1+p/16,dc/2-0.15], 0, 0, {strokeColor:"#cccccc"});
+      // H arrows
+      g.drawShape(shapeDefs.arrow(-0.13,dc/2-7*h/16, -0.13,dc/2-7*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("H", -0.15,dc/2-5*h/16, "black", 10);
+      g.drawShape(shapeDefs.arrow(-0.13,dc/2-h/4-0.03, -0.13,dc/2+h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      // all the right side H fractions
+      g.drawShape(shapeDefs.arrow(1.65,dc/2-h,   1.65,dc/2-7*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(\\frac{1}{4}H\\)", 1.65-0.03,dc/2-3*h/4+0.04, "black", 10);
+
+      g.drawShape(shapeDefs.arrow(1.65,dc/2+h/4, 1.65,dc/2+h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(\\frac{1}{8}H\\)", 1.65-0.03,dc/2+h/16+0.04, "black", 10);
+
+      g.drawShape(shapeDefs.arrow(1.65,dc/2-h/4, 1.65,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(\\frac{5}{8}H\\)", 1.65-0.03,dc/2-3*h/8+0.1, "black", 10);
+      g.drawShape(shapeDefs.arrow(1.65,dc/2-3*h/8, 1.65,dc/2-5*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"})
+
+      g.drawShape(shapeDefs.arrow(1.55,dc/2-7*h/16, 1.55,dc/2-17*h/24, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(\\frac{17}{24}H\\)", 1.55-0.1,dc/2-7*h/16+0.1, "black", 10);
+      g.drawShape(shapeDefs.arrow(1.55,dc/2-5*h/16, 1.55,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+
+      g.drawHTMLtext(" \\( \\mbox{H}=\\sqrt{0.75} \\times \\mbox{P}= 0.866025 \\times \\mbox{P}\\)", 0.2,dc/2-h, "black", 10);
+      // 60deg arc
+      arcData = shapeDefs.arrowArc(0.577*h, 90, 120, false, 1/g.xscl, 6).concat(shapeDefs.arrowArc(0.577*h, 90, 60, true, 1/g.xscl, 6));
+      g.drawShape(arcData, p/2, dc/2-h*7/8, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(60&deg;\\)", p/2-0.02,dc/2-h/6-0.02, "black", 10);
+      // root radius
+      g.drawShape(shapeDefs.arrow(p/2,dc/2-13*h/24, p/2-0.5*h/6,dc/2-13*h/24-0.87*h/6, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawHTMLtext("\\(r = \\frac{H}{6}\\)", p/2-0.02,dc/2-h/2+0.05, "black", 10);
+
+      // draw a red dot at each bezier control point
+      dot = new Cobj(shapeDefs.circle(0.03), "SHAPE", {fillColor:'red', iso:true});
+      g.render(dot, t1.x, t1.y);
+      g.render(dot, t2.x, t2.y);
+      g.render(dot, t3.x, t3.y);
+      g.render(dot, t4.x, t4.y);
+      g.render(dot, t5.x, t5.y);
+      g.render(dot, t6.x, t6.y);
+
+      // label the nodes
+      g.drawHTMLtext("t<sub>1</sub>", t1.x, t1.y+0.1, "black", 10);
+      g.drawHTMLtext("t<sub>2</sub>", t2.x, t2.y+0.1, "black", 10);
+      g.drawHTMLtext("t<sub>3</sub>", t3.x, t3.y, "black", 10);
+      g.drawHTMLtext("t<sub>4</sub>", t4.x, t4.y, "black", 10);
+      g.drawHTMLtext("t<sub>5</sub>", t5.x-0.1, t5.y+0.1, "black", 10);
+      g.drawHTMLtext("t<sub>6</sub>", t6.x, t6.y+0.1, "black", 10);
+
+      g.render([topLeft, topRight, topCrest]);
+      g.render(topLeft, pitch, 0);
+    }
+
+    function drawThreadCosine(cvsId, pitch, diameter)
+    {
+      'use strict'
+      var g = new Cango(cvsId),
+          xmin = 0, xmax = 2.2,
+          ymin = -3.5, ymax = 3.5,
+          P = pitch,
+          H = 0.86603*pitch,
+          Dc = diameter,                // diameter across thread crests
+          m = 0.51128733,
+          pi = Math.PI,
+          sp = 0.15915*P,
+          sc = 0.5*Dc,               // crest profile Y coordinate scale factor
+          sr = 0.5*Dc - 0.6134*P,    // root profile Y coordinate scale factor
+          outline, outlineObj,
+          bkCrest,
+          bkCrestObj,
+          startRoot, root, rootObj,
+          startL, startR,
+          flankL, flankLobj,
+          flankR, flankRobj,
+          topL    = ["l",0.3125*P,-0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,0.125*P,-0.0722*P],   //from (tl)
+          topR    = ["a",0.1443*P,0.1443*P,0,0,1,0.125*P,0.0722*P, "l",0.3125*P,0.5413*P],     //from (tr)
+          topC    = ["l",0.125*P,0],                                                           //from (tc)
+          bottomL = ["a",0.1443*P,0.1443*P,0,0,1,-0.125*P,-0.0722*P, "l",-0.3125*P,-0.5413*P], //from (bl)
+          bottomR = ["l",-0.3125*P,0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,-0.125*P,0.0722*P],   //from (br)
+          bottomC = ["l",-0.125*P,0],                                                          //from (bc)
+          crestR  = ["c",0.5708*sp,0, 1.0595*sp,-0.4887*sc, 1.5708*sp,-sc,"s",sp,-sc, 1.5708*sp,-sc],  //from (pf)
+          crestL  = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sc, -1.5708*sp,sc,"s",-sp,sc, -1.5708*sp,sc], //from (pr)
+          rootL   = ["c",0.5708*sp,0, 1.0595*sp,-0.4887*sr, 1.5708*sp,-sr,"s",sp,-sr, 1.5708*sp,-sr],  //from (pf)
+          rootR   = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr,"s",-sp,sr, -1.5708*sp,sr]; //from (pr)
+
+      bkCrest = ["M",0.5625*P,-0.5*Dc, "c", (pi/2-1)*sp,0, (pi/2-m)*sp,(1-m)*sc, (pi/2)*sp,sc, "c", m*sp,m*sc, sp,sc, (pi/2)*sp,sc];
+      bkCrestObj = new Cobj(bkCrest, "PATH", {
+        strokeColor:"red",
+        dashed: [3,3] });
+
+      startL = ["M",0.0625*P,0.5*Dc];
+      outline = startL.concat(topL).concat(topR).concat(topC).concat(crestR).concat(bottomC).concat(bottomR).concat(bottomL);
+      outlineObj = new Cobj(outline, "PATH");
+
+      flankL = startL.concat(crestR);
+      flankLobj = new Cobj(flankL, "PATH", {strokeColor:"red", lineWidth:2});
+
+      startRoot = ["M",0.5*P, sr];
+      root = startRoot.concat(rootL);
+      rootObj = new Cobj(root, "PATH");
+
+      startR = ["M",0.9375*P,0.5*Dc];
+      flankR = startR.concat(crestR);
+      flankRobj = new Cobj(flankR, "PATH");
+
+      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.setPropertyDefault("strokeColor", "gray");
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0});
+
+      g.render([outlineObj, flankLobj, rootObj, flankRobj, bkCrestObj]);
+    }
+
+    function bezCosine(cvsID)
+    {
+      'use strict'
+      var g = new Cango(cvsID),
+          xmin = 0,
+          xmax = 7,
+          ymin = -1.5,
+          ymax = 1.5,
+          q1, q2, q3, q4,
+          dot,
+          m = 0.51128733,       // constant for Bezier sinewave approximation
+          piON2 = Math.PI/2,
+          pi = Math.PI,
+          p0, p1, p2, p3, p4, p5, p6;
+
+      // 1st quarter cycle
+      q1 = ["M",0,1, "c", pi/2-1,0, pi/2-m,m-1, pi/2,-1];
+      // 2nd quarter
+      q2 = ["M",pi/2,0, "c", m,-m, 1,-1, pi/2,-1];
+      // 3rd quarter
+      q3 = ["M",pi,-1, "c", pi/2-1,0, pi/2-m,1-m, pi/2,1];
+      // 4th quarter
+      q4 = ["M",3*pi/2,0, "c", m,m, 1,1, pi/2,1];
+      // draw the arc
+      g.setGridboxRHC(15, 5, 80, 60);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.setPropertyDefault("strokeColor", "black");
+      g.drawAxes(xmin, xmax, ymin, ymax, {
+        xOrigin:0,
+        yOrigin:0,
+        xLabel:"x",
+        yLabel:"cos(x)" });
+      // plot
+      g.drawPath(q1, 0,0, {strokeColor:'blue'});
+      g.drawPath(q2, 0,0, {strokeColor:'green'});
+      g.drawPath(q3, 0,0, {strokeColor:'red'});
+      g.drawPath(q4, 0,0, {strokeColor:'orange'});
+
+      p0= {x:0, y: 1};
+      p1= {x:pi/2-1, y:1};
+      p2= {x:pi/2 - m, y: m};
+      p3= {x:pi/2, y: 0};
+      p4= {x:pi/2+m, y:-m};
+      p5= {x:pi/2+1, y:-1};
+      p6= {x:pi, y:-1};
+      // draw a red dot at each bezier control point
+      dot = new Cobj(shapeDefs.circle(0.15), "SHAPE", {fillColor: "red", iso:true});
+      g.render(dot, p0.x, p0.y);
+      g.render(dot, p1.x, p1.y);
+      g.render(dot, p2.x, p2.y);
+      g.render(dot, p3.x, p3.y);
+      g.render(dot, p4.x, p4.y);
+      g.render(dot, p5.x, p5.y);
+      g.render(dot, p6.x, p6.y);
+      // label the nodes
+      g.drawHTMLtext("P<sub>0</sub>", p0.x+0.1, p0.y+0.3, "black", 9);
+      g.drawHTMLtext("P<sub>1</sub>", p1.x+0.2, p1.y+0.2, "black", 9);
+      g.drawHTMLtext("P<sub>2</sub>", p2.x+0.2, p2.y+0.2, "black", 9);
+      g.drawHTMLtext("P<sub>3</sub>", p3.x+0.1, p3.y+0.3, "black", 9);
+      g.drawHTMLtext("P<sub>4</sub>", p4.x-0.2, p4.y, "black", 9);
+      g.drawHTMLtext("P<sub>5</sub>", p5.x, p5.y, "black", 9);
+      g.drawHTMLtext("P<sub>6</sub>", p6.x, p6.y, "black", 9);
+    }
+
+    function drawThreadOutline(cvsId, pitch, diameter)
+    {
+      'use strict'
+      var g = new Cango(cvsId),
+          xmin = 0, xmax = 3.2,
+          ymin = -3.5, ymax = 3.5,
+          threadData = genThreadOutline(pitch, diameter),
+          thread = new Cobj(threadData, "PATH", {strokeColor:"black"});
+
+      // plot
+      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.setPropertyDefault("strokeColor", "gray");
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns"});
+
+      g.render(thread);
+    }
+
+    function drawEndOutline(cvsId, pitch, diameter)
+    {
+      'use strict'
+      var g = new Cango(cvsId),
+          xmin = 0, xmax = 3.2,
+          ymin = -3.5, ymax = 3.5,
+          P = pitch,
+          H = 0.86603*pitch,
+          Dc = diameter,                  // diameter across thread crests
+          startE = ["M",13*P/16, Dc/2-H/4],
+          endData = genEndOutline(pitch, diameter),
+          endObj = new Cobj(endData, "PATH", {strokeColor:"black"}),
+          e1 = {x:13*P/16, y:Dc/2-H/4},
+          e2 = {x:P+P/8+H/12, y:Dc/2-17*H/24},   // 45deg line to root diameter
+          e3 = {x:P+P/8+H/12, y:-Dc/2+17*H/24},
+          e4 = {x:3*P/2-3*P/8, y:-Dc/2+5*H/8},   // 45deg back to meet bottom arc
+          dot;
+
+      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.setPropertyDefault("strokeColor", "gray");
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns"});
+      g.render(endObj);
+      // draw a red dot at each bezier control point
+      dot = new Cobj(shapeDefs.circle(0.08), "SHAPE", {fillColor: "red", iso:true});
+      g.render(dot, e1.x, e1.y);
+      g.render(dot, e2.x, e2.y);
+      g.render(dot, e3.x, e3.y);
+      g.render(dot, e4.x, e4.y);
+      // label the nodes
+      g.drawHTMLtext("e<sub>1</sub>", e1.x, e1.y+0.4, "black", 10);
+      g.drawHTMLtext("e<sub>2</sub>", e2.x, e2.y+0.4, "black", 10);
+      g.drawHTMLtext("e<sub>3</sub>", e3.x+0.1, e3.y+0.1, "black", 10);
+      g.drawHTMLtext("e<sub>4</sub>", e4.x, e4.y, "black", 10);
+    }
+
+    function drawHexHeadOutline(cvsId, diameter, length)
+    {
+      'use strict'
+      var g = new Cango(cvsId),
+          xmin = -0.7*length, xmax = 0.1*length,
+          ymin = -0.3*length,  ymax = 0.3*length,
+          headData = genHexHeadOutline(diameter, length),
+          head = new Cobj(headData, "PATH", {strokeColor:"black"});
+
+      g.setGridboxRHC(3, 7, 94, 55);
+      g.setWorldCoords(xmin, ymin, xmax-xmin);
+      g.setPropertyDefault("strokeColor", "gray");
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"mm"});
+      g.render(head);
+    }
+
+    function MetricBoltOutline(diameter, length)
+    {
+      'use strict'
+      var /*g = new Cango(cvsId),
+          g2 = new Cango(cvsId),  // for the scale to stay on corner
+          */
+          xmax = 3.5*diameter,
+          xmin = -(length-diameter),
+          ymin = -0.3*length,
+          ymax = 0.3*length,
+          refPx,
+          pitch = prefPitch[diameter],
+          headData = genHexHeadOutline(diameter, length),
+          head = new Cobj(headData, "PATH", {strokeColor:"black"}),
+          threadData = genThreadOutline(pitch, diameter),
+          thread = new Cobj(threadData, "PATH", {strokeColor:"black"}),
+          endData = genEndOutline(pitch, diameter),
+          end = new Cobj(endData, "PATH", {strokeColor:"black"}),
+          turns = Math.ceil((2*diameter+6)/pitch),   // Thread length is (2*Dc+6)mm
+          headBase = -length + (turns+1)*pitch;      // x coord of base of head  (add 1 for end turn)
+
+      this.drawBolt = function()
+      {
+        var ruleSVG, strObj, i,
+            scaleOrg = g2.toWorldCoords(refPx.x, g2.rawHeight-20);   // world coords of head base and 20 px from bottom of canvas
+            // Note: calc scaleOrg to undo the effect of zoom and pan on position of the scale (size zooms but position is fixed)
+
+        g.clearCanvas();
+        g.render(head);
+        for (i=0; i<turns; i++)
+        {
+          g.render(thread, i*pitch, 0);
+        }
+        g.render(end, i*pitch, 0);
+
+        ruleSVG = ["M",0,0, "l",1*length,0];   // length scale (units are mm)  1* converts string to number
+        for (i=1; i<10; i++)
+        {
+          ruleSVG.push("M",i,0, "l",0,5/g2.xscl);   // 1mm tick marks, constant tick height (in pixels)
+        }
+        for (i=0; i<=length; i+=10)
+        {
+          ruleSVG.push("M",i,0, "l",0,10/g2.xscl);   // 10mm tick marks, constant tick height (in pixels)
+        }
+
+        g2.drawPath(ruleSVG, scaleOrg.x, scaleOrg.y, {strokeColor:"darkgray"});
+        // add labels
+        for (i=0; i<=length; i+=10)
+        {
+          g2.drawText(i, scaleOrg.x+i,scaleOrg.y+10/g2.xscl, {fillColor:"darkgray", fontSize:12, lorg:8});
+        }
+      }
+      // plot
+      g.setGridboxRHC(3, 10, 94, 55);  // data area, units are % of canvas width
+      g.setWorldCoords(xmin, ymin, xmax-xmin);
+      g2.dupCtx(g);
+      refPx = g.toPixelCoords(headBase, 0);   // find pixel coords of head base (length of bolt ref point)
+
+      this.drawBolt();
+    }
+
+    function presetSelect(optionsTbl, masterVal, slaveVal)
+    {
+      var masterList = document.getElementById("selMaster"),
+          slaveList = document.getElementById("selSlave"),
+          mIdx, sIdx,
+          masterTxt, slaveTxt;
+
+      function genSlaveOptns()
+      {
+        var srcTxts = optionsTbl[mIdx].txts,
+            srcVals = optionsTbl[mIdx].vals,
+            newOpt,
+            i;
+        // clear out the old slave list
+        while (slaveList.options.length)
+        {
+          slaveList.remove(0);
+        }
+        // create a new list from the array of allowed lengths for current calibre
+        if (srcTxts)
+        {
+          for (i=0; i<srcTxts.length; i++)
+          {
+            newOpt = document.createElement("option");
+            newOpt.text = srcTxts[i];
+            newOpt.value = srcVals[i];
+            slaveList.add(newOpt);  // add the new option to the old list stub
+          }
+        }
+      }
+
+      function getSelIdx(sel, val)
+      {
+        var i=sel.options.length-1;
+        while ((i>=0)&&(sel.options[i].value != val))
+        {
+          i--;
+        }
+        return i;
+      }
+      // pre-select the options for this masterVal and slaveVal
+      // de-select the current selection
+      masterList.options[masterList.selectedIndex].removeAttribute("selected");
+      mIdx = getSelIdx(masterList, masterVal); // find index of the requested nature
+      if (mIdx === -1)
+      {
+        mIdx = 0;  // just selct the top option
+        masterVal = masterList.options[mIdx.toString()].value;
+      }
+      masterList.options[mIdx].setAttribute("selected", "selected");
+      masterTxt = masterList.options[mIdx].text;
+      // fix the slave select
+      genSlaveOptns();
+      sIdx = getSelIdx(slaveList, slaveVal);   // find the requested val in the new slave array
+      if (sIdx !== -1)
+      {
+        slaveList.options[sIdx].setAttribute("selected", "selected");
+      }
+      else  // requested val not available for this master val
+      {
+        slaveVal = prefLength[masterVal]       // get preferred slave value for this master
+        // pre-select his length
+        sIdx = getSelIdx(slaveList, slaveVal);
+        slaveList.options[sIdx].setAttribute("selected", "selected");  // mark preferred val as selected
+      }
+      slaveTxt = slaveList.options[sIdx].text;
+
+      return {"mVal":masterVal, "sVal":slaveVal, "mValTxt": masterTxt, "sValTxt": slaveTxt};
+    }
+
+    function handleThread()
+    {
+      var lengthList = document.getElementById("selSlave"),
+          threadList = document.getElementById("selMaster"),
+          currThrdIdx = threadList.selectedIndex,
+          currThrd = threadList.options[currThrdIdx].value,
+          currLen = lengthList.options[lengthList.selectedIndex].value,
+          pitchDisp = document.getElementById("pitchIp"),
+          selectedVals = presetSelect(threadLengths, currThrd, currLen);
+
+      pitchDisp.value = prefPitch[selectedVals.mVal]+" mm";
+
+      return new MetricBoltOutline(selectedVals.mVal, selectedVals.sVal);
+    }
+
+    function initSelectLists(thrdIdx, lenIdx)
+    {
+      // force initial state of selects (needed so re-load of page draws correct bolt)
+      var threadList = document.getElementById("selMaster"),
+          lengthList = document.getElementById("selSlave");
+
+        threadList.options[thrdIdx].setAttribute("selected", "selected"); // mark a thread as selected
+        lengthList.options[lenIdx].setAttribute("selected", "selected");  // mark a length as selected
+    }
+
+    function handleLength()
+    {
+      var lengthList = document.getElementById("selSlave"),
+          threadList = document.getElementById("selMaster"),
+          currThrd = threadList.options[threadList.selectedIndex].value,
+          currLen = lengthList.options[lengthList.selectedIndex].value,
+          pitchDisp = document.getElementById("pitchIp");
+
+      pitchDisp.value = prefPitch[currThrd]+" mm";
+
+      return new MetricBoltOutline(currThrd, currLen);
+    }
+
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+
+    var g, g2, bolt;
+
+    addLoadEvent(function(){
+      buildMenu(indexData);
+
+      metricProfile('cvs1');
+      drawThreadCosine('cvs2', 1, 6);
+      bezCosine('cvs3');
+      drawThreadOutline('cvs4', 1, 6);
+      drawEndOutline('cvs5', 1, 6);
+      drawHexHeadOutline('cvs6', 6, 30);
+      initSelectLists(1, 3);    // M6, 40mm
+
+      g = new Cango("cvs7");
+      g2 = new Cango("cvs7");  // for the scale to stay on corner
+      bolt = handleThread();           // draw the default bolt  (M6, 40mm)
+      initZoomPan(g.createLayer(), [g, g2], bolt.drawBolt);
+
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Drawing Metric Screw Threads</h1>
+        <div class="text_01">
+
+<h2>Introduction</h2>
+
+<p>This paper describes how to draw metric screw threads on the HTML canvas using the Cango graphics library. The 2D representation of a screw thread comprises straight lines, representing the profile of the thread crests and flanks, circular arcs representing the thread root profile and sinusoid curves for 2D projection of the cylindrical helices of the crest and root edges.</p>
+
+<p>The Cango canvas drawing library has been designed to take advantage of the property of Bézier curves to hold their shape under rotation and translation and also maintain their shape if the nodes are traversed in reverse order. Cango paths may be defined using the same segment commands as SVG paths.</p>
+
+<h3>Metric thread profile</h3>
+
+<p>The profile of metric threads are defined by ISO standard 68-1. The profile diagram with the relative dimensions is shown in Fig 1. Profiles of different threads scale with the threads pitch value.</p>
+
+  <div style="position: relative; width: 500px; margin: 20px auto;" >
+    <canvas id="cvs1" width="475" height="300"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 1.</b> ISO Metric external thread profile. Nodes used in the drawing example are shown as red dots.</p>
+    </div>  <!-- captionHolder -->
+  </div>
+
+<p>A metric thread form is fully defined by the diameter measured across the crests \(Dc\) and the thread pitch \(P\), the profile may be drawn as a series of straight line and circular arc segments. The nodes required to draw the profile are shown as red dots in the diagram. The Cartesian coordinates of the profile's nodes are given by: </p>
+
+$$ \begin {align}
+  t_1 &= (\tfrac{1}{16}P,\;   \frac{Dc}{2}) \\
+  t_2 &= (\tfrac{3}{8}P, \;\; \frac{Dc}{2}-\tfrac{5}{8}H) \\
+  t_3 &= (\tfrac{1}{2}P, \;\; \frac{Dc}{2}-\tfrac{17}{24}H) \\
+  t_4 &= (P - \tfrac{3}{8}P, \;\; \frac{Dc}{2}-\tfrac{5}{8}H) \\
+  t_5 &= (P - \tfrac{1}{16}P,\;\; \frac{Dc}{2}) \\
+  t_6 &= (P + \tfrac{1}{16}P,\;\; \frac{Dc}{2})
+\end {align}
+$$
+
+<p>The Cgo2D path data (equivalent to SVG but with Y coordinates inverted) for the three sections forming one thread's profile are shown below:</p>
+
+<div class="srcFmt">
+<pre>
+Top profile of a ISO metric thread in Cg02D format.
+The relative commands have been used so the initial "M" can be dropped when concatenating.
+
+Dc = thread diameter across crests
+P  = thread pitch
+H  = 0.866025×P
+
+// from t1 down left flank to t2, and the arc to t3 at the thread root
+f1 = ["M",P/16,Dc/2,
+      "l",5*P/16,-5*H/8, "a",H/6,H/6,0,0,1,P/8,-H/12]
+   = ["M",P/16,Dc/2,
+      "l",0.3125*P,-0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,0.125*P,-0.0722*P]             (tl)
+
+// right flank starting from t3 with the arc to t4 and up the right flank to t5
+f2 = ["M",P/2,Dc/2-17*H/24,
+      "a",H/6,H/6,0,0,1,P/8,H/12, "l",5*P/16,5*H/8]
+   = ["M",P/2,Dc/2-17*H/24,
+      "a",0.1443*P,0.1443*P,0,0,1,0.125*P,0.0722*P,"l",0.3125*P,0.5413*P]                (tr)
+
+// from t5 the right flank crest edge across the crest to t6, the start of next thread
+f3 = ["M",15*P/16,Dc/2, "l",P/8,0]
+   = ["M",15*P/16,Dc/2, "l",0.125*P,0]                                                   (tc)
+</pre>
+</div>
+
+<p>The bottom profile of the thread will have the same dimensions as the top but the Y coordinates inverted. To keep a consistent winding direction when concatenating paths the bottom profile nodes are traversed in reverse order to the top.</p>
+
+<div class="srcFmt">
+<pre>
+Bottom profile of ISO metric thread.
+
+var Dc,  // thread diameter across crests
+    P,   // thread pitch
+    H;   // 0.866025×P
+
+f1 = ["M",P/2,Dc/2-17*H/24,
+      "a",0.1443*P,0.1443*P,0,0,1,-0.125*P,-0.0722*P, "l",-0.3125*P,-0.5413*P]           (bl)
+
+f2 = ["M",15*P/16,Dc/2,
+      "l",-0.3125*P,0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,-0.125*P,0.0722*P]             (br)
+
+f3 = ["M",17*P/16,Dc/2, "l",-0.125*P,0]                                                  (bc)
+
+</pre>
+</div>
+
+<p>The thread crest edges and thread root trace out cylindrical helices in 3 dimensions. The crest helix is defined by the thread diameter, measured across the crests and the thread pitch. The root helix is defined by the root diameter and the pitch. When projected into 2D the crest and root helices form a sinusoid. Fig. 2 shows one crest edge, drawn in red, as it traces out one cycle of a cosine function.</p>
+
+  <div class="figHolder" style="width:450px" >
+    <canvas id="cvs2" width="250" height="350" style="margin:0 auto"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 2.</b> The outline drawing of a single turn of an ISO Metric thread. The left crest edge is shown in red, forming a single cycle on a cosine waveform.</p>
+    </div>  <!-- captionHolder -->
+  </div>
+
+<h2>Bézier approximation to the cosine function</h2>
+
+<p>To simplify drawing a thread, the sinusoidal paths can be approximated by Bézier curves, resulting in smoother curves with fewer points to manipulate. The approximation can be scaled horizontally to match the thread pitch and vertically to match the thread diameter.</p>
+
+<p>The approximation of the sine function using cubic Bézier curves is described elsewhere. A derivation of the node coordinates is given by Thomas W at <a href="http://mathb.in/1447">MathB.in</a>[1]). Using this approximation the Cartesian coordinates of the seven points defining the two cubic Bézier curve approximation to the half cycle cosine function are given by:</p>
+
+<p>The coordinates of the seven Bézier nodes are<sup>[1]</sup>:
+
+\begin{align*}
+  P_0 &= \{ x:0,\quad y: 1\} \\
+  P_1 &= \{ x:\frac{\pi}{2}-1,\quad y:1\} \\
+  P_2 &= \{ x:\frac{\pi}{2} - \frac{6-(\frac{3}{2}\pi-3)^2}{6},\quad y: \frac{6-(\frac{3}{2}\pi-3)^2}{6}\} \\
+  P_3 &= \{ x:\pi/2,\quad y: 0\} \\
+  P_4 &= \{ x:\pi/2+\frac{6-(\frac{3}{2}\pi-3)^2}{6},\quad y:-\frac{6-(\frac{3}{2}\pi-3)^2}{6}\} \\
+  P_5 &= \{ x:\pi/2+1,\quad y:-1\} \\
+  P_6 &= \{ x:\pi,\quad y:-1\}
+\end{align*}
+</p>
+
+<p>The nodes, P<sub>0</sub> .. P<sub>6</sub> defining the cubic Bézier curve approximation to the first two quadrants of a cosine are shown as red dots in Fig. 3.</p>
+
+<div class="figHolder" style="margin: 2em auto;">
+
+  <canvas id="cvs3" width="350" height="250" style="width: 350px; margin:0 auto"></canvas>
+
+  <p><b>Figure 3</b>. Cubic Bézier approximation to the cosine function. The Bézier control points for the first two quadrants are shown as red dots.</p>
+</div>
+
+<p>The Cgo2D path data for the half cycle cosine function are shown below:</p>
+
+<div class="srcFmt">
+<pre>
+ m = (6 - (pi*3/2 - 3)<sup>2</sup>)/6
+   = 0.5113
+pi = Math.PI
+
+cosine_f = ["M",0,1, "c",pi/2-1,0, pi/2-m,m-1, pi/2,-1, "s", 1,-1, pi/2,-1];
+
+Also useful is the Cgo2D representation of the cosine traversing the nodes in reverse order
+i.e. the opposite winding direction.
+
+cosine_r = ["M",pi/2,0, "c",-m,m, -1,1, -pi/2,1, "s", m-1,0, m-pi/2,1-m, -pi/2,1];
+</pre>
+</div>
+
+<h3>Scaling the cosine to thread dimensions</h3>
+<p>When drawing the 2D elevation of a screw thread, the thread crest cosine function must be scaled horizontally to match the thread pitch and vertically the thread crest or root diameter.</p>
+
+<p>If pitch=P then X coordinate scale factor, \(sp\), must map \(2\pi\) to \(P\), hence \(sp = P/2\pi\).
+For the crest helix, the Y coordinate scale factor, sc, must map the cosine amplitude, 1, to the crest radius, hence \(sc = \frac{Dc}{2}\). For the root helix, the Y coordinate scale factor, sr, must map 1 to the root radius, hence \(sr = \frac{Dc}{2} - \frac{17}{24}H\)
+</p>
+
+<p>The Cgo2D data for these scaled profiles are shown below:</p>
+
+<div class="srcFmt">
+<pre>
+Bézier approximation to half cycle cosine paths of thread crests and valleys
+
+ P = pitch
+Dc = diameter across crests
+ m = (6 - (pi*3/2 - 3)<sup>2</sup>)/6
+   = 0.5113
+pi = Math.PI
+sp = P/(pi*2)
+   = 0.1592*P           X coordinate scale factor
+sc = 0.5*Dc             Crest cosine Y coordinate scale factor
+sr = Dc/2-17*H/24
+   = 0.5*Dc-0.6134*P    Root cosine Y coordinate scale factor
+
+crest_f = ["M",0,sc,
+           "c",0.5708*sp,0,1.0595*sp,-0.4887*sc,1.5708*sp,-sc, "s",sp,-sc,1.5708*sp,-sc];     (cf)
+
+ root_f = ["M",0,sr,
+           "c",0.5708*sp,0,1.0595*sp,-0.4887*sr,1.5708*sp,-sr, "s",sp,-sr,1.5708*sp,-sr];     (rf)
+
+Traversing in reverse direction
+
+crest_r = ["M",pi*sp,-sy,
+           "c",-0.5708*sp,0,-1.0595*sp,0.4887*sy, -1.5708*sp,sy, "s",-sp,sy, -1.5708*sp,sy];  (cr)
+
+ root_r = ["M",pi*sp,-sr,
+           "c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr, "s",-sp,sr, -1.5708*sp,sr]; (rr)
+
+(The initial "M" command can be dropped if pen is in place when segments are concatenated)
+</pre>
+</div>
+
+<h3>Outline path of one turn of a metric thread</h3>
+
+<p>The preceding sections have provided the components needed to assemble the path data to draw one turn of a metric thread. A JavaScript function generate the Cgo2D (SVG) data array is shown below. For this example drawing just the thread outline the segment paths have been concatenated into a single array. The scale factors for pitch and thread diameter have been left as variables for brevity.</p>
+
+<p>Note: To assist in drawing colour filled threads, the thread path data has been generated in three distinct sections, left flank, right flank and crest. Each section would need an addition segment to close the shape outline (as shown in the code comments). The three shapes would each have a different gradient fill with corresponding sections on each thread turn coloured alike. The nodes of each section have been traversed in a consistent (clockwise) direction for correct colour filling when rendered to a canvas.</p>
+
+<div class="srcFmt" style="min-height: 700px">
+<pre style="margin-left: 1em">
+function genThreadOutline(pitch, diameter)
+{
+  'use strict'
+  var pi = Math.PI,
+    P = pitch,
+    H = 0.86603*pitch,
+    Dc = diameter,                // diameter across thread crests
+    m = 0.51128733,
+    sp = 0.15915*P,
+    sc = 0.5*Dc,               // crest profile Y coordinate scale factor
+    sr = 0.5*Dc - 0.6134*P,    // root profile Y coordinate scale factor
+    topL    = ["l",0.3125*P,-0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,0.125*P,-0.0722*P],   //from (tl)
+    topR    = ["a",0.1443*P,0.1443*P,0,0,1,0.125*P,0.0722*P, "l",0.3125*P,0.5413*P],     //from (tr)
+    topC    = ["l",0.125*P,0],                                                           //from (tc)
+    bottomL = ["a",0.1443*P,0.1443*P,0,0,1,-0.125*P,-0.0722*P, "l",-0.3125*P,-0.5413*P], //from (bl)
+    bottomR = ["l",-0.3125*P,0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,-0.125*P,0.0722*P],   //from (br)
+    bottomC = ["l",-0.125*P,0],                                                          //from (bc)
+    crestR  = ["c",0.5708*sp,0, 1.0595*sp,-0.4887*sc, 1.5708*sp,-sc,
+                "s",sp,-sc, 1.5708*sp,-sc],                                              //from (cf)
+    crestL  = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sc, -1.5708*sp,sc,
+                "s",-sp,sc, -1.5708*sp,sc],                                              //from (cr)
+    rootL   = ["c",0.5708*sp,0, 1.0595*sp,-0.4887*sr, 1.5708*sp,-sr,
+                "s",sp,-sr, 1.5708*sp,-sr],                                              //from (rf)
+    rootR   = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr,
+                "s",-sp,sr, -1.5708*sp,sr],                                              //from (rr)
+    startL, startR, startC,
+    flankL, flankR, crest;
+
+  startL = ["M",0.0625*P,0.5*Dc];
+  flankL = startL.concat(topL).concat(rootL).concat(bottomL);
+    // for closed shape: flankL.concat(crestL);
+
+  startR = ["M",0.5*P, sr];
+  flankR = startR.concat(topR).concat(crestR).concat(bottomR);
+    // for closed shape: flankR.concat(rootR);
+
+  startC = ["M",0.9375*P,0.5*Dc];
+  crest = startC.concat(topC).concat(crestR).concat(bottomC);
+    // for closed shape: crest.concat(crestL);
+
+  return flankL.concat(flankR).concat(crest);
+}
+</pre>
+</div>
+
+<p>Here is an example of drawing an "M6" thread. The M6 thread has diameter of 6mm across the thread crests, the pitch for an M6 coarse thread is 1mm [2].</p>
+
+<p>Fig 4 shows the three paths; flankL, flankR and crest drawn onto the canvas by the Cango library.</p>
+
+  <div class="figHolder" style="width:350px; margin:0 auto" >
+    <canvas id="cvs4" width="250" height="350" style="background-color: aliceblue"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 4.</b> A single turn of external thread of an M6 ISO Metric thread.</p>
+    </div>  <!-- captionHolder -->
+  </div>
+
+<h3>Adding a chamfered end</h3>
+
+<p>Metric bolts usually have their end chamfered down to the root diameter of the thread. Fig 5. shows the outline of this type of thread end. The top right flank will start as normal at the thread root but only go up to <b>e1</b> (e1 is 3/5 of the distance from t4 to t5 in Fig 1). The chamfer face is at 45&deg; down to the root diameter at <b>e2</b>. <b>e3</b> is the bottom point of the end just e2 flipped about the Y axis. The bottom chamfer then returns at 45&deg; to the axis, meeting the tip of the bottom root arc at e4. The end is completed by two quadrants of a cosine back to e1.</p>
+
+  <div class="figHolder" style="width:350px" >
+    <canvas id="cvs5" width="250" height="350" style="background-color: aliceblue; margin:0 auto"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 5.</b> Outline a typical Metric screw thread end.</p>
+    </div>  <!-- captionHolder -->
+  </div>
+
+$$ \begin {align}
+  e_1 &= (\tfrac{13}{16}P, \; \frac{Dc}{2}-\tfrac{1}{4}H) \\
+  e_2 &= (\tfrac{9}{8}P + \tfrac{1}{12}H, \;\; \frac{Dc}{2}-\tfrac{17}{24}H) \\
+  e_3 &= (\tfrac{9}{8}P + \tfrac{1}{12}H, \;\; -\frac{Dc}{2}+\tfrac{17}{24}H) \\
+  e_4 &= (\tfrac{9}{8}P, \;\; -\frac{Dc}{2}+\tfrac{5}{8}H) \\
+\end {align}
+$$
+
+<p>The end helix runs from Y = \(\frac{Dc}{2}-\tfrac{1}{4}H\) to \(-\frac{Dc}{2}+\tfrac{5}{8}H\), so diameter = \(Dc-\frac{21}{24}H\) and the Y axis scale factor for the cosine, \(se = \frac{Dc}{2}-\frac{21}{48}H\). </p>
+<p>The end helix runs from X = \(\tfrac{13}{16}P\) to \(\tfrac{9}{8}P\) (half turn) so pitch = \(\frac{5}{8}P\) and the X axis scale factor, \(sx = {\frac{5}{8}P}/{2\pi} \) </p>
+
+<div class="srcFmt">
+<pre style="margin-left:1em">
+Metric thread chamfered end
+
+sp = 0.15915*P          // X scale factor for cosine 0..pi to 0.. thread pitch
+sx = 0.625*P/(2*pi)     // X scale factor mapping cosine 0..pi to 0.. end crest pitch
+sc = 0.5*Dc             // Y crest profile Y coordinate scale factor
+sr = 0.5*Dc-0.6134*P    // Y root profile Y coordinate scale factor
+se = 0.5*Dc-0.3789*P    // Y crest profile Y coordinate for shortened end crest
+
+The Cgo2D data for the end chamfers using relative coordinates is:
+endCap = ["M",0,0, "l", 5*P/16+H/12,-11*H/24, 0,-Dc+17*H/12, -H/12,-H/12];
+       = ["M",0,0, "l", 0.3847*P,-0.3969*P, 0,1.2269*P-Dc, -0.0722*P,-0.0722*P];
+
+End crest outline (CW) used for the right flank:
+end crestR = ["M",0,0, "c",0.5708*sx,0,1.0595*sx,-0.4887*se, 1.5708*sx,-se,
+                        "s",sx,-se, 1.5708*sx,-se];
+
+Traversing in reverse direction (CCW) used for chamfered:
+end crestL = ["M",0,0, "c",-0.5708*sx,0, -1.0595*sx,0.4887*se, -1.5708*sx,se,
+                            "c",-0.5113*sx,0.5113*se, -sx,se, -1.5708*sx,se];
+</pre>
+</div>
+
+<p>The JavaScript function to generate the Cgo2D data for the outline path of the chamfered last turn is shown below. It has been written to allow easy modification to generate closed shaped for colour filled drawings.</p>
+
+<div class="srcFmt" style="min-height:740px">
+<pre style="margin-left:1em">
+function genEndOutline(pitch, diameter)
+{
+  'use strict'
+  var pi = Math.PI,
+      P = pitch,
+      H = 0.86603*pitch,
+      Dc = diameter,             // diameter across thread crests
+      m = 0.51128733,
+      sp = 0.15915*P,
+      sc = 0.5*Dc,               // crest profile Y coordinate scale factor
+      sr = 0.5*Dc - 0.6134*P,    // root profile Y coordinate scale factor
+      sx = 0.625*P/(2*pi),       // X scale factor for cosine 0..pi to 0..end crest pitch
+      se = 0.5*Dc - 0.3789*P,    // Y scale cosine amplitude 1 to end crest diameter/2
+      topL    = ["l",0.3125*P,-0.5413*P, "a",0.1443*P,0.1443*P,0,0,0,0.125*P,-0.0722*P],
+      rootL   = ["c",0.5708*sp,0, 1.0595*sp,-0.4887*sr, 1.5708*sp,-sr,
+                 "c",0.5113*sp,-0.5113*sr, sp,-sr, 1.5708*sp,-sr],
+      bottomL = ["a",0.1443*P,0.1443*P,0,0,1,-0.125*P,-0.0722*P, "l",-0.3125*P,-0.5413*P],
+      crestL  = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sc, -1.5708*sp,sc,
+                 "s",-sp,sc, -1.5708*sp,sc],
+      endTopR    = ["m",0,0, "a",0.1443*P,0.1443*P,0,0,1,0.125*P,0.0722*P, "l",0.1875*P,0.3248*P],
+      endCrestR = ["m",0,0, "c",0.5708*sx,0, 1.0595*sx,-0.4887*se, 1.5708*sx,-se,
+                   "s",sx,-se, 1.5708*sx,-se],
+      endBottomR = ["m",0,0, "a",0.1443*P,0.1443*P,0,0,1,-0.125*P,0.0722*P],
+      rootR   = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr,"s",-sp,sr, -1.5708*sp,sr],
+      endCap  = ["m",0,0, "l", 0.3847*P,-0.3969*P, 0,1.2269*P-Dc, -0.0722*P,-0.0722*P],
+      endCrestL = ["m",0,0, "c",-0.5708*sx,0, -1.0595*sx,0.4887*se, -1.5708*sx,se,
+                   "s",-sx,se, -1.5708*sx,se],
+      startL, startR, startE,
+      flankL, endFlankR, end;
+
+  startL = ["M",P/16,Dc/2];
+  flankL = startL.concat(topL).concat(rootL).concat(bottomL);
+  // for closed shape: flankL.concat(crestL);
+
+  startR = ["M",P/2, sr];
+  endFlankR  = startR.concat(endTopR).concat(endCrestR).concat(endBottomR);
+  // for closed shape: endFlankR.concat(rootR);
+
+  startE = ["M",13*P/16, Dc/2-H/4];
+  end = startE.concat(endCap)
+  // for closed shape: end.concat(endCrestL);
+
+  return flankL.concat(endFlankR).concat(end);
+}
+</pre>
+</div>
+
+<h3>Drawing a hexagonal bolt head</h3>
+
+<p>Metric bolts come with several head styles, for the purpose of this page a standard hex head has been constructed to complete the drawing example. Here is the code to draw a standard hex head for the M6 screw.</p>
+
+  <div class="figHolder" style="width:500px" >
+    <canvas id="cvs6" width="400" height="350" style="background-color: aliceblue; margin:0 auto"></canvas>
+    <div class="captionHolder">
+      <p><b>Figure 6.</b> Outline a hex head Metric bolt.</p>
+    </div>  <!-- captionHolder -->
+  </div>
+
+<div class="srcFmt" style="min-height: 660px">
+<pre>
+function genHexHeadOutline(diameter, length)
+{
+  'use strict'
+  function r3p(x1,y1, x2,y2, x3,y3) // radius of circle through 3 given points
+  {
+    var num = Math.sqrt(((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1))*((x2-x3)*(x2-x3)+
+                        (y2-y3)*(y2-y3))*((x3-x1)*(x3-x1)+(y3-y1)*(y3-y1))),
+        den = 2*Math.abs(x1*y2+x2*y3+x3*y1-x1*y3-x2*y1-x3*y2);
+
+    return num/den;
+  }
+
+  var P = prefPitch[diameter],
+      Dc = diameter,
+      t = 2*Dc/3,                                              // thickness of head
+      daf = (Dc>10)? Math.round(1.5*Dc): Math.round(1.625*Dc), // across flats (valid M5..M33)
+      dap = 2*daf/Math.sqrt(3),                                // diameter across the points
+      dx = Math.tan(30*Math.PI/180)*(dap-daf)/2,   // 30deg chamfer cuts dx off hex points
+      f = dap/2,                      // width of flats
+      r1 = r3p(dx,-f/2,0,0,dx,f/2),   // radius of flat top edge
+      pr1 = r3p(dx,-f/4,0,0,dx,f/4),  // projected (turn by 60deg) r1
+      fEdge = t - dx,                 // length of flat axial edges
+      turns = Math.ceil((2*Dc+6)/P),  // Thread length is (2*Dc+6)mm
+      slen = length - (turns+1)*P,    // shank length from start of thread to base of head
+      sp = 0.15915*P,
+      sc = 0.5*Dc,                    // crest profile Y coordinate scale factor
+      crestR, shankData, headData, arcsData, topData;
+
+  crestR  = ["M", P/16,Dc/2, "c",0.5708*sp,0, 1.0595*sp,-0.4887*sc, 1.5708*sp,-sc,
+                             "s",sp,-sc, 1.5708*sp,-sc],
+  shankData = ["M", 9*P/16,-Dc/2, "L", -slen, -Dc/2, "M", P/16,Dc/2, "L", -slen, Dc/2];
+  headData = ["M", -slen-fEdge,-dap/2, "L",-slen,-dap/2, -slen,dap/2, -slen-fEdge,dap/2,
+              "M", -slen,f/2, "L",-slen-fEdge,f/2, "M", -slen,-f/2, "L",-slen-fEdge,-f/2];
+  arcsData = ["M", -slen-fEdge,-dap/2, "A", pr1,pr1,0,0,0,-slen-fEdge,-f/2,
+              "A", r1,r1,0,0,0,-slen-fEdge,f/2, "A", pr1,pr1,0,0,0,-slen-fEdge,dap/2];
+  topData = ["M", -slen-t,-3*f/4, "L", -slen-t,3*f/4];
+
+  return crestR.concat(shankData).concat(headData).concat(arcsData).concat(topData);
+}
+</pre>
+</div>
+
+<p>Putting all the outline drawings together gives us a schematic drawing of various size metric bolts shown in Fig 7.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+      <div class="bezel">
+
+        <select id="selMaster" onchange="handleThread()"  style="width: 70px; margin: 0 0 5px 0">
+          <option value="5">M5</option>
+          <option value="6">M6</option>
+          <option value="8">M8</option>
+          <option value="10">M10</option>
+          <option value="12">M12</option>
+          <option value="16">M16</option>
+          <option value="20">M20</option>
+          <option value="24">M24</option>
+          <option value="30">M30</option>
+        </select>
+        <label style="margin: 0 0 5px 20px">Length:</label>
+        <select id="selSlave" onchange="handleLength()" style="width: 80px;">
+          <option value="25">25 mm</option>
+          <option value="30">30 mm</option>
+          <option value="35">35 mm</option>
+          <option value="40">40 mm</option>
+          <option value="45">45 mm</option>
+          <option value="50">50 mm</option>
+          <option value="55">55 mm</option>
+          <option value="60">60 mm</option>
+          <option value="65">65 mm</option>
+          <option value="70">70 mm</option>
+          <option value="75">75 mm</option>
+          <option value="80">80 mm</option>
+          <option value="85">85 mm</option>
+          <option value="90">90 mm</option>
+          <option value="100">100 mm</option>
+          <option value="110">110 mm</option>
+          <option value="120">120 mm</option>
+        </select>
+
+        <label style="margin: 0 0 5px 20px">Pitch:</label>
+        <input id="pitchIp" type="text" disabled style="width:60px;padding-left:5px;" value="1 mm">
+
+      <div class="scrnBevel" >
+        <canvas id="cvs7" width="600" height="400" style="background-color: aliceblue"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+<div class="captionHolder" style="margin:15px 60px">
+<p><b>Figure 7.</b>ISO Metric bolts drawn with the Cango graphics library. Use the drop down list to select the thread size and the length. Only preferred threads (M5 to M30) and preferred lengths (up to 120mm) for each thread are shown.</p>
+</div>
+
+<p style="font-size: 11px">References:<br />
+  1. Thomas W, "Approximating a sine curve with cubic Bézier splines" <i>http://mathb.in/1447</i>.<br/>
+  2. "ISO general purpose metric screw threads" <i>ISO 262</i> 1998.
+</p>
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

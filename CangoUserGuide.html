@@ -1,0 +1,1504 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Cango User Guide</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="JavaScript graphics, client-side graphics, canvas graphics, Cango, canvas graphics library, cross browser canvas graphics, Cango Reference Manual, Cango Manual" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "userManual-01.css";
+
+    #cvs1, #cvs2 {
+     float:left;
+     margin: 0;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+
+  <script type="text/javascript">
+
+    function gridboxDemo(cvsID)
+    {
+      var top,
+          g1, g2,
+          cos30 = Math.cos(30*Math.PI/180),
+          sin30 = Math.sin(30*Math.PI/180),
+          gc = new Cango(cvsID);
+      gc.clearCanvas();
+      gc.setGridboxRHC(10, 10, 100*0.85, 60*0.85);   // scale a pseudo canvas 100x40 at 0.9 scale
+      gc.fillGridbox("lightyellow");
+      gc.setWorldCoords(0, 0, 100);
+      gc.drawAxes(0, 100, 0, 60, {
+        strokeColor:"#aaaaaa",
+        fillColor: "#aaaaaa",
+        xTickInterval: 10,
+        xLabelInterval: 10,
+        yTickInterval: 10,
+        yLabelInterval: 10 });
+
+
+      g1 = new Cango(cvsID);
+      g1.setGridboxRHC(10+10*0.85, 10+5*0.85, 80*0.85, 40*0.85);
+      g1.fillGridbox("lightgreen");
+      g1.setWorldCoords(0, 0, 80);
+      g1.drawPath(["M", 0, -5, 'l', 0, 60, "M", -10, 0, 'l', 100, 0], 0, 0, {strokeColor: "green", lineWidth: 2});
+
+      g1.drawText("g1.setGridboxRHC(10,5, 80, 40)", 3, 51, {fontSize: 12, fillColor:"black"});
+      g1.drawText("X", 60, 2, {fontSize: 15, fontWeight: 800, lorg: 9, fillColor: "black"});
+      g1.drawText("Y", 2, 30, {fontSize: 15, fontWeight: 800, lorg: 1, fillColor: "black"});
+      var xArw = shapeDefs.arrow(0, 0, 60, 0, 1);
+      var yArw = shapeDefs.arrow(0, 0, 0, 30, 1);
+      g1.drawShape(xArw, 0, 0, {fillColor:"black"});
+      g1.drawShape(yArw, 0, 0, {fillColor:"black"});
+      g1.drawPath(["M", 0,0, "L", 35*cos30, 35*sin30, 0, 0]);
+      var ang = shapeDefs.arrowArc(25, 0, 30, false, 1);
+      g1.drawShape(ang, 0, 0, {fillColor:"black", lineWidth: 1});
+
+    }
+
+    function svgGridboxDemo(cvsID)
+    {
+      var top,
+          g1, g2,
+          cos30 = Math.cos(30*Math.PI/180),
+          sin30 = Math.sin(30*Math.PI/180),
+          gc = new Cango(cvsID);
+      gc.clearCanvas();
+      gc.setGridboxRHC(10, 10, 100*0.85, 60*0.85);   // scale a pseudo canvas 100x40 at 0.9 scale
+      gc.fillGridbox("lightyellow");
+      gc.setWorldCoords(0, 0, 100);
+      gc.drawAxes(0, 100, 0, 60, {
+        strokeColor:"#aaaaaa",
+        fillColor: "#aaaaaa",
+        xTickInterval: 10,
+        xLabelInterval: 10,
+        yTickInterval: 10,
+        yLabelInterval: 10 });
+
+      g2 = new Cango(cvsID);
+      g2.setGridboxSVG(10+20*0.85, 10+(60-10)*0.85, 50*0.85, 50*0.85);
+      g2.fillGridbox("lightpink");
+      g2.setWorldCoords(0, 0, 50);
+      g2.drawPath(["M", 0, -10, 'l', 0, 60, "M", -20, 0, 'l', 100, 0], 0, 0, {strokeColor: "red", lineWidth: 2});
+
+      g2.drawText("g2.setGridboxSVG(20,50, 50, 50)", 2, -6, {fontSize: 12, fillColor:"black"});
+      g2.drawText("X", 38, 2, {fontSize: 15, fontWeight: 800, lorg: 3, fillColor: "black"});
+      g2.drawText("Y", 2, 38, {fontSize: 15, fontWeight: 800, lorg: 7, fillColor: "black"});
+      var xArw = shapeDefs.arrow(0, 0, 38, 0, 1);
+      var yArw = shapeDefs.arrow(0, 0, 0, 38, 1);
+      g2.drawShape(xArw, 0, 0, {fillColor:"black"});
+      g2.drawShape(yArw, 0, 0, {fillColor:"black"});
+      g2.drawPath(["M", 0,0, "L", 30*cos30, 30*sin30, 0, 0]);
+      var ang = shapeDefs.arrowArc(22, 0, 30, true, 1, 4, g2);
+      g2.drawShape(ang, 0, 0, {fillColor:"black", lineWidth: 1});
+    }
+
+    function linGradDemo(cvsID)
+    {
+      var g = new Cango(cvsID);
+
+      var gradObj = new LinearGradient(-2,2, 2,-2);
+      gradObj.addColorStop(0, 'yellow');
+      gradObj.addColorStop(0.5, 'green');
+      gradObj.addColorStop(1, 'black');
+
+      g.setGridboxRHC();
+      g.setWorldCoords(-2, -2, 4);       // square pixels
+
+      g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:gradObj});
+    }
+
+    function radGradDemo(cvsID)
+    {
+      var g = new Cango(cvsID);
+
+      var grad = new RadialGradient(0, 0, .5, 1, 1, 2.5);
+      grad.addColorStop(0, '#aabbff');
+      grad.addColorStop(1, '#00f');
+
+      g.setGridboxRHC();
+      g.setWorldCoords(-2, -2, 4);       // square pixels
+
+      g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:grad});
+    }
+
+    function drawArrows(cvsID)
+    {
+      var gc = new Cango(cvsID),
+          xmin = 0, xmax = 250,
+          ymin = 0, ymax = 160,
+          arrowData, arcData;
+
+      gc.setGridboxRHC(10, 8, 88, 60);
+      gc.setWorldCoords(xmin, ymin, xmax-xmin);
+      gc.drawAxes(xmin, xmax, ymin, ymax);
+
+      arrowData = shapeDefs.arrow(100,10, 200,70, 2);
+      gc.drawShape(arrowData, 0, 0, {fillColor:'red'});
+
+      arcData = shapeDefs.arrowArc(130, 30, 90, false, 6);
+      gc.drawShape(arcData, 50, 30, {fillColor:'green'});
+    }
+
+  </script>
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+
+      gridboxDemo('cvs1');
+      svgGridboxDemo('cvs2');
+      linGradDemo('lingrad');
+      radGradDemo('radgrad');
+      drawArrows('cvs3');
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Cango User Guide</h1>
+        <div class="text_01">
+<h2>Cango</h2>
+<p>Canvas Graphics Object, <b>Cango</b>, is a graphics drawing context for the HTML5 canvas element. Cango supplies a canvas with a world coordinate system with independent X and Y scaling. Both the standard Right Handed Cartesian coordinates and Scalar Vector Graphics (left handed Cartesian) coordinates are supported. Everything to be drawn on the canvas is defined by a JavaScript object of type 'Cobj'. Cobj properties specify how the object should appear when rendered, path and shape outlines are defined in the compact SVG syntax. Cobj object properties are translated to native canvas drawing commands and rendered onto the canvas by the 'render' method. Canvas layers are supported, the background canvas or any canvas layer can have multiple Cango contexts defined on it and used simultaneously.</p>
+
+<p>Cango capabilities can be enhanced by loading extension modules. There are modules to add <a href="CangoDragAndDropManual.html">drag-and-drop</a> capabilities, to assist in <a href="CangoAxesManual.html">drawing axes</a> on graphs and for <a href="CangoAnimationManual.html">animation</a>.</p>
+
+<p>The current version of Cango is 8v03, and the source code is available at <a href="Cango-8v03.js" download>Cango-8v03.js</a> and the minified version at <a href="Cango-8v03-min.js" download>Cango-8v03-min.js</a>. The most significant change in Version 8 is the an enhancement of line width handling, so code written for Cango Version 7 may need modification to appear the same with Version 8.</p>
+
+<h3>New in Cango Version 8</h3>
+
+<ul>
+<li>
+<p>Version 8 adds the Cobj property <b>lineWidthWC</b> which sets the line width and border widths in world coordinate units. In earlier Cango versions line width was set in pixel units using the <i>Cobj</i>.<b>lineWidth</b> property, this is still supported in version. The two methods of setting the line width are provided to clarify the behaviour of path line width and object border width when the Cobj is scaled.</p>
+
+<p>There are three methods of scaling the size of any Cobj:</br>
+1. The <i>Cobj</i>.scale method, which actually changes the coordinates values used to drawn the object.</br>
+2. The <i>Cango</i>.render method, which will scale the object as it is drawn if a scale factor passed to it. This dynamic re-size will not change the object definition.</br>
+3. The Zoom-and-Pan utility can change the size of every Cobj drawn on a canvas by dynamically changing the world coordinates of the Cango instance and then re-drawing all the objects.</p>
+
+<p>If an Cobj's line width is assigned to the <b>lineWidthWC</b> property, the line width or border width will scale just like any other dimension of the object with all three scaling methods. If the <b>lineWidthWC</b> property is null or undefined and a line width value in pixels units has been assigned to the <b>lineWidth</b> property then the path outline or object border will have a fixed pixel width regardless of any type of scaling applied to the path or object.</p>
+<p>If both properties have been assigned a value then the <b>lineWidthWC</b> takes precedence. If neither has been specified, then the current default value of the <i>Cango</i><b>lineWidth</b> (pixel value) belonging to the Cango context used to render the object, is used. This default value may be changed with the <i>Cango</i>.<b>setPropertyDefault</b> method.</p>
+</li>
+
+<li>
+<p>Version 8 redefines the behaviour of drop shadows. Drop shadow spread distance and blur radius no longer scale with <i>Cobj</i>.scale method or with any dynamic scaling applied by the <i>Cango</i>.render method (scaling methods 1 & 2). Drop shadow dimensions are set in world coordinate units so they will scale in proportion to the other objects drawn on the canvas when the Zoom-and-Pan utility is used (scaling method 3).</p>
+</li>
+
+<li>
+<p>Version 8 adds <b>arrow</b> and <b>arrowArc</b> methods to global 'shapeDefs' object to create outline paths of straight and curved arrow shapes. Previous versions of Cango had the arrow shape creator as a Cango method available when the CangoAxes module was loaded.</p>
+</li>
+
+</ul>
+
+<h2 id="worldcoords">Setting up the world coordinate system</h2>
+
+<h3>1. Define a coordinate grid</h3>
+<p>Each Cango graphics context refers all its drawing to a coordinate grid, either the standard RHC (Right Handed Cartesian coordinates) or SVG style (Left Handed Cartesian coordinates). RHC coordinates have their X axis values increase to the RIGHT, Y axis values increase UP the canvas and angles starting from the X axis are positive ANTI-CLOCKWISE. SVG coordinates also have their X axis values increase to the RIGHT but their Y axis values increase DOWN the canvas and positive angle sweep CLOCKWISE. The coordinate grid is established by first defining a <b>originX</b> and <b>originY</b> coordinates of the grid origin point and a gridbox whose <b>width</b> and <b>height</b> will be used to set the world coordinate scaling factors. The Cango methods to define a Cango context coordinate grid are:</p>
+
+<pre>
+<i>cgo</i>.setGridboxRHC(originX, originY, width, height);
+or
+<i>cgo</i>.setGridboxSVG(originX, originY, width, height);
+</pre>
+
+<p>In both systems the 'originX', 'originY', 'width' and 'height' values are specified as a percentages of the canvas width. The grid origin is measured from the lower left corner of the canvas as shown in Fig 1.</p>
+
+<div class="figHolder" style="padding: 0; width:640px">
+
+  <canvas id="cvs1" width="320" height="220"></canvas>
+
+  <canvas id="cvs2" width="320" height="220"></canvas>
+
+<div class="captionHolder" style="clear:both;">Figure 1. An example of defining Cango context coordinate grids with 'setGridboxRHC' and 'setGridboxSVG'. The canvas is colored light yellow, the RHC gridbox is green and the SVG gridbox is pink. The arrows show the direction of positive X, Y and angle values.</div>
+</div>
+
+<p>To assist positioning the gridbox origin, all Cango contexts have the following properties:</p>
+<pre>
+<i>cgo</i>.aRatio;    // aspect ratio of the canvas = pixel width / pixel height.
+<i>cgo</i>.widthPW;   // canvas width in Percentage of Width units, = 100.
+<i>cgo</i>.heightPW;  // canvas height in Percentage of Width units, = 100/cgo.aRatio;
+</pre>
+
+<p>Calling '<span style="font-family:Consolas,monospace">cgo.setGridboxRHC()</span>' with no parameters is equivalent to calling</p>
+<pre><i>cgo</i>.setGridboxRHC(0, 0, 100, <i>cgo</i>.heightPW);</pre>
+<p>which sets the grid origin at the LOWER LEFT corner of the canvas and the gridbox width and height equal to the full canvas width (100) and height (<i>cgo</i>.heightPW).</p>
+<p>Calling '<span style="font-family:Consolas,monospace">cgo.setGridboxSVG()</span>' with no parameters is equivalent to calling</p>
+<pre><i>cgo</i>.setGridboxSVG(0, <i>cgo</i>.heightPW, 100, <i>cgo</i>.heightPW);</pre>
+<p>which sets the grid origin at the UPPER LEFT corner of the canvas and the gridbox width and height equal to the full canvas width and height.</p>
+
+<h3>2. Define the world coordinates</h3>
+
+<p>To define the world coordinates call <i>cgo</i>.<b>setWorldCoords</b> passing the world coordinate X and Y value of the grid origin, along with the gridbox's width and height expressed in world coordinate units. If square pixels are desired, omit the 'height' argument and the Y scale factor will be set equal to the X scale factor. The calling syntax is:</p>
+
+<pre>
+<i>cgo</i>.setWorldCoords(gridOrgX, gridOrgY, gridboxWidth [, gridboxHeight]);
+</pre>
+
+<p>All parameters passed to 'setWorldCoords' should be positive numbers. If no call to 'setGridboxRHC' or 'setGridboxSVG' has been made prior to calling 'setWorldCoords' then it is assumed that the coordinate system is RHC and the gridbox is the whole canvas, equivalent to having called 'cgo.setGridboxRHC()'. If drawing is made without a call to 'setWorldCoords' then the world coordinates will be in pixels and the origin 0,0 will be at current grid origin. This is equivalent to calling 'cgo.setWorldCoords()' passing no parameters.</p>
+
+<p>Support for world coordinates with different X and Y scaling greatly simplifies the plotting of numeric data. If a graph is to be drawn of temperature, distance, volume etc. plotted against time, distance etc, just call 'setWorldCoords' to cover the range of X values and Y values, then the original data values in units of degrees, miles, cubic meters can be passed to the Cango draw commands and the scaling of these world coordinates to canvas pixels will being handled by Cango.</p>
+
+<h3>Canvas Layers</h3>
+<p>Support for multiple canvas layers is provided by the Cango methods <i>cgo</i>.<b>createLayer</b> and <i>cgo</i>.<b>deleteLayer</b>. Only Cango contexts that are created on the original background canvas can create layers. Once a canvas layer is created a new Cango context should be made to draw on that canvas. Layers can be drawn upon and cleared independent of the background canvas or other layers, so animations can run on a layer without affecting the content on other layers. Drag and drop is not affected by which layer an object is drawn on. Drag and drop mouse event are applied to the first object encountered at the event coordinates with each layer in the stack checked, starting at the top and going all the way down to the background canvas.</p>
+
+<h3>Cobj object</h3>
+<p>Everything drawn onto the canvas by Cango is a JavaScript object type 'Cobj'. A Cobj packages properties of objects such as their outline path definition, fill color, fontSize for text etc. These properties define the Cobj appearance when rendered onto the canvas. A Cobj has several methods to modify its properties such as <i>Cobj</i>.<b>rotate</b>, <i>Cobj</i>.<b>scale</b>, <i>Cobj</i>.<b>setProperty</b> etc. Extension modules such as 'CangoDragAndDrop' can add methods Cobj objects.</p>
+
+<p>A Cobj can be any of four types: <b>PATH</b>, <b>SHAPE</b>, <b>TEXT</b>, and <b>IMG</b>. PATH and SHAPE types are defined by their outline path using the <a href="#svgCmds">Cgo2D</a> path syntax, borrowed for the SVG standard. The path definition is converted to straight lines and Bézier curve drawing commands which are then stored in the Cobj. PATH types are rendered as outlines and SHAPE types are always filled. TEXT type Cobj take a string parameter which can be drawn in any of the CSS fonts available to the system, with user defined font size and weight etc. Text is always drawn with its aspect ratio preserved, regardless of any difference in X and Y world coordinate scaling. IMG type Cobj take an image file URL or an HTML Image object as a parameter. If the URL is passed then the image is loaded into an HTML Image object and properties describing how it is to be drawn are stored in the Cobj ready to be rendered onto the canvas. Image width and height may be set independently in world coordinate units using the <i>Cobj</i>.imgWidth and <i>Cobj</i>.imgHeight properties or may be drawn with the image aspect ratio preserved by setting only one of width or height.</p>
+
+<p>Cobj are be created by passing the defining data, along with the type string "PATH", "SHAPE", "TEXT" or "IMG" to the Cobj constructor. Any optional properties may be set at construction time by, passing key-value pairs in the 'options' parameter. Here is a typical code snippet defining an IMG type Cobj:</p>
+
+<div class="srcFmt">
+<pre>
+var jane = new Cobj("Images/JaneAvril.jpg", "IMG", {
+    imgHeight: 100,
+    lorg:2,
+    border: true,
+    lineWidth: 4,
+    strokeColor: "green" });
+</pre>
+</div>
+
+<p>Cobj object can then be transformed or modified, grouped into JavaScript arrays and rendered onto the canvas using the 'render' method.</p>
+
+<p>There are also four shorthand methods, <i>cgo</i>.<b>drawPath</b>, <i>cgo</i>.<b>drawShape</b>, <i>cgo</i>.<b>drawImg</b> and <i>cgo</i>.<b>drawText</b> that are wrapper functions for both creating the Cobj and rendering it to the canvas in a single call. They take as parameters the objects defining data and x and y coordinates of where the Cobj is to be rendered onto the canvas and any options to set Cobj properties. These methods return a reference to the Cobj created for further manipulation and rendering.</p>
+
+<h4>Preserving Aspect Ratio</h4>
+<p>The Cango graphics context allows independent X and Y axis world coordinate scaling. Different X and Y scaling won't distort text or images, but sometimes an application may want a PATH or SHAPE type object to have its aspect ratio preserved. As an example, when drawing a circle to mark a point on a graph the location of the center of the circle will use different world coordinate X and Y axis scaling, but the different X and Y scaling would result in the circle being rendered as an ellipse. To cater for this, the PATH and SHAPE Cobj have an 'iso' property to define whether the aspect ratio of their path or shape will be preserved as they are rendered. Setting the Cobj.<b>iso</b> property to the string 'iso', or the boolean <b>true</b> will ensure the its aspect ratio preserved. PATH type Cobj have 'iso' set <b>false</b> by default and SHAPE object have 'iso' set <b>true</b> by default.</p>
+
+<h4>Cgo2D path definition syntax</h4>
+<p>The outlines for PATH and SHAPE objects are passed to the Cobj constructor (or to the 'drawPath' and 'drawShape' methods) as an array of one letter commands and their associated numeric parameters referred to as <b>Cgo2D</b> format data. The command set is borrowed directly from SVG (Scalar Vector Graphics) path definition format. The full SVG path definition command set is supported. Lowercase command coordinates are relative to the current pen position (end point of previous command). Upper case commands are relative to the world coordinate origin. The first command of any path must always be 'M' or 'm' (moveTo) followed by the x,y values of the drawing origin of the path. This is followed by an arbitrarily long set of command letters each with their numeric parameters, each set specifying a segment of the path. Cgo2D data can be used in either Cartesian or SVG coordinate systems.</p>
+<p>As an example, here is the array of commands to draw a unit square with the drawing origin (0,0) at it's center. </p>
+<div class="srcFmt">
+<pre>
+var square = ['M', 0.5,-0.5, 'l',0,1, -1,0, 0,-1, 'z'];
+
+/* Note: The example demonstrates lower case commands which use relative coordinates,
+   continuation of the "lineTo" commands omitting the "l" between coordinate pairs
+   and closing the path with the "z" command. */
+</pre>
+</div>
+
+<p>Cgo2D format makes one concession to the SVG path rules to facilitate plotting arrays of numeric data. Cango will accept as valid, an array of coordinate pairs without the initial "M" command string. The first pair of numbers are assumed to be the coordinates of an "M" command, the next pair of numbers is assumed to be the first in a series of x,y coordinates of an "L" command. All subsequent pairs are assumed to be continuations of the "L" command. Using this special case syntax, the following code snippet draws a cosine waveform.</p>
+
+<div class="srcFmt">
+<pre>
+  var g = new Cango(cvsID),
+      data = [],
+      i;
+  ...
+
+  for (i=0; i&lt;=200; i++)
+  {
+    data.push(i*6, 5*Math.cos(i/6));
+  }
+  g.drawPath(data);
+</pre>
+</div>
+
+<p>SVG path data can be copied from SVG editors and readily converted to a Cgo2D JavaScript array. SVG data is assumed to be a string written for an SVG (left handed Cartesian) coordinates. Cango provides two conversion utilities to convert an SVG string to a Cgo2D format array ready to be used in the Cobj constructor, <b>svgToCgoRHC</b> and <b>svgToCgoSVG</b>.</p>
+
+<p>The <b>svgToCgoRHC</b> utility converts the SVG coordinates to Right Handed Cartesian coordinates by flipping the sign of all Y coordinates of all the commands. In addition any SVG "A" (elliptical arc) commands will have the sign of the 'x-rotation' angle flipped and the 'sweep' parameter will be switched from clockwise to anti-clockwise. SVG editors usually have the drawing origin for PATH data at the top left of the screen which introduces a large offset in all coordinates. The optional parameters <i>xOfs, yOfs</i> are added to the SVG coordinates to enable correction of this offset. The syntax is as follows:</p>
+
+<pre>var pathdata = <b>svgToCgoRHC</b>(svgPathStr [, xOfs, yOfs])</pre>
+
+<p>The <b>svgToCgoSVG</b> utility converts the SVG coordinates to Cgo2D arrays without the need to change any values since the Cango SVG grid coordinates match the SVG convention. The optional parameters <i>xOfs, yOfs</i> are available to adjust the position of the drawing origin of the converted path. The syntax is as follows:</p>
+
+<pre>var pathdata = <b>svgToCgoSVG</b>(svgPathStr [, xOfs, yOfs])</pre>
+
+<p>The Cobj constructor processes Cgo2D path data by converting it to native canvas drawing commands which are stored in the Cobj for subsequent rendering. These canvas drawing commands are restricted to moveTo, lineTo, cubic Bézier curve, quadratic Bézier curve and closePath instructions, all specified in absolute world coordinates. So an SVG "A" command defining a elliptical arc is converted to a Bézier curve approximation of the arc. This restricted command set allows scaling and rotation transforms and reversal of a path's winding direction while still accurately representing the user defined path.</p>
+
+<h4>Cobj drawing origin</h4>
+
+<p>The outline path coordinates of PATH and SHAPE type Cobj are expressed in world coordinates referenced to the drawing origin 0,0. Similarly, TEXT and IMG objects are drawn relative to the drawing origin 0,0. The actual point within the image or text bounding box that is drawn at 0,0 is determined by the <i>Cobj</i>.<b>lorg</b> (locate origin) property. The 'lorg' property can accept values from 1..9, 1=top left, 2=top center, and so on to 9=bottom right. So when a Cobj is drawn onto the canvas at some world coordinate position x,y, it is the Cobj 'drawing origin' that is positioned at x,y.</p>
+
+<h4>Cobj drop shadow</h4>
+<p>Any Cobj may be drawn with a drop shadow. The Cobj object has properties <b>shadowOffsetX</b>, <b>shadowOffsetY</b>, <b>shadowBlur</b> and <b>shadowColor</b>, defining the drop shadow. By default the shadow dimensions are set to 0 so no shadow is drawn. All dimensions are measured in world coordinates. The drop shadow properties can be set by assigning key-value pairs to the constructor's 'options' object or by using the <i>Cobj</i>.<b>setProperty</b> method. Drop shadow dimension only scale with world coordinate changes (eg zoom and pan) they are not altered by <i>Cobj</i>.scale or <i>Cango</i>.render scaling.</p>
+
+<h4>Cobj border</h4>
+<p>Any SHAPE, TEXT or IMG type Cobj may be drawn with a border if the <i>Cobj</i>.<b>border</b> property is set 'true'. The color of the border are set by Cobj object <b>strokeColor</b> property. The width of the border is set in world coordinates by the <b>lineWidthWC</b> or set in pixels by the <b>lineWidth</b> property. Line widths set by the 'lineWidth' property are fixed and remain unaffected by object scaling. These properties can be set by passing the key-value pairs to the constructor 'options' parameter or by using the <i>Cobj</i>.<b>setProperty</b> method.</p>
+
+<h3>Rendering</h3>
+<p>Cango really only has one method to actually draw onto the canvas, the <b>render</b> method. The 'drawPath', 'drawShape', 'drawImg' and 'drawText' are just wrapper functions to create a Cobj and then call <i>cgo</i>.<b>render</b> to draw it onto the canvas. The syntax is as follows:</p>
+
+<pre><i>cgo</i>.<b>render</b>(obj[, x, y[, scl[, degs]]]);</pre>
+
+<p>The <i>cgo</i>.<b>render</b> method can accept a single Cobj to be drawn onto the canvas or an array of Cobj. An array passed to the render method can have more arrays as elements as well as Cobj, so arrays of objects can be nested to an arbitrary depth.</p>
+
+<p>The render method can apply additional translation, scaling and rotation to the objects as they are rendered. The optional 'x,y' parameters are coordinates specifying where the objects' drawing origin should be positioned in the world coordinate system, 'scl' is a scale factor to resize the objects and 'degs' is an angle by which each object is rotated. The center of scaling and rotation is the drawing origin of the Cobj. The translation, scaling and rotation do not change the Cobj coordinates definitions.</p>
+
+<p>To apply other matrix transforms or have objects inherit transform effects from a parent object requires a canvas graphics library with isotropic coordinate system and full matrix transform support. The <a href="CanvasAnimation.html">Cango2D</a> graphics library has this architecture and may prove more suitable than Cango in these applications.</p>
+
+<h3>Cango Utility methods</h3>
+<p>The Cango has utility methods to set the world coordinates, clear the canvas and so on. Notable among them is the <b>setPropertyDefault</b> method sets default values for Cobj properties if they are required but not set prior to rendering. There are other utilities to convert between world coordinates and canvas pixel coordinates. The <b>dupCtx</b> utility copies all the settings from a existing Cango graphics context to another, which is particularly handy when working with multiple canvas layers. A full list of Cango methods is provided below.</p>
+
+<h2>Getting Started</h2>
+
+<p>Cango requires the browser to support the HTML5 canvas element. To use the Cango, download the JavaScript file: <a href="Cango-8v03.js" download>Cango-8v03.js</a>. Save the file in a directory accessible to JavaScript code running in the web page, then add the following line to the web page header:</p>
+<div class="srcFmt">
+<pre>
+&lt;script type="text/javascript" src="<i>[directory path]</i>/Cango-8v03.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+<p>Within the body of the web page insert a canvas element. The only attribute required by Cango is a unique <b>id</b> string.</p>
+<div class="srcFmt">
+<pre>
+&lt;canvas id="<i>canvasID</i>" width="500" height="300"&gt;&lt;/canvas&gt;
+</pre>
+</div>
+
+<p>Canvas pixel dimensions should be specified by the 'width' and 'height' attributes, as shown above. Specifying the canvas dimensions by CSS 'width' and 'height' style values is not the same, these only set the size of the canvas box dimensions on the HTML page. <i>Cango</i> avoids any or stretching of canvas pixels to fit the box by resetting the pixel dimensions to match the HTML canvas box dimensions, forcing a 1:1 mapping of canvas pixels to screen pixels.</p>
+
+<p>Here is the source code for a complete HTML page which contains only a canvas element. On load, "Hullo World" is shown.</p>
+
+<div class="srcFmt" style="max-height:580px">
+<pre>
+&lt;!DOCTYPE HTML>
+&lt;html>
+&lt;head>
+  &lt;title>Canvas Test&lt;/title>
+  &lt;script type="text/javascript" src="Cango-8v03.js">&lt;/script>
+  &lt;script type="text/javascript">
+    function sayHullo(cvsID)
+    {
+      var g = new Cango(cvsID);
+
+      g.setGridboxRHC();     // full canvas
+      g.setWorldCoords(-10, -5, 20, 10); // independent X and Y scaling
+      g.drawText("Hullo World", 0, 0, {
+        fillColor: "blue",
+        fontSize: 28,
+        lorg:5 });
+    }
+  &lt;/script>
+&lt;/head>
+&lt;body onload = "sayHullo('cvs')">
+   &lt;canvas id="cvs" width="640" height="400">&lt;/canvas>
+&lt;/body>
+&lt;/html>
+</pre>
+</div>
+
+<h3>Cango constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var cgo = <b>new Cango</b>(canvasID);</p>
+<h4>Description:</h4>
+<p>To start drawing an instance of the Cango graphics object must be created. This requires a canvas element to exist in the web page and for it to have a unique ID. Pass the canvas ID to the Cango constructor and the Cango graphics object is returned.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>canvasID</b>:String - The 'id' property of the canvas object on which the Cango library will draw.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cango object - An instance of the Cango graphics library which has all the following properties and methods.</p>
+
+<h2>Cango properties</h2>
+
+<h4>Syntax:</h4>
+<p><b>var</b> <i>value</i> = <i>cgo</i><b>.property</b>;</p>
+<h4>Properties:</h4>
+<div style="padding-left:2em">
+  <p><b style="color:blue">ctx</b>:CanvasRenderingContext2D - the raw canvas drawing context. This is available to access the more esoteric canvas capabilities such as <i>cgo</i>.ctx.globalCompositeOperation etc.</p>
+  <p><b style="color:blue">aRatio</b>:Number - Aspect ratio of the canvas element, the canvas width divided by canvas height. If the canvas is square, <i>cgo</i>.aRatio will be 1, if the canvas is 300px wide and 200px high, <i>cgo</i>.aRatio will be 1.5.</p>
+  <p><b style="color:blue">xscl</b>:Number - the X axis scaling factor to convert world coordinate sizes to canvas pixel sizes. If an application requires a dimension to be interpreted as pixels, then dividing the world coordinate size by <b>this.xscl</b> will give the desired result. </p>
+  <p><b style="color:blue">yscl</b>:Number - the Y axis scaling factor to convert world coordinate Y axis sizes to canvas pixel sizes. <i>cgo</i>.yscl will always be a negative value for Cartesian coordinate systems and positive for SVG coordinate systems. In isotropic coordinate situation <i>cgo</i>.yscl will equal &plusmn;<i>cgo</i>.xscl.</p>
+  <p><b style="color:blue">widthPW</b>:Number - the canvas width in expressed as a percentage of the canvas width. This property always return the value 100. The canvas dimensions in percentage units, widthPW and heightPW, are very useful in specifying a coordinate gridbox. </p>
+  <p><b style="color:blue">heightPW</b>:Number - the canvas height expressed as a percentage of the canvas width. This property will be equal to 100/<i>cgo</i>.aRatio. This number is often useful in setting the position of the origin of an SVG coordinate grid.</p>
+</div>
+
+<h2>Cango methods</h2>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="clearCanvas" href="#" class="itemName" onclick="return toggleSection(this)">clearCanvas</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>clearCanvas</b>([fillColor]);</p>
+<h4>Description:</h4>
+<p>Clears the canvas, deleting all drawing, images and text. The canvas may be optionally filled with the color <i>fillColor</i>.  If 'clearCanvas' is called with no 'fillColor' parameter, or 'fillColor' is null, then the canvas is cleared back to its default color which is inherited from the canvas element style. All graphics drawing contexts are left intact. Listening for mousedown events on any draggable objects is canceled.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>fillColor</b>:String or color gradient- The fill color may be color defined by a string in one of the CSS color formats or if a gradient color is to be used a reference to a LinearGradient or RadialGradient object should be passed, see <a href="#colors">Colors</a> section for detailed syntax.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="clipPath" href="#" class="itemName" onclick="return toggleSection(this)">clipPath</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>clipPath</b>(pathObj[, x, y[, scl[, degs]]]);</p>
+<h4>Description:</h4>
+<p>Defines the clipping region to be the outline path of the 'pathObj'. All subsequent drawing will only show those portions of the drawing that lie within the current clip region. Multiple calls to 'clipPath' without an intervening call to 'resetClip' will add regions where drawing is allowed.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathObj</b>:Cobj - A Cobj object of type PATH or SHAPE. The outline of 'pathObj' will define the clipping region.</p>
+  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y coordinates of the position at which the drawing origin of the path will be located, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>scl</b>:Number - An optional scale factor by which the path coordinates will be scaled. The same scale factor is applied to both x and y coordinates.</p>
+  <p style='margin-left:2em'><b>degs</b>:Number - Number of degrees by which the path will be rotated, measured in degrees +ve counter clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="createLayer" href="#" class="itemName" onclick="return toggleSection(this)">createLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>ovlID</i> = <i>cgo</i>.<b>createLayer</b>();</p>
+<h4>Description:</h4>
+<p>Creates a transparent canvas over-laying the background canvas to which 'cgo' instance is associated. The overlay will be the same size as the background canvas and will be transparent. The canvas is given a unique ID string which is the return value from the method. A new instance of Cango should be created to draw in the overlay, the layer's ID string should be passed to the Cango constructor. The properties of the background canvas can be readily copied to the new Cango context using the 'dupCtx' method. Only Cango instances created on the background canvas can create layers, calling 'createLayer' as a method of a Cango instance on an overlay layer does nothing and returns an empty string. </p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>String - The unique ID string of the newly created canvas element. This ID string allows reference to the canvas overlay to create Cango instances on the layer. The ID string is also required by the Cango 'deleteLayer' method.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteLayer" href="#" class="itemName" onclick="return toggleSection(this)">deleteLayer</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>deleteLayer</b>(ovlID);</p>
+<h4>Description:</h4>
+<p>Deletes an existing canvas overlay. The ID string of each canvas layer is returned from the 'createLayer' method. Passing this string to 'deleteLayer' will remove the canvas from the DOM. The canvas can be anywhere within the stack of canvases except the background canvas which cannot be deleted with this method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>ovlID</b>:String - The ID attribute of the canvas element to be deleted. This is the same string that is returned when the layer was created with the 'createLayer' method.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteAllLayers" href="#" class="itemName" onclick="return toggleSection(this)">deleteAllLayers</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>deleteAllLayers</b>();</p>
+<h4>Description:</h4>
+<p>Deletes all existing canvas overlay layers. The overlay canvases' HTML objects are deleted from the DOM, leaving only the original background canvas.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawImg" href="#" class="itemName" onclick="return toggleSection(this)">drawImg</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>drawImg</b>(imgSpec [, x, y [, options]]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Cobj constructor passing the 'imgSpec' as the data and "IMG" as the type. The imgSpec can be a URL string or a pre-loaded Image object. The 'options' object is also passed unchanged to the constructor's 'options' parameter. The <i>cgo</i>.render is then called passing obj as the Cobj to be rendered. If x,y coordinates are supplied these will also be passed to 'render', this will position the image drawing origin at x,y in world coordinates. The optional parameters specified by the 'options' object will be applied as the image is rendered. The Cobj object is returned.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>imgSpec</b>:Image or String - The pre-loaded Image object or the URL of the image to load.</p>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Numbers - X and Y coordinates of the point at which the drawing origin of the image is to be rendered.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Cobj properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Cobj.setProperty</a> method for the list of properties).</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cobj - An object encapsulating the HTML Image object and various properties specifying how it should appear when rendered.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawPath" href="#" class="itemName" onclick="return toggleSection(this)">drawPath</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <i>cgo</i>.<b>drawPath</b>(pathData [, x, y [, options]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Cobj constructor passing the 'pathData' string as the data and "PATH" as the type. The 'options' object is also passed unchanged as the constructor's 'options' parameter. This will covert the pathData to a Cobj object ready for rendering onto the canvas and set all the optional parameters as specified by the 'options' key-value pairs. The <i>cgo</i>.render is then called passing obj as the Cobj to be rendered. If x,y coordinates are supplied these will also be passed to 'render', this will position the path drawing origin at x,y in world coordinates. The Cobj object is returned.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathData</b>:Array - An array of Cgo2D drawing commands and coordinates, (see <a href="#svgCmds">Cgo2D syntax</a> for the command descriptions).</p>
+  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y world coordinates where drawing origin of the path will be rendered.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Cobj properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Cobj.setProperty</a> method for the list of properties).</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cobj - An object encapsulating the canvas commands available for further manipulation and re-rendering.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawShape" href="#" class="itemName" onclick="return toggleSection(this)">drawShape</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <i>cgo</i>.<b>drawShape</b>(pathData [, x, y [, options]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Cobj constructor passing the 'pathData' string as the data and "SHAPE" as the type. The 'options' object is also passed unchanged as the constructor's 'options' parameter. This will create a Cobj object ready for rendering onto the canvas and set all the optional parameters as specified by the 'options' key-value pairs. The <i>cgo</i>.render is then called passing obj as the Cobj to be rendered. If x,y coordinates are supplied these will also be passed to 'render', this will position the shape drawing origin at x,y in world coordinates. The Cobj object is returned.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathData</b>:Array - An array of Cgo2D drawing commands and coordinates defining the outline of the shape, (see <a href="#svgCmds">Cgo2D syntax</a> for the command descriptions).</p>
+<p style='margin-left:2em'><b>x</b>, <b>y</b>:Numbers - X and Y world coordinates of the position where the drawing origin of the shape will be rendered.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Cobj properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Cobj.setProperty</a> method for the list of properties).</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cobj - An object encapsulating the canvas commands and various properties of the Cobj described outline path, fillColor and so on, available for further manipulation and re-rendering.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="drawText" href="#" class="itemName" onclick="return toggleSection(this)">drawText</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <i>cgo</i>.<b>drawText</b>(str, x, y [, options]);</p>
+<h4>Description:</h4>
+<p>A wrapper function which calls the Cobj constructor passing the 'str' string as the data, the string "TEXT" as the type, and passing the 'options' object reference unchanged as the options parameter. This will store the string 'str' for subsequent rendering onto the canvas and set all the optional parameters as specified by the 'options' object. The <i>cgo</i>.render is then called passing Cobj and the x,y values as parameters, this will move the text's drawing origin to x,y in world coordinates when rendered. The Cobj object is returned.</p>
+<p>The obj.lorg property will determine which point within the text bounding box is designated as the object's drawing origin. The obj.fontWeight property will set the weight with which the text is rendered, the obj.fontFamily property will set the font to be used. If any of these properties is undefined then the current default values will be used, see <a href="#setPropertyDefault">setPropertyDefault</a>.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>str</b>:String - The text string to be written.</p>
+  <p style='margin-left:2em'><b>x</b> <b>y</b>:Number - X and Y coordinates of the position at which the test drawing origin will be placed, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>options</b>:Object - The values for the various Cobj properties should be passed as key-value pairs in this object (see <a href='#setProperty'>Cobj.setProperty</a> method for the list of properties).</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cobj - An object encapsulating the canvas commands for further manipulation and re-rendering.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="dupCtx" href="#" class="itemName" onclick="return toggleSection(this)">dupCtx</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>dupCtx</b>(sourceCtx);</p>
+<h4>Description:</h4>
+<p>Copy the graphics context properties from another Cango context into <i>cgo</i>. <i>cgo</i>.dupCtx() copies the properties, coordinate grid scale factors, default fonts and so on, from <i>sourceCtx</i> graphics context into <i>cgo</i> the context making the call.</p>
+<p>When drawing onto a new layer (see <a href="#createLayer">createLayer</a>), this method  provides a quick way to copy the graphics context properties into a Cango context for the new layer so that drawing will be in the same world coordinates etc. </p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>sourceCtx</b>:Cango - The source Cango from which the <i>cgo</i> properties are copied.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="fillGridbox" href="#" class="itemName" onclick="return toggleSection(this)">fillGridbox</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>fillGridbox</b>(fillColor);</p>
+<h4>Description:</h4>
+<p>Fills the current gridbox area with the color <i>fillColor</i>.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>fillColor</b>:String or color gradient- The fill color may be solid color defined by a string in one of the CSS color formats or if a gradient color is to be used, a reference to a LinearGradient or RadialGradient object should be passed, see <a href="#colors">colors</a>. If 'fillGridbox' is called with no 'fillColor' parameter then the gridbox is filled with the current Cango default fillColor. If not set by the application, the default fill color is 'gray'.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="render" href="#" class="itemName" onclick="return toggleSection(this)">render</a>
+  <dt class="itemBody">
+<h3 id="render" style="color:blue">render</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>render</b>(obj [, x, y[, scl[, degs]]]);</p>
+<h4>Description:</h4>
+<p>Renders a Cobj or an Array of Cobj onto the canvas. The one <b>render</b> method is used for all object types. Each object to be rendered is an existing Cobj object containing the object definition data and encapsulated object properties. The render method applies optional translation, scaling and rotation transforms to the canvas drawing context, effectively moving the objects drawing origin to 'x,y' and scaling the object from its reference size by a factor of 'scl'. The object can also be rotated by an angle of 'degs' degrees anti-clockwise. The center of scaling and rotation is the drawing origin of the Cobj. Gradient fills applied to SHAPE objects are translated, and scaled along with the object but not rotated! If obj.border is set true, then the object is rendered with a border the color of which is 'obj.strokeColor' and width 'obj.lineWidthWC' (or obj.lineWidth if lineWidthWC is undefined). If obj dropShadow properties are non-zero then the object is rendered with a drop shadow.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>obj</b>:Cobj or Array of Cobj - The object or array group of objects to be rendered to the canvas.</p>
+  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y coordinates of the position at which the drawing origin of the path will be located, measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>scl</b>:Number - An optional scale factor by which the object will be scaled. This parameter allows the path defined by 'data' to be stretched or shrunk as required. The same scale factor is applied to both x and y coordinates.</p>
+  <p style='margin-left:2em'><b>degs</b>:Number - Number of degrees by which the object will be rotated, measured in degrees +ve counter clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="resetClip" href="#" class="itemName" onclick="return toggleSection(this)">resetClip</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>resetClip</b>();</p>
+<h4>Description:</h4>
+<p>Clears the current clip path by resetting it to the full canvas. The native drawing context is restored to the state when the resetClip was last called or if no resetClip call has been made it is restored to the state when the first call to 'clipPath' was made. If multiple calls to 'clipPath' are been made without intervening call to resetClip, then the clip area is the combination of all the clip paths.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setPropertyDefault" href="#" class="itemName" onclick="return toggleSection(this)">setPropertyDefault</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setPropertyDefault</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the default values for various system properties. The property whose default is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new default value is passed as 'value'. The value is restricted to be within the range of values appropriate to the property. If the property is not one of the string values listed or the value is an incorrect type or outside the reasonable range of values then the call is ignored and the current default value remains unaltered.</p>
+<p>If no call is made to 'setPropertyDefault' for a particular property, then the property value remains at its system default value listed in column 4.</p>
+
+<table class="txtTbl" style="width: 620px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th><th>Default</th>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color or gradient</td><td>see <a href="colors">Colors</a></td><td>'rgba(0, 0, 0, 1.0)'</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>-</td><td>'rgba(128, 128, 128, 1.0)'</td>
+</tr>
+<tr>
+<td>lineWidth</td><td>Number (pixels)</td><td>-</td><td>1</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td><td>'butt'</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>CSS font family definitions</td><td>"Inconsolata, monospace"</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (pixels)</td><td>-</td><td>12</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td><td>400</td>
+</tr>
+<tr>
+<td>stepTime<br/>
+<i>(if animation module loaded)</i></td><td>Number (msec)</td><td>16..500</td><td>50</td>
+</tr>
+</table>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>:String- The name of the property whose default value is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>- The new default value for the property. Its type should match the type listed in column 2 of the table above and the range of values must fall within the range listed in column 3.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setGridboxRHC" href="#" class="itemName" onclick="return toggleSection(this)">setGridboxRHC</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setGridboxRHC</b>([originX, originY, width, height]);</p>
+<h4>Description:</h4>
+<p>Defines an origin point and a gridbox for a Right Handed Cartesian coordinate grid. RHC coordinates have the X axis increase to the RIGHT and Y axis increase UP the canvas and angles increase ANTI-CLOCKWISE. The gridbox is used by subsequent calls to <i>setWorldCoords</i> to establish a world coordinate system for drawing with <i>cgo</i> context. The gridbox also defines the area to be filled by the method <i>fillGridbox</i>.</p>
+<p>The gridbox is located with its lower left corner at the grid origin. All parameters are expressed in percent of canvas width units, measured from the lower left corner of the canvas. The canvas width and height in percentage units are made available as <i>cgo</i> properties <i>cgo</i>.widthPW which will always be 100 and <i>cgo</i>.heightPW, which will be equal to 100/cgo.aRatio.</p>
+<p>Note: setGridboxRHC may be called with no parameters passed will set the gridbox to be the full canvas. So calling <i>cgo</i>.setGridboxRHC() is equivalent to the call <i>cgo</i>.setGridboxRHC(0, 0, <i>cgo</i>.widthPW, <i>cgo</i>.heightPW).</p>
+<p>Note: Every call to <i>setGridboxRHC</i> resets the world coordinates to the default values. The default world coordinates will set the origin of the gridbox to 0,0 and X and Y scaling to map world coordinates 1:1 with canvas pixels.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>originX</b>:Number - X coordinate of the grid origin (lower left corner of the gridbox), measured from the lower left corner of the canvas in percentage (of canvas width) units.</p>
+  <p style='margin-left:2em'><b>originY</b>:Number - Y coordinate of the grid origin (lower left corner of the gridbox), measured from the lower left corner of the canvas in percentage (of canvas width) units.</p>
+  <p style='margin-left:2em'><b>width</b>:Number - Width of the gridbox, measured as percentage of canvas width.</p>
+  <p style='margin-left:2em'><b>height</b>:Number - Height of the gridbox, measured as percentage of canvas width.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setGridboxSVG" href="#" class="itemName" onclick="return toggleSection(this)">setGridboxSVG</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setGridboxSVG</b>([originX, originY, width, height]);</p>
+<h4>Description:</h4>
+<p>Defines an origin point and a gridbox for an SVG (Left Handed Cartesian) coordinate grid. SVG coordinates have the X axis increase to the RIGHT and Y axis increase DOWN the canvas and angles increase CLOCKWISE. The gridbox is used by subsequent calls to <i>setWorldCoords</i> to establish a world coordinate system for drawing with <i>cgo</i> context. The gridbox also defines the area to be filled by the method <i>fillGridbox</i>.</p>
+<p>The height of the gridbox is measured down the canvas so gridbox upper left corner will be located at the grid origin. All parameters are expressed in percent of canvas width measured from the lower left corner of the canvas. The canvas width and height in percent are made available as <i>cgo</i> properties <i>cgo</i>.widthPW, which will always be 100, and <i>cgo</i>.heightPW, which will be equal to 100/cgo.aRatio.</p>
+<p>Note: setGridboxSVG may be called with no parameters passed will set the gridbox to be the full canvas. So calling <i>cgo</i>.setGridboxSVG() is equivalent to the call <i>cgo</i>.setGridboxSVG(0, 0, <i>cgo</i>.widthPW, <i>cgo</i>.heightPW).</p>
+<p>Note: Every call to <i>setGridboxSVG</i> resets the world coordinates to the default values. The default world coordinates will set the origin of the gridbox to 0,0 and X and Y scaling to map world coordinates 1:1 with canvas pixels.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>originX</b>:Number - X coordinate of the grid origin (upper left corner of the gridbox), measured from the lower left corner of the canvas in percentage (of canvas width) units.</p>
+  <p style='margin-left:2em'><b>originY</b>:Number - Y coordinate of the grid origin (upper left corner of the gridbox), measured from the lower left corner of the canvas in percentage (of canvas width) units.</p>
+  <p style='margin-left:2em'><b>width</b>:Number - Width of the gridbox, measured as percentage of canvas width.</p>
+  <p style='margin-left:2em'><b>height</b>:Number - Height of the gridbox, measured as percentage of canvas width.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setWorldCoords" href="#" class="itemName" onclick="return toggleSection(this)">setWorldCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setWorldCoords</b>([gridOrgX, gridOrgY, gridboxWidth [, gridboxHeight]]);</p>
+<h4>Description:</h4>
+<p>Defines a world coordinate system for subsequent drawing operations with the <i>cgo</i> graphics context. The world coordinate system sets translation and scaling factors to map world coordinate values to canvas drawing pixels. This is done by specifying the world coordinate values of the current gridbox origin and the width and height of the gridbox in world coordinate units. The 'gridOrgX, gridOrgY' will be the world coordinate values of the gridbox origin. Specifying the gridboxWidth in world coordinate units determines the X axis scale factor (<i>cgo</i>.xscl) and specifying the gridboxHeight in world coordinates Y axis units will determine the Y axis scale factor (<i>cgo</i>.yscl). If no value is passed for the gridboxHeight then the magnitude of the Y axis scale factor will be set equal to the X axis scale factor resulting in square pixels.</p>
+<p>NOTE: The world coordinate system extends to the full size of the canvas, there is no clipping outside the gridbox. The gridbox is only a device to set the X and Y direction and scaling factors.</p>
+<p>If no prior call has been made to either 'setGridboxRHC' or 'setGridboxSVG', then the gridbox is assumed to be the full canvas and the coordinate system is RHC.</p>
+<p>Calling 'setWorldCoords' with no parameters results in the origin of the gridbox being set to 0,0 and X and Y scaled in canvas pixels always mapped 1 to 1 with screen pixels by Cango. Whether the coordinates are RHC or SVG will be determined by the Cango method used to create the gridbox or the default if no call was made.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>gridOrgX</b>:Number - World coordinate X value of the gridbox origin.</p>
+  <p style='margin-left:2em'><b>gridOrgY</b>:Number - World coordinate Y value of the gridbox origin.</p>
+  <p style='margin-left:2em'><b>gridboxWidth</b>:Number - The width of the gridbox measured in world coordinates.</p>
+  <p style='margin-left:2em'><b>gridboxHeight</b>:Number - The height of the gridbox measured in world coordinates. If 'gridboxHeight' is omitted the Y scaling is set to equal the X scaling, resulting in square pixels.</p>
+<p>If the following call is made:</p>
+<div class="srcFmt">
+<pre>
+<i>cgo</i>.setGridboxRHC();
+<i>cgo</i>.setWorldCoords(-500, 0, 1000, 3);
+</pre>
+</div>
+<p>The full canvas is the gridbox, and the canvas width is 1000 world coordinate units wide and 3 units high, the lower left corner of the canvas has world coordinates of -500, 0, hence the world coordinate point (0,0) will be in the center of the bottom edge of the canvas.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="toImgObj" href="#" class="itemName" onclick="return toggleSection(this)">toImgObj</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var imgObj = <i>cgo</i>.<b>toImgObj</b>(pathObj);</p>
+<h4>Description:</h4>
+<p>This method converts a Cobj of type PATH or type SHAPE into a new Cobj of type IMG. An offscreen canvas buffer is created with dimensions of the pathObj bounding box. The pathObj is then rendered into the canvas buffer with the current Cango graphics context settings. The completed drawing is then used as the image source for a new Cobj which is returned by the method. The drawing origin of the returned imgObj will be in the same relative position as the drawing origin of pathObj.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>pathObj</b>:Cobj - A Cobj of type PATH or SHAPE. If any other type of object is passed the method does nothing and returns 'null'.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cobj - A Cobj of type IMG containing the bitmap of the pathObj. The image dimensions will be the minimum size bounding box in which the pathObj can be drawn with the current Cango context scaling.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="toPixelCoords" href="#" class="itemName" onclick="return toggleSection(this)">toPixelCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toPixelCoords</b>(x, y);</p>
+<h4>Description:</h4>
+<p>This method converts the world coordinates (x, y) of a point to an object with x and y properties that hold the raw canvas pixel coordinates of the point. The canvas pixel coordinates for all Cango contexts map 1 to 1 with screen pixels.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Number - X and Y coordinates of a point measured in world coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with two properties:</p>
+  <p style='margin-left:2em'><b>x</b>:Number - X coordinate of the point measured in canvas pixel coordinates, equal to screen pixels.</p>
+  <p style='margin-left:2em'><b>y</b>:Number - Y coordinate of the point measured in canvas pixel coordinates, equal to screen pixels.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="toWorldCoords" href="#" class="itemName" onclick="return toggleSection(this)">toWorldCoords</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toWorldCoords</b>(x, y);</p>
+<h4>Description:</h4>
+<p>This method converts the coordinates (x, y) of a point expressed in canvas pixels coordinates to an object with x and y properties that hold the world coordinates of the point. Their can be more than one Cango graphics context on a canvas, the x,y point can be anywhere on the canvas, the world coordinate system of the calling graphics context used to calculate the returned values. This method is often useful in mapping a point from one world coordinate system to another on the same canvas, first use 'toPixelCoords' from the first Cango context to find the pixel coordinates of the point and then use 'toWorldCoords' as a method of the second Cango context passing the pixel position.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>:Number - X and Y coordinates of a point measured in world coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with two properties:</p>
+  <p style='margin-left:2em'><b>x</b>:Number - X coordinate of the point measured in current world coordinates of the <i>cgo</i> graphics context.</p>
+  <p style='margin-left:2em'><b>y</b>:Number - Y coordinate of the point measured in world coordinates.</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+
+
+
+
+
+
+
+
+<h2>Cobj</h2>
+
+<h3 id="Cobj">Cobj constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Cobj</b>(data, type[, options]);</p>
+<h4>Description:</h4>
+<p>This function returns a Cobj object suitable to be passed to the render method of a Cango instance.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>data</b>:various types - The 'type' parameter will determine how the 'data' parameter is interpreted, it is expected to be an array of Cgo2D drawing commands for types 'PATH' or 'SHAPE', an Image object or image URL string for type 'IMG' or a string for type 'TEXT'.</p>
+<p style='margin-left:2em'><b>type</b>:String - The only values recognized are 'PATH', 'SHAPE', 'IMG' or 'TEXT' if 'type' is undefined or any other value then 'PATH' type is assumed by default.</p>
+<p style='margin-left:2em'><b>options</b>:Object - This object may contain key-value pairs to pre-set the properties of the Cobj returned. The keys and value restrictions are identical to those described in the <a href="#setProperty">setProperty</a> method.</p>
+<h4>Example</h4>
+<p>The following line of code will create a 'SHAPE' type Cobj and then scale its size. When rendered 'obj' will be drawn as a square with width and height 4 units in the world coordinates of the Cango context used to render it. It will be filled with the color 'red' and will preserve its aspect ratio even when drawn in non-isotropic coordinate system.</p>
+<div class="srcFmt">
+<pre>
+var obj = new Cobj(['M',2,-2,'l',0,4,-4,0,0,-4,'z'], 'SHAPE', {fillColor: 'red'});
+</pre>
+</div>
+
+
+<h2>Cobj methods</h2>
+
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="appendPath" href="#" class="itemName" onclick="return toggleSection(this)">appendPath</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj1</i>.<b>appendPath</b>(obj2 [, delMove]);</p>
+<h4>Description:</h4>
+<p><b>appendPath</b> extends the array of draw commands defining the outline of <i>obj1</i> by appending the draw commands of <i>obj2</i>. If the optional 'delMove' parameter is 'true', then the initial 'moveTo' command is deleted from the array of commands to be appended. This command applies only to SHAPE and PATH type objects, for Cobj types TEXT or IMG the method does nothing.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>obj2</b>:Cobj - The object whose drawCmd array elements are to be appended to the drawCmd array of obj1. The obj2.drawCmds are cloned i.e new javascript objects are made that are copies of the DrawCmd objects in the array not references to the originals.</p>
+<p style='margin-left:2em'><b>delMove</b>:Boolean - If 'true' the initial 'moveTo' command of <i>obj2</i> path outline is omitted. This results in the outline path of <i>obj1</i> being join to the outline of <i>obj2</i>. If 'delMove' evaluates to false, then the 'moveTo' command and its coordinates just become the next command in the outline of <i>obj1</i> which means there will be a break in the outline.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="dup" href="#" class="itemName" onclick="return toggleSection(this)">dup</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>dup</b>();</p>
+<h4>Description:</h4>
+<p><b>dup</b> creates a new Cobj object and copies all its properties and methods into the new object. The properties are copies of the values not references to the original. This method is useful in creating complex objects made from similarly shaped components.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="revWinding" href="#" class="itemName" onclick="return toggleSection(this)">revWinding</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>revWinding</b>();</p>
+<h4>Description:</h4>
+<p><b>revWinding</b> re-arranges the order of the draw commands and their coordinates that define the outline path of this object so that they are drawn by traversing the path in the reverse direction. This command is provided to enable shapes with holes to be color filled correctly ie, without the hole being filled too. The canvas specifications describe the behaviour as follows: "if two overlapping but otherwise independent sub-paths have opposite windings, they cancel out and result in no fill. If they have the same winding, that area just gets painted once". A good explanation of the effects of winding rules is given at <a href="http://www.bit-101.com/blog/?p=3702">BIT-101.com</a>.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b>.</p>
+<h4>Example</h4>
+<p>As an example, the following code attempts (and fails) to draw a triangle with a circular hole at the center: </p>
+<img src="Images/winding.png" style="float:right; width: 130px; margin:10px 0" alt="" />
+<div class="srcFmt" style="width: 550px">
+<pre>
+var g = new Cango(cvsID);
+...
+var rect = ["M", 0, 100, 500, 100, 500, 200, 0, 200, "z"],
+    tri = new Cobj(shapeDefs.triangle(300), "SHAPE", {fillColor: 'black'}),
+    hole = new Cobj(shapeDefs.circle(140), "SHAPE");
+tri.appendPath(hole);
+g.drawShape(rect, 0, 0 {fillColor: "red"});
+g.render(tri, 250, 100);
+</pre>
+</div>
+<p>If the winding direction of the Cobj 'hole' is reversed before appending to the triangle, the hole is not filled: </p>
+<img src="Images/revWinding.png" style="float:right; width: 130px; margin:10px 0" alt="" />
+<div class="srcFmt" style="width: 550px">
+<pre>
+var g = new Cango(cvsID);
+...
+var rect = ["M", 0, 100, 500, 100, 500, 200, 0, 200, "z"],
+    tri = new Cobj(shapeDefs.triangle(300), "SHAPE", {fillColor: 'black'}),
+    hole = new Cobj(shapeDefs.circle(140), "SHAPE");
+<b>hole.revWinding();</b>  // reverse winding for this object
+tri.appendPath(hole);
+g.drawShape(rect, 0, 0 {fillColor: "red"});
+g.render(tri, 250, 100);
+</pre>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="rotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>rotate</b>(degs);</p>
+<h4>Description:</h4>
+<p>Rotates all the draw commands coordinates of the object by 'degs' degrees centered on the current drawing origin of the object. The change to the orientation of the object is permanent, when the object is rendered the new angle will be the reference for future rotation applied by the render method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>degs</b>:Number - The angle of rotation measured in degrees +ve anti-clockwise.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="scale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>scale</b>(xScale[, yScale]);</p>
+<h4>Description:</h4>
+<p>Multiplies all the draw commands X coordinates of the object by 'xScale' and all the 'Y coordinates by 'yScale'. This scaling permanently changes the size of the object as it will be rendered to the canvas. If <i>obj</i> is a square with unit length side, then the command <i>obj</i>.<b>scale(5)</b> will change the coordinates of the object to be 5 time larger, this change is permanent, when the object is rendered the new side length will be 5 units. If the object is rendered with a scale factor of 2 then the square will be drawn with side length of 10 units.  If yScale is omitted or invalid then xScale value is used to scale the Y coordinates.</p>
+<p>If obj.lineWidthWC is defined then the line width of the PATH or the line width of any border will be scaled by xScale. If the lineWidthWC is undefined then the line width used for stroking paths or borders will remain unaffected by this scale method.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>xScale</b>:Number - A number >0 by which the object's X coordinates are scaled.</p>
+<p style='margin-left:2em'><b>yScale</b>:Number - A number >0 by which the object's Y coordinates are scaled.</p>
+   </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="translate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>translate</b>(x, y);</p>
+<h4>Description:</h4>
+<p>Adds the values x and y to all draw commands coordinates of the object. Effectively making a permanent shift of the object by x and y from the drawing origin. As an example if a circle is defined with a radius of 5, and its drawing origin at the center, then calling <i>obj</i>.<b>translate(0, 5)</b> will shift the object up relative to the drawing origin by 5 units, the length of the radius. The drawing origin will then be at the bottom of the circle. The change to the drawing origin is permanent. The center of rotation are scaling will be about this new drawing origin.</p>
+<p><b>translate</b> can be applied to IMG and TEXT type objects the drawing origin of these objects is initially set by the 'lorg' parameter to a restricted number of positions on the image or text, translate allows the object's to be arbitrarily offset from the drawing origin.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>x, y</b>:Numbers - X and Y offset of the object from the current drawing origin.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setProperty" href="#" class="itemName" onclick="return toggleSection(this)">setProperty</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>setProperty</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the values for various Cobj properties. The property whose value is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new value is passed as 'value'. The value must be of an appropriate type and fall within the useful range of values for the property, and the types are listed in column 2 and range of values is listed in column 3. If the property is not one of the string values listed or the value is an incorrect type then the call is ignored and the current value remains unaltered.</p>
+<p>Each property has a Cango default value, so that if the property has not been set by prior to rendering, then the property will be set to the Cango default value, see <a href="#setPropertyDefault">setPropertyDefault</a>.</p>
+
+<table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color or gradient</td><td>see <a href="colors">Colors</a></td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>see <a href="colors">Colors</a></td>
+</tr>
+<tr>
+<td>lineWidthWC</td><td>Number (World Coordinates)</td><td> > 0</td>
+</tr>
+<tr>
+<td>lineWidth</td><td>Number (pixels)</td><td> > 0</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td>
+</tr>
+<tr>
+<td>iso</td><td>String</td><td>true, 'iso', 'isotropic'</td>
+</tr>
+<tr>
+<td>dashed</td><td>Array</td><td>[mark, space ...] the repeating mark-space pixel lengths</td>
+</tr>
+<tr>
+<td>dashOffset</td><td>Number (pixels)</td><td>length of initial space before the first dash</td>
+</tr>
+<tr>
+<td>border</td><td>Boolean</td><td>true or false</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>CSS fontFamily definitions</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (pixels)</td><td>-</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td>
+</tr>
+<tr>
+<td>imgWidth</td><td>Number (World Coordinates)</td><td> &gt;0</td>
+</tr>
+<tr>
+<td>imgHeight</td><td>Number (World Coordinates)</td><td> &gt;0</td>
+</tr>
+<tr>
+<td>lorg</td><td>Number</td><td> 1..9 (see <a href="#lorg">lorg</a>) </td>
+</tr>
+<tr>
+<td>shadowOffsetX</td><td>Number (World Coordinates)</td><td> </td>
+</tr>
+<tr>
+<td>shadowOffsetY</td><td>Number (World Coordinates)</td><td> </td>
+</tr>
+<tr>
+<td>shadowBlur</td><td>Number (World Coordinates)</td><td> </td>
+</tr>
+<tr>
+<td>shadowColor</td><td>CSS Color</td><td>see <a href="colors">Colors</a></td>
+</tr>
+</table>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>:String- The name of the Cobj property the value of which is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>: (various) - The new value for the property. Its type should match the type listed in column 2 of the table and its range should fall with the range set out in column 3 of the table above.</p>
+   </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+
+<h3 id="svgCmds">Cgo2D (SVG) syntax:</h3>
+<p>Outline path data is defined in Cgo2D format, comprising an array of one letter string commands and two number sets of x,y coordinates. The command set is borrowed directly from SVG (Scaler Vector Graphics) but with Y coordinates increasing UP the screen.</p>
+<p>Path commands are case-sensitive, an uppercase command's coordinates use absolute positioning and a lowercase command's coordinates are relative the last point. The one exception to this is the first point must always be a 'M' (move) command using absolute positioning.</p>
+<table class="txtTbl" style="width: 630px; margin: 2em auto">
+<tr>
+  <th width="10%"><div class="tblTitle">Command</div></th>
+  <th width="20%"><div class="tblTitle">Parameters</div></th>
+  <th><div class="tblTitle">Description</div></th>
+</tr>
+<tr>
+  <td><div class="tblAtt">M</div></td>
+  <td><div class="tblExp">x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">moveto</span>: Moves the pen to a new location. No line is drawn. All path data must begin with a 'moveto' command.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Line Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">L</div></td>
+  <td><div class="tblExp">x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">lineto</span>: Draws a line from the current point to the point (x,y).</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">H</div></td>
+  <td><div class="tblExp">x</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">horizontal lineto</span>: Draws a horizontal line from the current point to x.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">V</div></td>
+  <td><div class="tblExp">y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">vertical lineto</span>: Draws a vertical line from the current point to y.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Cubic Bézier Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">C</div></td>
+  <td><div class="tblExp">x1, y1, x2, y2, x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">curveto</span>: Draw a cubic Bézier curve to the point (x,y) where the points (x1,y1) and (x2,y2) are the start and end control points, respectively.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">S</div></td>
+  <td><div class="tblExp">x2, y2, x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">shorthand/smooth curveto</span>: Draw a cubic Bézier curve to the point (x,y) where the point (x2,y2) is the end control point and the first control point is the reflection of the previous C command's ending control point.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Quadratic Bézier Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">Q</div></td>
+  <td><div class="tblExp">x1, y1, x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">quadratic Bézier curveto</span>: Draw a quadratic Bézier between the last point and point (x,y) using the point (x1,y1) as the control point.</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">T</div></td>
+  <td><div class="tblExp">x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">shorthand/smooth quadratic Bézier curveto</span>: Draw a quadratic Bézier between the last point and point (x,y) using the reflection of the last control point as the control point.</div></td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">Elliptical Arc Curve Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">A</div></td>
+  <td><div class="tblExp">rx, ry,<br/> x-rotation,<br/> large-arc-flag,<br/> sweep-flag,<br/> x, y</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">elliptical arc</span>: Draws and arc starting from the current point and ending at (x, y). The ellipse has the two radii (rx, ry). The x-axis of the ellipse is rotated by 'x-axis-rotation' relative to the x-axis of the world coordinate system. The 'large-arc-flag' and the 'sweep-flag' together define which way the arc joins to start and end point.<br/><br/>
+For Cartesian coordinate systems the 'x-axis-rotation' is measured anti-clockwise and 'sweep-flag = 1' may be interpreted as the arc sweeping in an anti-clockwise direction.<br/><br/>
+For SVG coordinate systems the 'x-axis-rotation' is measured clockwise and 'sweep-flag = 1' flag may be interpreted as the arc sweeping in a clockwise direction.</div>
+</td>
+</tr>
+<tr>
+  <td colspan="3"><div class="tblMidDiv">End Path Commands</div></td>
+</tr>
+<tr>
+  <td><div class="tblAtt">z</div></td>
+  <td><div class="tblExp">-</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">closepath</span>: Closes the path. A line is drawn from the last point to the first.</div></td>
+</tr>
+</table>
+
+<h4>Relative coordinates</h4>
+<p>To use path end point and control point coordinates relative to the last pen position use a lowercase letter for the command, eg. 'a' rather than 'A'.</p>
+
+<h4>Assumed 'M' concession</h4>
+<p>Cgo2D syntax allows a concession to the SVG command format, by accepting an array of data values with no command strings as a valid path definition. In such a case the initial 'M' command to move to the location of the first x,y pair is assumed, and the succeeding pairs are assumed to be preceded by an 'L' command. An example of storing coordinates values in this format:</p>
+
+<div class="srcFmt">
+<pre>
+  var i, data = [];
+  for (i=0; i&lt;n; i++)
+  {
+    data[2*i] = xFn(i);   // some function returning x values
+    data[2*i+1] = yFn(i); // some function returning y values
+  }
+  g.drawPath(data);       // move to point data[0],data[1] then draw n-1 straight line segments
+</pre>
+</div>
+
+<hr class="ugHr" />
+
+<h3 id="lorg">lorg (locate origin):</h3>
+  <p style='margin-left:2em'>Location of the drawing origin within the bounding box of a TEXT or IMG type Cobj is set by the parameter 'lorg'. The 'lorg' property can take integer values 1..9, lorg>=1 locates the top,left of the text box or image at the (x, y) position, lorg=2 locates the top, center of the box at the (x, y) position, and so on. Fig 1 shows the effect of each 'lorg' value on where a text object is drawn. Each text object in the figure is drawn at the x,y coordinates of the adjacent grid intersection, the text string itself specifies which lorg value was used when drawing the text.</p>
+<div class="figHolder" style="width: 330px">
+  <img src="Images/lorg.png" alt="" />
+</div>
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 1.</b> Placement of text relative to the x,y parameter for the 9 possible values of lorg.</p>
+</div>  <!-- captionHolder -->
+
+<hr class="ugHr" />
+
+<h3 id="colors">Colors:</h3>
+<p>Fill color or stroke color values may be specified either by a reference to a color gradient object or by a string specifying the a color in one of the CSS color formats.</p>
+<h4>CSS Color formats</h4>
+<p>There are five different formats that can be used to define a color for use in the canvas:<br/>
+- 6 Digit RGB hex notation, '#rrggbb', where 'rr' sets the Red level (00 to ff), 'gg' sets the Green and 'bb' sets the Blue level.<br/>
+- 3 Digit RGB hex notation '#rgb', this is converted into six-digit form (#rrggbb) by replicating digits, not by adding zeros. For example, #fb0 expands to #ffbb00.
+- RGBA notation 'rgba(r, g, b, a)' where r, g and b are decimal numbers in the range 0 to 255 representing the Red, Green and Blue levels respectively and a is the Alpha or transparency value, 0 being fully transparent and 1.0 fully opaque.<br/>
+- RGB notation "rgb(r, g, b)" where r, g and b are decimal numbers in the range 0 to 255 representing the red, green and blue levels respectively. This is a suitable format for entering dynamic color values. The calculated r, g and b values may be passed to drawing methods by the string 'rgb('+r+','+g+','+b+')'.<br/>
+- Predefined colors names specified by the <a href="http://www.w3.org/TR/css3-color/#svg-color">Extended CSS Color List</a> eg. 'red', 'blue', 'maroon', 'palegoldenrod', 'wheat' etc.  There are 143 standard colors named in the list.</p>
+
+<h4>LinearGradient and RadialGradient Objects</h4>
+<p>The LinearGradient and RadialGradient objects encapsulates the instructions from making canvasGradient objects just as if the native canvas ctx.createLinearGradient or ctx.createRadialGradient had been called. The difference is that they expect the coordinates passed as parameters to be in <b>world coordinates</b> not pixels. If the 'fillColor' property of a Cobj is assigned to be a LinearGradient or RadialGradient object then the coordinates defining the gradient are relative to the drawing origin of the Cobj, so if the Cobj position is translated then the gradient fill will move with the object. The gradients will also scale with the object but will not rotate!</p>
+<p>The LinearGradient and RadialGradient constructors are globals and are independent of any particular Cango instance.</p>
+
+<p>LinearGradient or RadialGradient objects may be used as the fill color for cgo.clearCanvas and cgo.fillGridbox methods.</p>
+
+<h4>Example 1:</h4>
+<p>An example of the LinearGradient is: </p>
+
+<div style="float:right; margin:10px 10px 10px 0">
+  <canvas id="lingrad" width="150" height="150"></canvas>
+</div>
+
+<div class="srcFmt" style="width: 520px">
+<pre>
+var gradObj = new LinearGradient(-2,2, 2,-2);
+gradObj.addColorStop(0, 'yellow');
+gradObj.addColorStop(0.5, 'green');
+gradObj.addColorStop(1, 'black');
+
+g.setGridboxRHC();
+g.setWorldCoords(-2, -2, 4);  // 4x4 square, 0,0 in center
+
+g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:gradObj});
+</pre>
+</div>
+
+<h4>Example 2:</h4>
+<p>An example of the RadialGradient is :</p>
+
+<div style="float:right; margin:10px 10px 10px 0">
+  <canvas id="radgrad" width="150" height="150"></canvas>
+</div>
+
+<div class="srcFmt" style="width: 520px">
+<pre>
+var grad = new RadialGradient(0, 0, .5, 1, 1, 2.5);
+grad.addColorStop(0, '#aabbff');
+grad.addColorStop(1, '#00f');
+
+g.setGridboxRHC();
+g.setWorldCoords(-2, -2, 4);  // 4x4 square, 0,0 in center
+
+g.drawShape(shapeDefs.square(4), 0, 0, {fillColor:grad});
+</pre>
+</div>
+<p style="clear:both; height:0; color: white">.</p>
+
+<hr class="ugHr" />
+
+<h3 id="shapeDefs">shapeDefs Methods</h3>
+<p>Cango makes available a Global object <b>shapeDefs</b> which has methods to create the Cgo2D data defining the outline path of many commonly used shapes.</p>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="circle" href="#" class="itemName" onclick="return toggleSection(this)">circle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>circle</b>(d);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a circle with diameter 'd'. The returned array is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The Cobj drawing origin will be at the center of the circle.</p>
+<p><b>NOTE</b>: If the circle outline is used as a PATH Cobj definition and the Cango context has different X and Y scaling the circle will be distorted to an ellipse unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>d</b>:Number - Diameter of the circle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the circle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ellipse" href="#" class="itemName" onclick="return toggleSection(this)">ellipse</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>ellipse</b>(w, h);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a ellipse with width (X axis) 'w' and height (Y axis) 'h'. The returned array is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The Cobj drawing origin will be at the center of the ellipse.</p>
+<p><b>NOTE</b>: If the ellipse outline is used as a PATH Cobj definition and the Cango context has different X and Y scaling the ellipse will be distorted unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>w</b>:Number - The width (X dimension) of the ellipse measured in the world coordinates.</p>
+<p><b>h</b>:Number - The height (Y dimension) of the ellipse measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the ellipse.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="square" href="#" class="itemName" onclick="return toggleSection(this)">square</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>square</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a square with sides of length 's'. The returned array is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The Cobj drawing origin will be at the center of the square.</p>
+<p><b>NOTE</b>: If the square outline is used as a PATH Cobj definition and the Cango context has different X and Y scaling the square will be distorted, appearing as a rectangle unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - Side length of the square measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the square.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="rectangle" href="#" class="itemName" onclick="return toggleSection(this)">rectangle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>rectangle</b>(w, h);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a rectangle with width 'w' and height 'h'. The returned array is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The Cobj drawing origin will be at the center of the rectangle.</p>
+<p><b>NOTE</b>: If the rectangle outline is used as a PATH Cobj definition and the Cango context has different X and Y scaling the rectangle will be distorted unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>w</b>:Number - The width (X dimension) of the rectangle measured in the world coordinates.</p>
+<p><b>h</b>:Number - The height (Y dimension) of the rectangle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the rectangle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="triangle" href="#" class="itemName" onclick="return toggleSection(this)">triangle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs.<b>triangle</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of an equilateral triangle with sides of length 's'. The returned array is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The Cobj drawing origin will be at the center of the triangle.</p>
+<p><b>NOTE</b>: If the triangle outline is used as a PATH Cobj definition and the Cango context has different X and Y scaling the triangle will be distorted to an isosceles triangle unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each side of the triangle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the triangle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="cross" href="#" class="itemName" onclick="return toggleSection(this)">cross</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs.<b>cross</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a cross with horizontal and vertical arms of length 's'. The returned array is suitable as input parameter for the Cobj constructor for PATH type object. The Cobj drawing origin will be at the center of the cross.</p>
+<p><b>NOTE</b>: When the PATH Cobj made with the cross data is drawn with a Cango context having different X and Y scaling the cross will be distorted unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of the horizontal and vertical arms of the cross, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the cross.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ex" href="#" class="itemName" onclick="return toggleSection(this)">ex</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs.<b>ex</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D format data array defining the outline path of a ex with arm lengths 's'. The returned array is suitable as input parameter for the Cobj constructor for PATH type object. The Cobj drawing origin will be at the center of the ex.</p>
+<p><b>NOTE</b>: When the PATH Cobj made with the ex data is drawn with a Cango context having different X and Y scaling the ex will be distorted unless the Cobj 'iso' property is set 'true'.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each arm of the ex, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the ex.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="arrow" href="#" class="itemName" onclick="return toggleSection(this)">arrow</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>arrowData</i> = shapeDefs.<b>arrow</b>(x1, y1, x2, y2[[[, shaftWidth], headSize], gc]);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D data array defining the outline path of an arrow starting at world coordinates x1,y1 and ending at world coordinate location x2,y2. An arrow head is draw at the end point. The width of the shaft will be 'shaftWdith' and the length of the arrow head along the shaft is approximately 'headSize*shaftWidth' so the head will scale with the width of the shaft. The Cgo2D format array defining the arrow shape is returned. This is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The drawing origin of the Cobj will be at x1,y1. The arrow data with start with an absolute move ("M" command) to the point x1,y1 so is not suitable for concatenating with other Cgo2D arrays.</p>
+<p><b>NOTE</b>: The Cobj made with the arrow data is drawn using a Cango context with different X and Y scaling the data will be generated with a compensating scale factors if a reference to the Cango context is passed as the 'gc' parameter. The Cobj should always have its 'iso' property set 'true' to preserve the shape.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>x1, y1</b>:Numbers - X and Y coordinates of the start of the arrow. Measured in the world coordinates.</p>
+<p><b>x2, y2</b>:Numbers - X and Y coordinates of the end of the arrow, the location of the tip of the arrow head when drawn. Measured in the world coordinates.</p>
+<p><b>shaftWidth</b>:Number - The width of the arrow shaft and reference size for the arrow head. Measured in world coordinate units (default = 1).</p>
+<p><b>headSize</b>:Number - The relative size of the arrow head compared to the shaft width. A nice arrow head is about 4 times the width of the shaft (default = 4).</p>
+<p><b>gc</b>:Cango graphics context - A reference to the Cango context that will be used to render the arrow created from the arrow data. This reference is only required when the Cango context has different X and Y scaling.</p>
+</div>
+
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the arrow.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="arrowArc" href="#" class="itemName" onclick="return toggleSection(this)">arrowArc</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>arrowData</i> = shapeDefs.<b>arrowArc</b>(radius, startAngle, stopAngle, clockwise[[[, shaftWidth], headSize], gc]);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo2D data array defining the outline path of a curved arrow whose shape is a circular arc of radius 'radius' starting at the angle 'startAngle' from the X axis and finishing at angle 'stopAngle'. An arrow head is drawn at the end with its tip at radius 'radius' and angle 'stopAngle'. The width of the arrow shaft is 'shaftWidth' measured in world coordinate units and the arrow head is scaled in proportion to the shaft width. The Cgo2D format array defining the arrow shape is returned. This is suitable as input parameter for the Cobj constructor for PATH or SHAPE types objects. The drawing origin of the Cobj will be at the center of the circular arc. The arrow data with start with an absolute move ("M" command) to the point 0,0 so is should be positioned on the drawing using the dynamic x,y parameters of the render command.</p>
+<p><b>NOTE</b>: The Cobj made with the arrow data is drawn using a Cango context with different X and Y scaling the data will be generated with a compensating scale factors if a reference to the Cango context is passed as the 'gc' parameter. The Cobj should always have its 'iso' property set <b>true</b> to preserve the shape.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>radius</b>:Number - The radius of the circular arc formed by the arrow shaft. Measured in the world coordinates.</p>
+<p><b>startAngle, stopAngle</b>:Numbers - The angles at which the arrow arc start and stops respectively. Measured in degrees.</p>
+<p><b>clockwise</b>:Boolean - If 'clockwise' evaluates to <b>true</b> the arc will be drawn from start angle to stop angle sweeping in a clockwise direction. If <b>false</b> the arc will be swept in the anti-clockwise direction.</p>
+<p><b>shaftWidth</b>:Number - The width of the arrow shaft and reference size for the arrow head. Measured in world coordinate units (default = 1).</p>
+<p><b>headSize</b>:Number - The relative size of the arrow head compared to the shaft width. A nice arrow head is about 4 times the width of the shaft (default = 4).</p>
+<p><b>gc</b>:Cango graphics context - A reference to the Cango context that will be used to render the arrow created from the arrow data. This reference is required when the Cango context has different X and Y scaling or if the Cango context is using the SVG coordinate grid (i.e. setGridboxSVG was called).</p>
+</div>
+
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo2D format commands and associated coordinate pairs defining the outline of the arrow.</p>
+
+<h4>Example:</h4>
+
+<div class="srcFmt">
+<pre>
+function drawArrows(cvsID)
+{
+  var gc = new Cango(cvsID),
+      xmin = 0, xmax = 250,
+      ymin = 0, ymax = 160,
+      arrowData, arcData;
+
+  gc.setGridboxRHC(10, 8, 88, 60);
+  gc.setWorldCoords(xmin, ymin, xmax-xmin);
+  gc.drawAxes(xmin, xmax, ymin, ymax);
+
+  arrowData = shapeDefs.arrow(100,10, 200,70, 2);
+  gc.drawShape(arrowData, 0, 0, {fillColor:'red'});
+
+  arcData = shapeDefs.arrowArc(130, 30, 90, false, 6);
+  gc.drawShape(arcData, 50, 30, {fillColor:'green'});
+}
+</pre>
+</div>
+
+  <canvas id="cvs3" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 3.</b> Simple example of 'arrow' and 'arrowArc' methods.</p>
+</div>
+  </dt>
+</div>
+
+</div> <!-- manualItems -->
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

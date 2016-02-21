@@ -1,0 +1,1012 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Canvas 3D Graphics</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="canvas, HTML5 canvas, 3D drawing, 3D canvas drawing, 3D graphics library, javascript 3D graphics" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango3D-7v10.js"></script>
+  <script type="text/javascript" src="timeline2v13.js"></script>
+
+  <script type="text/javascript">
+
+    function makeIcosahedron(g, sideLen)
+    {
+        // draw a icosahedron
+        var tau = 1.6180,
+            phi = 20.90515745,  // (180-138.1896851)/2
+            rt3 = Math.sqrt(3),
+            d = sideLen/2,
+            foldTbl = [ 60, -60, 60, -60,
+                           -60, -60, 60,  60,
+                            60, -60, 60, -60,
+                           -60, -60, 60,  60,
+                            60, -60, 60, -60],
+            moveTbl = [  0, 2*d,  0, 2*d,
+                           2*d, 2*d,  0,   0,
+                             0, 2*d,  0, 2*d,
+                           2*d, 2*d,  0,   0,
+                             0, 2*d,  0, 2*d],
+            triangle = ['M',0,0,0, 'L', d*rt3,d,0, 0,2*d,0, 'z'],
+            tri,
+            faces = g.createGroup3D(),
+            bend = -2*phi,
+            i;
+
+        for (i=0; i<20; i++)
+        {
+          // create the next face
+          tri = g.compileShape3D(triangle, "red");  // backColor irrelevant
+          tri.backHidden = true;
+          faces.addObj(tri);
+          faces.translate(0, -moveTbl[i], 0);
+          faces.rotate(0, 0, 1, foldTbl[i]);
+          faces.rotate(0, 1, 0, bend);
+          faces.translate(0, moveTbl[i], 0);
+        }
+        return faces;
+    }
+
+    function icosAnimation(cvsId)
+    {
+      var g = new Cango3D(cvsId),
+          anims;
+
+      function initIcos()
+      {
+        var icos,
+            icosNaxes,
+            axis = [],
+            axes,
+            lbl = [];
+
+        // setup currSate and nextState objects
+        this.currState = {t:0, angle:0, xRot:0, yRot:0, zRot:0};
+        this.nextState = {t:0, angle:0, xRot:0, yRot:0, zRot:0};
+
+        axis[0] = g.compilePath3D(['M',0,0,0, 'L',250,0,0], 'red');      // X axis
+        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,250,0], 'green');     // Y axis
+        axis[2] = g.compilePath3D(['M',0,0,0, 'L',250,0,0], 'blue');      // copy X
+        axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
+
+        lbl[0] = g.compileText3D("X", "red", 10, 500, 9);
+        lbl[0].translate(250, 10, 0);
+        lbl[1] = g.compileText3D("Y", "green", 10, 500, 9);
+        lbl[1].translate(250, 10, 0);       // draw on X axis
+        lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
+        lbl[1].rotate(0, 1, 0, 90);       // rotate to Y
+        lbl[2] = g.compileText3D("Z", "blue", 10, 500, 9);
+        lbl[2].translate(250, 10, 0);       // draw on X axis
+        lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
+        lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
+        axes = g.createGroup3D(axis, lbl);
+
+        // create the icosahedron
+        icos = makeIcosahedron(g, 100);
+        // move it away from origin so it tumble when simply rotated
+        icos.translate(100, 50, 200);
+
+        icosNaxes = g.createGroup3D(icos, axes);
+
+        return icosNaxes;
+      }
+
+      function drawGroup3D(obj, pos, parms)      // animation drawFn
+      {
+        obj.transform.reset();     // reset to indentity matrix
+        obj.transform.rotate(0, 0, 1, pos.zRot);
+        obj.transform.rotate(0, 1, 0, pos.yRot);
+        obj.transform.rotate(1, 0, 0, pos.xRot);
+        // request a rendering
+        g.renderFrame(obj);
+      }
+
+      function tumblePath(time)
+      {
+        // 'this' refers to the Animation object instance
+        var va = 1.5*180/Math.PI,  // angular velocity 1.5 rad/sec
+            dt = time - this.currState.t,
+            angle = this.currState.angle + dt*va/1000;
+
+        this.nextState.t = time;
+        this.nextState.angle = angle;
+        this.nextState.xRot = -angle/2;
+        this.nextState.yRot = -angle/3;
+        this.nextState.zRot = angle;
+      }
+
+      g.setWorldCoords3D(-500, -300, 1000); // viewport is full canvas
+      g.setLightSource(0, 0, 500);   // vector pointing to light source
+
+      anims = new Animation(initIcos, drawGroup3D, tumblePath);
+      tline1 = new Timeline(anims, 0, false);     // loop = false
+      tline1.play();
+    }
+
+//==========================================================================
+
+    function drawDemo(cvsID)
+    {
+      var stick, plate, plateNstick,
+          g = new Cango3D(cvsID);  // create a graphics context
+
+      function turnPlate()
+      {
+        plateNstick.transform.rotate(0, 1, 0, -25);     // apply 25 deg rotation to matrix
+        g.renderFrame(plateNstick);           // request a re-draw
+      }
+
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-75, -120, 150);
+      g.setLightSource(0, 100, 200);
+
+      stick = g.compilePath3D(["M",0,0,0, "Q", 0,50,0, -15, 100, 0], "sienna", 3);
+      stick.rotate(0, 1, 0, 90);  // rotate out of XY plane
+      plate = g.compileShape3D(shapes3D.circle(50), "yellow", "yellow");
+      plate.rotate(1, 0, 0, 75);  // flip to near horizontal
+      stick.translate(0, -96, 0); // move down Y axis under plate
+      // make a group comprising stick and plate
+      plateNstick = g.createGroup3D(stick, plate);
+
+      setInterval(turnPlate, 50)        // keep doing this forever
+    }
+
+//==========================================================================
+
+    function buildCube(g, width, colors) // pass width and array of 6 colors
+    {
+      var sq = ['M',0,0,0, 'L',width,0,0, width,width,0, 0,width,0, 'z'],
+          foldTbl = [-90, 90, -90, 90, -90, 90],
+          bend = -90,
+          moveTbl_1 = [-width, 0, -width, 0, -width, 0],
+          moveTbl_2 = [width, 0, width, 0, width, 0],
+          faces = g.createGroup3D(),
+          side,
+          i;
+
+      for (i=0; i<6; i++)
+      {
+        side = g.compileShape3D(sq, colors[i]);
+        side.backHidden = true;
+        faces.addObj(side);
+        faces.translate(0, moveTbl_1[i], 0);
+        faces.rotate(0, 0, 1, foldTbl[i]);
+        faces.rotate(0, 1, 0, bend);
+        faces.translate(0, moveTbl_2[i], 0);
+      }
+      return faces;
+    }
+
+    function drawCube(cvsID)
+    {
+      var g = new Cango3D(cvsID),  // create a graphics context
+          width = 100,
+          colors = ["red", "green", "blue", "yellow", "silver", "sienna"],
+          cube, movedCube,
+          radius = 50,         // sensitivity of dragging action
+          savMouse,
+          dragPt,
+          csrPt,
+          u, theta;
+
+      function grabCube(mousePos)
+      {
+        savMouse = mousePos;
+      }
+
+      function dragCube(mousePos)
+      {
+        // This drag function rotates an object around its drawing origin
+        // assume a lever from drawing origin to drag point z=radius is moved by csr
+        var dragPt = {x:savMouse.x-this.grabOfs.x, y:savMouse.y-this.grabOfs.y, z:radius},
+            csrPt = {x:mousePos.x-this.grabOfs.x, y:mousePos.y-this.grabOfs.y, z:radius},
+            u, theta;
+
+        savMouse = mousePos;    // save these as reference for next drag
+        // axis to rotate lever is the normal to plane defined by the 3 points
+        u = calcNormal(this.dwgOrg, dragPt, csrPt);
+        // calc angle between dragPt and csrPt (amount of rotation needed about axis 'u')
+        theta = calcIncAngle(this.dwgOrg, dragPt, csrPt);    // degrees
+        // apply this drag rotation to 'cube' Group3D
+        cube.transform.rotate(u.x, u.y, u.z, theta);
+        // redraw with rotation applied
+        g.renderFrame(movedCube);
+      }
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "lightyellow");
+      g.setWorldCoords3D(-150, -100, 300);
+      g.setLightSource(0, 100, 200);
+
+      cube = buildCube(g, width, colors);
+      // move the cube so cnter is over the drawing origin for nice drag rotation
+      cube.translate(-width/2, -width/2, width/2);
+
+      // enable dragging
+      cube.enableDrag(grabCube, dragCube, null);
+
+      // make a group to move the cube independent of turning
+      movedCube = g.createGroup3D(cube);
+      movedCube.transform.rotate(1, 2, 1, 35);
+
+      g.render(movedCube);
+    }
+
+//==========================================================================
+
+    function groupDragDemo(scrnID)
+    {
+      var g = new Cango3D(scrnID),
+          newPos = {x:0, y:0, z:0},  // avoid creating Objects in event handlers
+          taggedFace, cube1, cube2, cube3, grp, lbl,
+          width = 20,
+          colors1 = ["green", "green", "green", "green", "green", "green"],
+          colors2 = ["red", "green", "blue", "yellow", "silver", "brown"];
+
+      function dragGroup(mousePos)
+      {
+        // use the target's drawing origin as reference point
+        newPos.x = mousePos.x-this.grabOfs.x;
+        newPos.y = mousePos.y-this.grabOfs.y;
+        newPos.z = mousePos.z-this.grabOfs.z;
+        grp.transform.reset();
+        grp.transform.translate(newPos.x, newPos.y, newPos.z);
+
+        g.renderFrame(grp);
+      }
+
+      function dragObj(mousePos)
+      {
+        // use target's parent group drawing origin as reference
+        newPos.x = mousePos.x-this.grabOfs.x;
+        newPos.y = mousePos.y-this.grabOfs.y;
+        newPos.z = mousePos.z-this.grabOfs.z;
+        cube1.transform.reset();          // reset to identity matrix
+        cube1.transform.translate(newPos.x, newPos.y, newPos.z);
+
+        g.renderFrame(grp);
+      }
+
+      g.setWorldCoords3D(-50, -40, 100);
+      g.setFOV(45);
+      g.setPropertyDefault("backgroundColor", "lightyellow");
+
+      cube1 = buildCube(g, width, colors1);
+      lbl = g.compileText3D("Drag Me", "white", 12, 600, 5);
+      taggedFace = g.tagShape3D(cube1.children[0], lbl, width/2, width/2);
+      // tagShape3D removes the shape being tagged from its group3D, returns a new Group3D
+      cube1.addObj(taggedFace);   // add the new Group3D to cube1.children
+      cube1.rotate(1, 1, 0, 30);
+      cube1.translate(35, 10, -10);
+
+      cube2 = buildCube(g, width, colors2);
+      cube2.transform.rotate(1, 1, 0, 30);
+
+      cube3 = buildCube(g, width, colors2);
+      cube3.transform.rotate(1, 1, 0, -20);
+      // create a group to parent the cubes for manoeuvring
+      grp = g.createGroup3D(cube1, cube2, cube3);
+      // shift group down and back into screen from the drawing origin
+      grp.translate(0, -20, -20);
+      // enabled GREEN cube to be dragged independently
+      cube1.enableDrag(null, dragObj, null);
+      // enable grp to be dragged by RED cubes
+      grp.enableDrag(null, dragGroup, null);
+
+      g.render(grp);
+    }
+
+//==========================================================================
+
+    function GlassDemo(cvsID)
+    {
+      var g = new Cango3D(cvsID),
+          glassProfile = "M 487.14286,213.79076 C 487.14286,225.21932 486.13649,235.16678 475,240.93362 C 412.42894,273.33497 388.39126,257.10929 377.14286,305.21933 C 374.83706,315.08135 372.48359,380.66161 378.57143,388.07647 C 396.52204,409.93993 425,401.64098 430.71428,408.79076",
+          glassData, glass,
+          sPos = {x:0, y:0, z:0, xRot:0, yRot:0, zRot:0},
+          savPos = {x:0, y:0, z:0, xRot:0, yRot:0, zRot:0},
+          s1, s2, s3;
+
+      this.newXrot = function()
+      {
+        var dxRot;
+
+        sPos.xRot = s1.value;
+        dxRot = sPos.xRot - savPos.xRot;
+        savPos.xRot = sPos.xRot;
+        glass.rotate(1, 0, 0, dxRot);
+        g.renderFrame(glass);
+      }
+
+      this.newYrot = function()
+      {
+        var dyRot;
+
+        sPos.yRot = s2.value;
+        dyRot = sPos.yRot - savPos.yRot;
+        savPos.yRot = sPos.yRot;
+        glass.rotate(0, 1, 0, dyRot);
+        g.renderFrame(glass);
+      }
+
+      this.newZrot = function ()
+      {
+        var dzRot;
+
+        sPos.zRot = s3.value;
+        dzRot = sPos.zRot - savPos.zRot;
+        savPos.zRot = sPos.zRot;
+        glass.rotate(0, 0, 1, dzRot);
+        g.renderFrame(glass);
+      }
+
+      g.clearCanvas();
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-400, -200, 800);
+      g.setLightSource(-100, 100, 300);
+      glassData = svgToCgo3D(glassProfile);
+      glass = g.objectOfRevolution3D(glassData, -368, 36, "rgba(150, 230, 160, 0.3)", "rgba(150, 230, 160, 0.3)");
+      glass.translate(0, 350, 50);
+      glass.rotate(1, 0, 0, 15);
+
+      s1 = document.getElementById("slider-1");
+      s2 = document.getElementById("slider-2");
+      s3 = document.getElementById("slider-3");
+      // draw the group in the start position
+      g.renderFrame(glass);
+    }
+
+//============================================================
+    function standAnimation(cvsID)
+    {
+      function fetchFile(url)
+      {
+        var p;
+        
+        if (window.XMLHttpRequest)
+        {
+          p = new XMLHttpRequest();  // modern browsers
+        }
+        else
+        {
+          p = new ActiveXObject('Microsoft.XMLHTTP');  // code for IE6, IE5
+        }
+        p.open("GET", url, false);
+        p.send(null);
+
+        return p.responseText
+      }
+
+      var turntableProfile2D = ["M",0,25, "L",45,25, "A",7,7, 0,0,0, 45,15, "L",0,15],
+          turntableProfile,
+          turntable,
+          axleProfile = ["M",20,15,0, "L",20,0,0],
+          axle,
+          strData = fetchFile("CatFace-V6-01.json"),
+          jsonData = JSON.parse(strData),
+          raetz,
+          base,
+          displayStand,
+          anims,
+          radius = 50,         // sensitivity of dragging action
+          savMouse = null,
+          dragActive = false,
+          dragPt = {x:0, y:0, z:radius},
+          csrPt = {x:0, y:0, z:radius},
+          u, theta,
+          g;
+
+      function initTurntable()
+      {
+        // setup currSate and nextState objects
+        this.currState = {t:0, angle:0};
+        this.nextState = {t:0, angle:0};
+
+        return turntable;   // not used (but good form to follow template)
+      }
+
+      function drawTurntable()
+      {
+        // rotate the turntable about the normal to the turntable platter (un-transformed)
+        turntable.transform.reset();
+        turntable.transform.rotate(0, 1, 0, this.nextState.angle);   // rotate about Y axis
+        // draw the whole turntable and base
+        g.renderFrame(displayStand);
+      }
+
+      function revolvePath(time)
+      {
+        // 'this' refers to the Animation object instance
+        var va = -0.3*180/Math.PI,  // angular velocity  1 rad/sec
+            dt = time - this.currState.t,
+            angle = this.currState.angle + dt*va/1000;
+
+        this.nextState.t = time;
+        this.nextState.angle = angle;
+      }
+
+      var grabBox = function(mousePos)
+      {
+        savMouse = mousePos;
+      }
+
+      function dragBox(mousePos)
+      {
+        // This drag function rotates an object around its drawing origin
+        // assume a lever from drawing origin to drag point z=radius from drawing origin is moved by csr
+        dragPt.x = savMouse.x-this.grabOfs.x;
+        dragPt.y = savMouse.y-this.grabOfs.y;
+
+        csrPt.x = mousePos.x-this.grabOfs.x;
+        csrPt.y = mousePos.y-this.grabOfs.y;
+        savMouse = mousePos;    // save these as reference for next drag
+        // axis to rotate lever from dragPt to csrPt is the normal to plane defined by the 3 points
+        u = calcNormal(this.dwgOrg, dragPt, csrPt);
+        // calc angle between dragPt and csrPt (amount of rotation needed about axis 'u')
+        theta = calcIncAngle(this.dwgOrg, dragPt, csrPt);    // degrees
+        displayStand.transform.rotate(u.x, u.y, u.z, theta);
+        // redraw with rotation applied
+        g.renderFrame(displayStand);
+      }
+
+      g = new Cango3D(cvsID);
+      g.setPropertyDefault("backgroundColor", "aliceblue");
+      g.setWorldCoords3D(-150, -50, 300);
+      g.setFOV(40);     // viewpoint is always along z axis
+      g.setLightSource(0, 100, 500);
+      // make a timeline to rotate the turntable
+      // build the turnTable
+      turntableProfile = svgToCgo3D(turntableProfile2D);
+      turntable = g.objectOfRevolution3D(turntableProfile, 0, 36, "cadetblue", "transparent");
+      // fat axle frombase to turntable
+      axle = g.objectOfRevolution3D(axleProfile, 0, 36, "cadetblue", "transparent");
+
+      raetz = g.JSONtoObj3D(jsonData);
+      // add to rotating element group
+      turntable.addObj(raetz);
+      // build the base
+      base = g.objectOfRevolution3D(["M",0,30,0,"L",35,30,0,"L",40,25,0,"L",40,0,0,"L",0,0,0], 0, 6, "darkslategray", "green", true);
+      base.translate(0, -30, 0);  // move it under the turntable
+      // make the base draggable
+      base.enableDrag(grabBox, dragBox, null);
+      // group the base and stand so that they can be depth sorted for rendering
+      displayStand = g.createGroup3D(base, axle, turntable);
+
+      // make a timeline to rotate the turntable
+      anims = new Animation(initTurntable, drawTurntable, revolvePath);
+      tline2 = new Timeline(anims, 0, false);     // loop = false
+
+      tline2.play();
+    }
+
+//============================================================
+
+    var tline1, tline2;
+
+    var consoleBtns1 =
+    {
+      f1:function(){tline1.play()},
+      f2:function(){tline1.pause()},
+      f3:function(){tline1.stop()},
+      f4:function(){tline1.step()}
+    };
+
+    var consoleBtns2 =
+    {
+      f1:function(){tline2.play()},
+      f2:function(){tline2.pause()},
+      f3:function(){tline2.stop()},
+      f4:function(){tline2.step()}
+    };
+
+  </script>
+
+  <script type="text/javascript">
+    var glass1;
+
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      icosAnimation('cvs0');
+      drawDemo('cvs1');
+      drawCube('cvs2');
+      groupDragDemo('cvs3');
+      glass1 = new GlassDemo('cvs4');
+      standAnimation('cvs5');
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Canvas 3D Graphics</h1>
+        <div class="text_01">
+
+    <h2>3D Graphics for HTML5 canvas</h2>
+    <p>Here are various examples of objects, drawn and animated in 3D on the HTML5 canvas element. All the 3D coordinate manipulation and projection to the 2D canvas is handled by the <i><b>Cango3D</b></i> graphics library.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+    <div class="scrnBevel" >
+      <canvas id="cvs0" width="640" height="400" style="background-color: lightyellow;"></canvas>
+    </div>  <!-- scrnBevel -->
+
+    <table class="btnHolder" cellspacing="0" cellpadding="0">
+      <tr align="center">
+        <td width="25%"><button type="button" onclick="consoleBtns1.f1()" class="button-link">SPIN</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f2()" class="button-link">PAUSE</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f3()" class="button-link">STOP</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f4()" class="button-link">STEP</button></td>
+      </tr>
+    </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+<h2>Cango3D</h2>
+
+<p>Cango3D provides methods for creating, rendering and animating 3D outline paths, filled shapes and stroke text on a 2D canvas. Complex 3D objects can be constructed by manoeuvring shapes, acting as panels, forming the 3D object. 3D objects created by Cango3D can be saved to JSON format files for re-use.</p>
+
+<p>The current version of Cango3D is 7v10, and the source code is available at <a href="Cango3D-7v10.js" download>Cango3D-7v10.js</a>.</p>
+
+<h3>Features of the <i>Cango3D</i></h3>
+
+<ul>
+<li><p><b>Conceptual simplicity</b> - The only things Cango3D draws on the canvas are Obj3D objects. Obj3Ds can be manoeuvred to form multi-faceted 3D shapes by their <b>translate</b>, <b>rotate</b> or <b>scale</b> methods. These groups of Obj3D can be treated as a single entity by creating a Group3D object and adding Obj3Ds as its children. The Group3D object also has <b>translate</b>, <b>rotate</b> and <b>scale</b> methods to manoeuvre all their children to form more complex objects. Group3Ds can themselves be added as children of other Group3Ds. <b>Group3D</b> transforms are applied to the group's Obj3D children and recursively to the children of its Group3D children and so on. The effect is that children inherit motion that has been applied to any Group3D ancestors higher up the family tree.</p>
+</li>
+
+<li>
+<p><b>Curved or Straight outlines</b> - An <i>Obj3D</i> is defined by its multi-segment outline path. Path segments can be straight lines or Bézier curves with 3D coordinates. Obj3Ds come in three types, PATH types which are rendered as a simple outline, SHAPE types which are always filled with a color and TEXT types which have multi-segment paths forming stroke text characters that can be moved about in 3D.</p>
+</li>
+
+<li>
+<p><b>Simple but powerful animation capability</b> - All Obj3Ds and Group3Ds have a <b>transform</b> property which is an object with <b>translate</b>, <b>revolve</b>, <b>rotate</b> and <b>scale</b> methods to apply temporary transforms to the Obj3Ds coordinates as the Obj3D is rendered. New transforms can be applied at every frame of an animation without changing the underlying coordinates of the Obj3D.</p>
+</li>
+<li>
+<p><b>World Coordinates</b> - All 3D objects can be created and rendered in user defined, isotropic world coordinates. The mapping of 3D world coordinates to 2D canvas pixels is handled by the Cango3D. A right handed coordinate system is used, with Y axis values increasing UP the screen. The canvas sits in the XY plane, the viewpoint is at some distance along the positive Z axis which points out of the screen.</p>
+</li>
+<li>
+<p><b>Shading</b> - When a SHAPE type Obj3D is rendered, it's fill color is shaded according to the current position of the user defined light source.</p>
+</li>
+<li>
+<p><b>Drag and Drop</b> - Any Obj3D or Group3D can be simply enabled for drag-n-drop, just specify the callback functions, all the event handling support code is built-in.</p>
+</li>
+</ul>
+
+<h3>Using Cango3D</h3>
+<p>Firstly, download the Cango3D JavaScript source file: <a href="Cango3D-7v10.js" download>Cango3D-7v10.js</a>. This can be placed in the same directory as the web page HTML file. Add the following line to the web page header:</p>
+<div class="srcFmt">
+<pre>
+  &lt;script type="text/javascript" src="Cango3D-7v10.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+<p>This file exposes the global objects: <b>Cango3D</b>, <b>Obj3D</b>, <b>Group3D</b>, <b>Drag3D</b> and the utility methods svgToCgo3D, calcNormal, calcIncAngle.</p>
+
+<p>Within the body of the web page, there must be a canvas element, it must have a unique <b>id</b>.</p>
+<p>Typical HTML code is:</p>
+<div class="srcFmt">
+<pre>
+ &lt;canvas id="<i>canvasID</i>" width="500" height="300"&gt;&lt;/canvas&gt;
+</pre>
+</div>
+<p>An instance of a Cango3D graphics context is created as follows:</p>
+<div class="srcFmt">
+<pre>
+ var g = new Cango3D(<i>canvasID</i>);
+</pre>
+</div>
+<p>The returned object referenced by <i>g</i>, has the Cango3D methods such as g.<b>setWorldCoords3D</b>, g.<b>compileShape3D</b>, g.<b>createGroup3D</b> and so on.</p>
+
+<h3>Creating an object with Cango3D</h3>
+<p>A 3D object it is made by first creating its component panels with the Cango3D compile methods such as; <b>compileShape3D</b>, <b>compilePath3D</b>, etc. which return a reference to the Obj3D created.</p>
+
+<p>Cango3D provides the global object <b>shapes3D</b> to simplify defining common 2D shapes that can be compiled to 3D objects. The shapes3D object has properties: <b>circle</b>, <b>ellipse</b>, <b>square</b>, <b>triangle</b>, <b>cross</b>, <b>ex</b>. These are JavaScript functions taking a scale factor parameter and returning an array of data in Cgo3D format defining the shape.</p>
+
+<p>Yet another way to make objects is to load pre-defined objects that have been saved in Cango3D JSON format. These can be read from a file and converted back to a Group3D and all its children.</p>
+
+<h4>Example</h4>
+<p>Here is a very simple example, it creates two Obj3D, a plate from a shapes3D.circle and a stick from a Quadratic Bézier curve. It then creates a Group3D to move them as one entity, the Group3D's transform.rotate method is called to rotate the group. This rotation is re-applied and the Group3D re-rendered every 50 msec.</p>
+
+<div style="position: relative; margin: 1em auto; width: 200px; height:200px;border:1px solid #000000">
+  <canvas id="cvs1" width="200" height="200"></canvas>
+</div>
+
+<p>JavaScript source code for this example is shown below:</p>
+<div class="srcFmt">
+<pre>
+function drawDemo(cvsID)
+{
+  var stick, plate, plateNstick,
+      g = new Cango3D(cvsID);  // create a graphics context
+
+  function turnPlate()
+  {
+    plateNstick.transform.rotate(0, 1, 0, -25);     // apply 25 deg rotation to matrix
+    g.renderFrame(plateNstick);           // request a re-draw
+  }
+
+  g.setPropertyDefault("backgroundColor", "aliceblue");
+  g.setWorldCoords3D(-75, -120, 150);
+  g.setLightSource(0, 100, 200);
+
+  stick = g.compilePath3D(["M",0,0,0, "Q", 0,50,0, -15, 100, 0], "sienna", 3);
+  stick.rotate(0, 1, 0, 90);  // rotate out of XY plane
+  plate = g.compileShape3D(shapes3D.circle(50), "yellow", "yellow");
+  plate.rotate(1, 0, 0, 75);  // flip to near horizontal
+  stick.translate(0, -96, 0); // move down Y axis under plate
+  // make a group comprising stick and plate
+  plateNstick = g.createGroup3D(stick, plate);
+
+  setInterval(turnPlate, 50)        // keep doing this forever
+}
+</pre>
+</div>
+
+<h3>Building a cube by folding its net</h3>
+<p>Here is an example of building an object by folding the individual panels forming its net. All panels start in the same place in the XY plane, the first panel is created and added to the Group3D that will hold the cube. The group is moved to the Y axis (fold line) rotated, and folded back. The next panel is created, added to a Group3D, the group is again moved, rotated and folded, these movements are applied to both the panels, so the first has had 2 rotations and 2 folds. The next panel is created and so on. Here is a cube built using the net fold method. It can be rotated by clicking on it and dragging.</p>
+
+<div style="position: relative; margin: 1em auto; width: 350px; height: 250px; border:1px solid #000000">
+  <canvas id="cvs2" width="350" height="250"></canvas>
+</div>
+
+<p>The source code for constructing the 3D cube is listed below, the Cango3D context is passed in as 'g'.</p>
+<div class="srcFmt">
+<pre>
+function buildCube(g, width, colors) // pass width and array of 6 colors
+{
+  var sq = ['M',0,0,0, 'L',width,0,0, width,width,0, 0,width,0, 'z'],
+      foldTbl = [-90, 90, -90, 90, -90, 90],
+      bend = -90,
+      moveTbl_1 = [-width, 0, -width, 0, -width, 0],
+      moveTbl_2 = [width, 0, width, 0, width, 0],
+      faces = g.createGroup3D(),
+      side,
+      i;
+
+  for (i=0; i&lt;6; i++)
+  {
+    side = g.compileShape3D(sq, colors[i]);
+    side.backHidden = true;
+    faces.addObj(side);
+    faces.translate(0, moveTbl_1[i], 0);
+    faces.rotate(0, 0, 1, foldTbl[i]);
+    faces.rotate(0, 1, 0, bend);
+    faces.translate(0, moveTbl_2[i], 0);
+  }
+  return faces;
+}
+</pre>
+</div>
+
+<h3>Drag and Drop</h3>
+<p>Drag and Drop capability can be enabled on all Obj3D and Group3D objects by defining the callback functions for mousedown, mousemove and mouseup events. References to these three callback functions are passed as parameters to the object's <b>enableDrag(grab, drag, drop)</b> method.</p>
+<p>Once an object is enabled for drag-n-drop, the canvas 'mousedown' event handler will check if the mouse event occurred within the outline of the object. If it did, then the object's 'grab' event handler is called, this assigns the 'drag' and 'drop' handlers for subsequent 'mousemove' and 'mouseup' events and then calls the 'grab' callback function.</p>
+<p>These callback functions are executed in the scope of a Drag3D object, so its properties are all available to the event handler using <b>this</b>. Drag-n-drop handlers often need to know the drawing origin and the cursor offsets when the grab occurred. Drag3D properties supply these values.</p>
+<p>The drawing origin of each Obj3D or Group3D is (0,0,0) in world coordinates when first created, but this will change when the object is moved by any Obj3D.transform.translate method being applied to the object. The Drag3D object stores the current world coordinates of the target object's drawing origin in the property, <b>dwgOrg</b>, which has x,y,z properties.</p>
+ <p>The starting point for measuring drag distances is the initial cursor offset from the target Group3D or Obj3D's drawing origin. The cursor position at grab time (mousedown event) is stored as <b>grabCsrPos</b> and the offset from the cursor to the target's drawing origin is provided as <b>grabOfs</b>, all measured in world coordinates.</p>
+ <p>In many instances a the target Group3D may be several generations up the family tree from the object handling the mouse event, so the offset of the Obj3D drawing origin from its parent Group3D drawing origin is also provided. This is stored as <b>dwgOrgOfs</b> again with x,y,z properties with all values in world coordinates.</p>
+
+<p>For every drag callback ie. every mousemove event, the current world coordinates of the cursor are always passed to the callback functions as an object with x,y,z properties. The cursor location is a point on the canvas which is always in the XY plane, therefore the z property of the cursor location will always be 0.</p>
+<p>Note: Drag and drop is not supported in Internet Explorer browsers prior to IE9.</p>
+<p>As an example of group and object dragging, the canvas below shows three cubes that have been created and made the children of a Group3D. When either of the two multi-colored cubes are dragged, they will drag the group containing of all three cubes. The green cube has a different drag callback, it will just drag the green cube around. Click on any of the cubes and drag to see the difference.</p>
+
+<div style="position: relative; margin: 1em auto; width: 400px; height: 300px; border:1px solid #000000">
+  <canvas id="cvs3" width="400" height="300"></canvas>
+</div>
+
+<p>The source code for this drag and drop example is shown below.</p>
+
+<div class="srcFmt">
+<pre>
+function groupDragDemo(scrnID)
+{
+  var g = new Cango3D(scrnID),
+      newPos = {x:0, y:0, z:0},  // avoid creating Objects in event handlers
+      taggedFace, cube1, cube2, cube3, grp, lbl,
+      width = 20,
+      colors1 = ["green", "green", "green", "green", "green", "green"],
+      colors2 = ["red", "green", "blue", "yellow", "silver", "brown"];
+
+  function dragGroup(mousePos)
+  {
+    // use the target's drawing origin as reference point
+    newPos.x = mousePos.x-this.grabOfs.x;
+    newPos.y = mousePos.y-this.grabOfs.y;
+    newPos.z = mousePos.z-this.grabOfs.z;
+    grp.transform.reset();
+    grp.transform.translate(newPos.x, newPos.y, newPos.z);
+
+    g.renderFrame(grp);
+  }
+
+  function dragObj(mousePos)
+  {
+    // use target's parent group drawing origin as reference
+    newPos.x = mousePos.x-this.grabOfs.x;
+    newPos.y = mousePos.y-this.grabOfs.y;
+    newPos.z = mousePos.z-this.grabOfs.z;
+    cube1.transform.reset();          // reset to identity matrix
+    cube1.transform.translate(newPos.x, newPos.y, newPos.z);
+
+    g.renderFrame(grp);
+  }
+
+  g.setWorldCoords3D(-50, -40, 100);
+  g.setFOV(45);
+  g.setPropertyDefault("backgroundColor", "lightyellow");
+
+  cube1 = buildCube(g, width, colors1);
+  lbl = g.compileText3D("Drag Me", "white", 12, 600, 5);
+  taggedFace = g.tagShape3D(cube1.children[0], lbl, width/2, width/2);
+  // tagShape3D removes the shape being tagged from its group3D, returns a new Group3D
+  cube1.addObj(taggedFace);   // add the new Group3D to cube1.children
+  cube1.rotate(1, 1, 0, 30);
+  cube1.translate(35, 10, -10);
+
+  cube2 = buildCube(g, width, colors2);
+  cube2.transform.rotate(1, 1, 0, 30);
+
+  cube3 = buildCube(g, width, colors2);
+  cube3.transform.rotate(1, 1, 0, -20);
+  // create a group to parent the cubes for manoeuvring
+  grp = g.createGroup3D(cube1, cube2, cube3);
+  // shift group down and back into screen from the drawing origin
+  grp.translate(0, -20, -20);
+  // enabled GREEN cube to be dragged independently
+  cube1.enableDrag(null, dragObj, null);
+  // enable grp to be dragged by RED cubes
+  grp.enableDrag(null, dragGroup, null);
+
+  g.render(grp);
+}
+</pre>
+</div>
+
+<h3>Saving to Cango3D JSON format</h3>
+<p>To save the cube just created to a file for later use, Cango3D provides the <b>Obj3DtoJSON</b> method:</p>
+<div class="srcFmt">
+<pre>
+var g = new Cango3D(cvsID),  // create a graphics context
+    width = 100,
+    colors = ["red", "green", "blue", "yellow", "silver", "sienna"],
+    cube, jsonStr,
+...
+cube = buildCube(g, width, colors);
+jsonStr = g.Obj3DtoJSON(cube, "Colored Cube");
+// jsonStr can now be saved to the local file system (if accessible) as a '.json' file.
+</pre>
+</div>
+<p>The JSON format data returned from this call is shown below (line breaks have been added for clarity).</p>
+
+<div class="srcFmt">
+<pre>
+{"type":"Component","name":"Colored Cube","ComponentData":
+{"type":"GROUP","children":[
+{"type":"SHAPE","fillColor":"rgba(255, 255, 0, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",50,-50,-50,"L",-50,-50,-50,"L",-50,50,-50,"L",50,50,-50,"Z"],"centroid":[0,0,-50],"normal":[0,0,-51]},
+{"type":"SHAPE","fillColor":"rgba(0, 0, 255, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",50,50,50,"L",50,-50,50,"L",50,-50,-50,"L",50,50,-50,"Z"],"centroid":[50,0,0],"normal":[51,0,0]},
+{"type":"SHAPE","fillColor":"rgba(192, 192, 192, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",50,-50,-50,"L",50,-50,50,"L",-50,-50,50,"L",-50,-50,-50,"Z"],"centroid":[0,-50,0],"normal":[0,-51,0]},
+{"type":"SHAPE","fillColor":"rgba(0, 128, 0, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",50,50,50,"L",50,50,-50,"L",-50,50,-50,"L",-50,50,50,"Z"],"centroid":[0,50,0],"normal":[0,51,0]},
+{"type":"SHAPE","fillColor":"rgba(160, 82, 45, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",-50,-50,50,"L",-50,50,50,"L",-50,50,-50,"L",-50,-50,-50,"Z"],"centroid":[-50,0,0],"normal":[-51,0,0]},
+{"type":"SHAPE","fillColor":"rgba(255, 0, 0, 1)","backHidden":true,"hardOfsTfm":{"matrix":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]},"lineWidth":1,"strokeCap":"butt","lorg":7,"pathData":["M",-50,-50,50,"L",50,-50,50,"L",50,50,50,"L",-50,50,50,"Z"],"centroid":[0,0,50],"normal":[0,0,51]}
+]}}</pre>
+</div>
+
+<h3>Create a 3D object by profile rotation</h3>
+<p>A powerful Cango3D method is <b>objectOfRevolution3D</b>, which does most of the work of making the component Obj3Ds forming an object that has symmetry about central axis, such as a glass, or a column or circular waste paper basket. This method just requires a profile of the shape in Cgo3D format, or in string format copied and pasted from an SVG editor. The object is formed by rotating the profile about the Y axis, the number of steps is passed as a parameter. The segments of the profile are joined to adjacent rotated profile copies. The segments can be joined by circular arcs or by straight lines. More detail is given in the <a href="Canvas3DManual.html">Cango3D User Guide</a>, but here is an example to demonstrate its use.</p>
+
+<h4>Champagne Glass</h4>
+<p>Here is a 3D model of a champagne glass created by a created by a single call of <i>cgo</i>.<b>objectOfRevolution3D</b>. The sliders allow the model to be rotated about the X, Y and Z axes.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+      <div class="scrnBevel" >
+        <canvas id="cvs4" width="640" height="400" style="background-color: aliceblue"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      <table class="sliderHolder" cellspacing="0" cellpadding="0">
+        <tr align="center">
+          <td><input id="slider-1" class="slider" type=range min=-180 max=180 value=0 step=1 onchange="glass1.newXrot()" oninput="glass1.newXrot()"></td>
+          <td><input id="slider-2" class="slider" type=range min=-180 max=180 value=0 step=1 onchange="glass1.newYrot()" oninput="glass1.newYrot()"></td>
+          <td><input id="slider-3" class="slider" type=range min=-180 max=180 value=0 step=1 onchange="glass1.newZrot()" oninput="glass1.newZrot()"></td>
+        </tr>
+      </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div>  <!-- console -->
+</div>  <!-- consoleHolder -->
+
+<h3>Display stand with Markus Raetz style sculpture in 3D</h3>
+<p>Here is an example of many of the features of Cango3D working together. The hexagonal display stand base is made by 'objectOfRevolution3D' with 6 segments joined by straight lines. Drag-n-drop has been enabled on the base to swivel the whole display so see it from any angle. The turntable on the display stand has also been made from 'objectOfRevolution3D' but with 36 segments joined by arcs. It is rotated using the 'PLAY', 'PAUSE', 'STOP'  and 'STEP' controls. The sculpture is made in the style of Markus Raetz work's. It is made from a single PATH type Obj3D which has been saved in JSON format.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+      <div class="bezel">
+
+      <div class="scrnBevel" >
+        <canvas id="cvs5" width="640" height="400" style="background-color: lightyellow;"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      <table class="btnHolder" cellspacing="0" cellpadding="0">
+        <tr align="center">
+          <td width="25%"><button type="button" onclick="consoleBtns2.f1()" class="button-link">TURN</button></td>
+          <td width="25%"><button type="button" onclick="consoleBtns2.f2()" class="button-link">PAUSE</button></td>
+          <td width="25%"><button type="button" onclick="consoleBtns2.f3()" class="button-link">STOP</button></td>
+          <td width="25%"><button type="button" onclick="consoleBtns2.f4()" class="button-link">STEP</button></td>
+        </tr>
+      </table>
+
+      </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

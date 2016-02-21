@@ -1,0 +1,72 @@
+/*=============================================================
+  Filename: userManual-01.css
+
+  Style Sheet for common elements of software User Manuals.
+
+  Date    Description                                       By
+  -------|-------------------------------------------------|---
+  16Aug15 First release                                     ARC
+ ==============================================================*/
+
+    div.manualItems {
+      width: 720px;
+      margin: 1em 0;
+      border-bottom: 1px solid #888888;
+    }
+
+    div.manualItems a.itemName {
+      display: block;      /* a element need this to style width, height */
+      width: 640px;
+      height: 20px;
+      text-decoration: none;
+      outline: none;
+      border: 0;
+      border-top: 1px solid #888888;
+      background-color: #eeeee0;
+      background-repeat:no-repeat;
+      background-position: 1% 40%;
+      font-family: Verdana,Arial,Helvetica,sans-serif;
+      margin: 0;
+      padding: 5px 40px;
+    	font-size: 15px;
+    	font-weight: bold;
+    	color: blue;
+    }
+
+    div.sectClosed dt.itemBody {
+      width: 700px;
+      height: 0;
+      padding: 0 10px;
+      overflow: hidden;
+      border-top: 0;
+    }
+
+    div.sectClosed a.itemName {
+      background-image: url('Images/arrowDown20.gif');
+    }
+
+    div.sectOpen dt.itemBody {
+      width: 700px;
+      height: auto;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+
+    div.sectOpen a.itemName {
+      background-image: url('Images/arrowUp20.gif');
+    }
+
+    .cvsEg {
+      position: relative;   /* positioned to parent bottom menus */
+      display: block;       /* must have to position canvas elements */
+      margin: 2em auto;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+   .syntax {
+      font-family: "Courier New", monospace;
+      font-size: 1.2em;
+      margin-left: 2em;
+    }
+

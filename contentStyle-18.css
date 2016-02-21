@@ -1,0 +1,238 @@
+/*================================================================
+  Filename: contentStyle-18.css
+
+  Style Sheet for ARC Web Pages
+
+  Date    Description                                          By
+  -------|----------------------------------------------------|---
+  21Sep09 First release                                        ARC
+  24Sep09 Logo, header colour change to hue 214                ARC
+  25Sep09 use h1, h2, h3 rather than new p.class               ARC
+          added ._eqn and pre rules                            ARC
+  10Oct09 Added margins to hr                                  ARC
+  17Oct09 Add #h1-bkg for blue-grey background                 ARC
+  30Jun10 Dropped iframe use SSI for navData                   ARC
+  07Jul10 Reverted to version based on zazzMain07 (for IE6)    ARC
+  12Jul10 drop height:auto from img, causes IE6 to strech img  ARC
+  04Seo10 Drop the use of 'Courier' font Firefox makes it big  ARC
+  15Sep10 Added consoleHolder for console-04.css style         ARC
+  03Oct10 Tweeks to colours and margins                        ARC
+  11Oct10 More tweeks, set line-height etc                     ARC
+  22Jun11 comma missing in font-family declaration             ARC
+  04Apr12 Stripped down to just content from zazzMain-21       ARC
+  05Jun12 Convert for new style page                           ARC
+  13Aug12 More flexible figureHolder                           ARC
+  08Sep12 New srcFmt                                           ARC
+  16May13 Added more top margin to headings less to paras      ARC
+  14Nov13 Updated table style to HTML5                         ARC
+  22Feb14 Added ol format                                      ARC
+  30May14 Use font Inconsolas for <pre> <textArea> etc         ARC
+  02Jun14 Use Consolas, Monaco, Andale Mono, monospace fonts   ARC
+  10Jan15 Add canvasHolder                                     ARC
+  04Dec15 Adjust zmpn to match dynamically created one         ARC
+	15Jan16 Tweek colours for new lighter page style             ARC
+ =================================================================*/
+
+* {
+	margin: 0px;
+	padding: 0px;
+}
+
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+}
+
+h1, h2, h3, h4 {
+  font-family: Helvetica,Arial,sans-serif;
+  line-height: 1.2em;
+  font-size: 1em;
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+h1 {
+  position: relative;
+  font-size: 30px;
+  line-height: 1.0em;
+  margin: 0;
+  color: #f8f8f8;
+  font-weight: normal;
+  letter-spacing: 1px;
+  text-shadow: 0px 0px 2px #333343;
+}
+
+h2 {
+	font-size: 20px;
+	font-weight: bold;
+	color: #3C4244;
+}
+
+h3 {
+	font-size: 18px;
+	font-weight: normal;
+	color: #2C3234;
+}
+
+h4 {
+	font-size: 14px;
+	font-weight: bold;
+	color: #2C3234;
+}
+
+.text_01 {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 13px;
+  line-height: 16px;
+	color: #333;
+	padding: 0;
+}
+
+.text_01 p {
+  padding-top: 0.5em;
+}
+
+.text_01 h2, h3, h4{
+  padding-top: 0.3em;
+}
+
+.text_01 ._eqn {
+  padding: 1em 0 0 2em;
+}
+
+.text_01 pre {
+  font-family: Consolas, Monaco, "Andale Mono", monospace;
+  color: black;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: left;
+  border: 0;
+  padding: 0;
+  margin: 1em 1em 1em 2em;
+}
+
+.text_01 textArea {
+  font-family: Consolas, Monaco, "Andale Mono", monospace;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: left;
+}
+
+.text_01 ul {
+  margin-top: 1em;
+}
+
+.text_01 ul li {
+  margin: 0 0 1em 1.4em;
+}
+
+.text_01 ol {
+  margin-top: 1em;
+}
+
+.text_01 ol li {
+  margin: 0 0 1em 1.7em;
+}
+
+.text_01 hr {
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+.text_01 .srcFmt {
+  position: relative;
+  max-height: 500px;
+  overflow: auto;
+  background-color: #f7f7f7;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px 4px 4px 4px;
+  margin: 1em 10px 1em 0;
+  padding: 0;
+}
+
+.text_01 .syntax {
+  font-family: Consolas, Monaco, "Andale Mono", monospace;
+  font-size: 13px;
+  margin-left: 2em;
+}
+
+.txtTbl {
+  table-layout:fixed;
+  line-height: 1.3em;
+  margin: 2em auto 0 auto;
+  padding: 0;
+  border: 1px solid #333333;
+  border-collapse: separate;
+  border-spacing: 1px;
+}
+
+.txtTbl th {
+  text-align: center;
+  padding: 0.5em 0.3em 0.5em 0.3em;
+  margin: 1px;
+  background-color: #dfe2e6;
+  border: 1px solid #666666;
+}
+
+.txtTbl td {
+  padding: 0.5em 0.3em 0.5em 0.3em;
+  background-color: transparent;
+  border: 1px solid #666666;
+}
+
+.txtTbl td.hilight {
+  background-color: #ffffaa;
+}
+
+.text_01 .figHolder {
+  position: relative;
+  margin: 1em auto 0 auto;
+  width: 500px;
+}
+
+.figHolder img {           /* child of figureHolder  */
+  position: relative;
+  display: block;
+  padding: 0;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.text_01 .captionHolder {
+  position: relative;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  margin: 0.5em auto 1em auto;
+  width: 100%;                   /* default if child of figureHolder  */
+  background-color: transparent;
+ }
+
+.text_01 .consoleHolder{
+  position: relative;
+  margin: 1em auto 0 auto;
+  width: 100%;         /* just for centering the console using text-align: center */
+  text-align: center;  /* this will center console if it has display:inline-block */
+  background-color: transparent;
+}
+
+.text_01 .canvasHolder {
+  position: relative;
+  margin: 20px auto 10px auto;
+  border: 1px solid black;
+  width: 600px;
+}
+
+.zmpn { 
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 118px;
+  height: 84px;
+}

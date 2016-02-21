@@ -1,0 +1,445 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Historical Calendar</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="JavaScript Calendar, perpetual calendar, Julian Calendar, Gregorian Calendar, Julian Day number, calendar conversion algorithms"/>
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "calendar-24.css";
+    @import "DDmenu-16.css";
+
+    #yearMenu {
+      top: 3px;
+      left: 278px;
+    }
+
+    #yearId {
+      top: 3px;
+      left: 275px;
+      width: 85px;
+    }
+
+    #yearSelBtn {
+      top: 4px;
+      left: 352px;
+    }
+
+    #countryMenu {
+      top: 3px;
+      right: 14px;
+      width: 110px;
+    }
+
+    #countryMenu ul {
+      left: 0;
+      width: 111px;
+    }
+
+    #countryId {
+      top: 3px;
+      right: 10px;
+      width: 110px;
+      padding-left: 4px;
+    }
+
+    #countrySelBtn {
+      top: 4px;
+      right: 11px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="calendarUtils-22.js"></script>
+  <script type="text/javascript">
+
+    var calendar1,
+        minYear = 1000,
+        maxYear = 2100;
+
+    function initCal()
+    {
+      var now = new Date(),
+          selCountryObj = document.getElementById("countryId"),
+          country = selCountryObj.value,
+          yearLabel = document.getElementById("yearId");
+
+      calendar1 = new Calendar("calBody", "equBody", "JDay", now, country, minYear, maxYear);
+      calendar1.genTableSkeleton();
+      calendar1.genCalendarYear(now.getFullYear());
+
+      yearLabel.value = now.getFullYear();
+    }
+
+    function getCountry(elem)
+    {
+      var country = elem.innerHTML,
+          countryRO = document.getElementById("countryId");
+
+      countryRO.value = country;
+      calendar1.updateCountry(country);
+      calendar1.genCalendarYear(calendar1.currYear);
+      hideMenu("countryMenu");
+      return false;
+    }
+
+    function genYear(targetYr)
+    {
+      var yr = document.getElementById("yearId");
+
+      yr.value = targetYr;
+      hideMenu("yearMenu");
+      calendar1.genCalendarYear(targetYr);
+      return false;
+    }
+
+    function genPrevYear()
+    {
+      var yr = document.getElementById("yearId");
+
+      if (calendar1.currYear > calendar1.minYear)
+      {
+        calendar1.genCalendarYear(calendar1.currYear-1);
+      }
+      yr.value = calendar1.currYear;
+      return false;
+    }
+
+    function genNextYear()
+    {
+      var yr = document.getElementById("yearId");
+
+      if (calendar1.currYear < calendar1.maxYear)
+      {
+        calendar1.genCalendarYear(calendar1.currYear+1)
+      }
+      yr.value = calendar1.currYear;
+      return false;
+    }
+
+    function genMenu()
+    {
+      var txtLine = "",
+          century, decade, yr;
+
+      document.writeln('<ul>');
+      for (century=minYear; century<maxYear; century+=100)
+      {
+        document.writeln('<li class="daddy"><a href="#">'+century+'s<\/a>');
+          document.writeln('<ul>');
+          for (decade=0; decade<100; decade+=10)
+          {
+            document.writeln('<li class="daddy"><a href="#">'+(century+decade)+'s<\/a>');
+              document.writeln('<ul>');
+              for (yr=0; yr<10; yr++)
+              {
+                txtLine = '<li><a href="#" onmousedown="genYear('
+                txtLine += century+decade+yr;
+                txtLine += ');return false">'+(century+decade+yr)+'<\/a><\/li>';
+                document.writeln(txtLine);
+              }
+              document.write('<\/ul>');
+            document.write('<\/li>');
+          }
+          document.write('<\/ul>');
+        document.write('<\/li>');
+      }
+      document.write('<\/ul>');
+    }
+
+    function showMenu(mnuId)
+    {
+      var mnu = document.getElementById(mnuId);
+
+      mnu.style.display = 'block';
+      return false;
+    }
+
+    function hideMenu(mnuId)
+    {
+      var mnu = document.getElementById(mnuId);
+
+      mnu.style.display = 'none';
+      return false;
+    }
+
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      initCal();
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Historical Calendar</h1>
+        <div class="text_01">
+          <h2>Multi-country historical calendar</h2>
+
+          <p>Here is an historical calendar for the years 1000&nbsp;to 2100. The year may be selected from the drop down menu. The calendar in use for a particular year varied from country to country for many centuries. So having selected the year, choose from among 13 countries using the drop down menu on the top right of the calendar.</p>
+
+<p>Clicking on any date will show what the date of that day was in all of the 13 countries in the table below the calendar. All the dates will be the same for dates before September 1582, while the Julian calendar was in general use, and they are again all in agreement after 1918 by which time the Gregorian calendar had been universally adopted.</p>
+
+               <div id="calHolder">
+                <table class='calendar'>
+                  <thead>
+                    <tr>
+                      <th colspan="4">
+                        <form class="selFrm" action="#">
+                          <button id="prev" onclick="genPrevYear();return false">
+                            <div class="triangle-left"></div>
+                          </button>
+                          <input class="ddSelect" id="yearId" type="text" value="2014" onclick='genYear(this.value);return false;'/>
+                          <button id="yearSelBtn" class="selBtn" onblur='hideMenu("yearMenu")' onclick='showMenu("yearMenu"); return false;'>
+                            <div class="triangle-down"></div>
+                          </button>
+                          <button id="next" onclick="genNextYear();return false">
+                            <div class="triangle-right"></div>
+                          </button>
+                           <div id="yearMenu" class="ddmenu" style="display:none">
+<script type="text/javascript">
+  genMenu();
+</script>
+                          </div>
+
+                          <input  class="ddSelect" id="countryId" type="text" value="Italy" onclick='return false;'>
+                          <button id="countrySelBtn" class="selBtn" onblur='hideMenu("countryMenu")' onclick='showMenu("countryMenu"); return false;'>
+                            <div class="triangle-down"></div>
+                          </button>
+                          <div id="countryMenu" class="ddmenu" style="display:none">
+                            <ul>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Britain</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Bulgaria</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Denmark</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">France</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Hungary</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Italy</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Poland</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Portugal</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Prussia</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Spain</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Sweden</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">Russia</a></li>
+                              <li><a href="#" onmousedown="getCountry(this);return false;">USA</a></li>
+                            </ul>
+                          </div>
+                        </form>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="calBody" style="vertical-align:top">
+                    <!--  12 month tables go here    -->
+                  </tbody>
+                </table>
+
+                <table class="equDate">
+                  <colgroup>
+                    <col width="70%"/>
+                    <col/>
+                  </colgroup>
+
+                  <tbody>
+                    <tr>
+                      <th>The highlighted date is Julian Day:</th>
+
+                      <td align="center" id="JDay">1234567</td>
+                    </tr>
+
+
+                    <tr style="height: 4em">
+                      <th colspan="2">Here is the date of this day in various countries</th>
+                    </tr>
+                  </tbody>
+
+                  <tbody id="equBody">
+                    <!--  table of equivalent dates goes here    -->
+                  </tbody>
+                </table>
+              </div>  <!-- calHolder -->
+
+          <h2>Julian and Gregorian calendars</h2>
+          <p>By 1000 AD, European countries had generally adopted the Julian calendar of 365 days in a year and 366 days every fourth year. The Julian calendar did however accumulate errors at a rate of roughly one day every hundred years when compared to astronomical events. To correct this, the Gregorian calendar was introduced by Papal decree in 1582, when ten days were dropped, so that September 4 was followed by September 15. The new calendar was not immediately adopted by all countries. The process of adoption took place over a period of about 350 years. So, for more than three centuries after 1582 there were two calendars in use in Western countries. The date on which historical events are recorded to have occurred will differ depending on which country's calendar was the reference.</p>
+
+          <p>The year in which the Gregorian calendar was adopted for each country is interesting, as 10 or more days are missing.
+          The changeover years were as follows:<br/>
+          1582 - Italy, Spain, Portugal and Poland,<br/>
+          1582 - France (later in the year),<br/>
+          1587 - Hungary<br/>
+          1610 - Prussia,<br/>
+          1700 - Denmark,<br/>
+          1752 - Britain, USA,<br/>
+          1753 - Sweden,<br/>
+          1916 - Bulgaria,<br/>
+          1918 - Russia.</p>
+
+          <h3>Julian day number</h3>
+
+          <p>The ability to assign a number to every day in sequence greatly simplifies the conversion from the different calendar systems that have been in use throughout history. The Julian Day number does just that, with day 0 assigned to be 1 January 4713 BC. The Julian Day number for any day can be seen by clicking on the date, the table then shows the various dates that different countries assigned to that day.</p>
+
+          <p>The calendar can show how a particular day can have different dates in different countries. For example, the Great Fire of London started on 1666 September 2 (see <a href="http://www.pepysdiary.com/archive/1666/09/">Pepys' Diary</a>), Julian day number 2329809. In France, they would have seen the smoke rising across the channel on September 12, since France had changed to the Gregorian calendar (skipping 10 days at the change-over) and England had not.</p>
+
+          <p>As a further example of the use of the calendar, take the Russian Bolshevik Revolution, this is celebrated in Russia as the <b>October Revolution</b> but it was reported in New York as having just happened on November 9, 1917. The Russian revolutionaries captured the seat of government in Petrograd on 1917 October 25 according to their calendar, which was still the Julian calendar. The news reached the USA the next day, which was November 8, since the USA was using the Gregorian calendar. The story was published in the NY Times on the November 9 <font size="-1"><a href="http://query.nytimes.com/mem/archive-free/pdf?res=9F0DE0D9123FE433A2575AC0A9679D946696D6CF">[EXTREMISTS RISE TO POWER IN RUSSIA, NYT 1917 Nov 9</a>]</font>.</p>
+
+          <p>To see this difference on the calendar, use the drop down menus at the top of the calendar, select the country: RUSSIA, and the year: 1917, click on October 25. The table of dates in various countries shows that all other countries name this day 1917 November 7. That's why the news of the revolution reached the USA on November 8, only hours after the event, not after the apparent 13 day delay.</p>
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Underwater Acoustics</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="underwater acoustics, ocean sound propagation, SOFAR zone, mixed layer, convergence zone, sound velocity profile, SVP, bathythermograph, shadow zone, submarine sonar, underwater acoustics tutorial" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Underwater Sound Propagation</h1>
+        <div class="text_01">
+
+<h2>Temperature and sound velocity profiles</h2>
+<p>The speed of sound in the ocean is a function of temperature, pressure and salinity. Eqn (1) shows the dependence of sound speed C, on these factors:</p>
+
+$$C(T, P, S) = 1449.2 + 4.6\ T + 0.055\ T^2 + 1.39\ (S - 35) + 0.016\ D \qquad (1)$$
+
+<p style="margin-left:2em">where:<br/>
+  <i>C</i> sound speed in m/sec,<br/>
+  <i>T</i> water temperature in &deg; Celsius,<br/>
+  <i>D</i> depth below the surface in metres,<br/>
+  <i>S</i> salinity in parts per thousand.</p>
+
+<p>Typical ocean salinity, <i>S</i>, is fairly constant at 35 ppt and so the sound speed formula reduces to a function of temperature and depth.</p>
+
+<p>From Eqn 1 it can be seen that the sound speed is strongly dependant on the water temperature <i>T</i>. Solar radiation warms the surface of the ocean, wave action tends to mix the warm surface water generating a surface layer of fairly uniform temperature. In temperate and tropical waters this isothermal surface layer may extend from 20&nbsp;m to 200&nbsp;m deep. The water temperature below this layer rapidly drops away. Such a region of falling temperature is called a negative thermocline.</p>
+<p>The ocean depths, where little or no sunlight penetrates is of uniform temperature, varying only 1 or 2&deg;C over thounsands of meters of depth. In these isothermal regions the sound speed, <i>C</i>, is largly detirmined by the pressure which increases uniformly with depth. The rate of increase is 0.016&nbsp;m/sec per metre of depth.</p>
+
+<p>Fig 1a shows temperature as a function of water depth, a bathythermograph, for the first 1000m below the surface. This bathy's mixed layer and thermocline are clearly defined and are typical of warmer ocean regions.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig1-[37,-143].PNG" alt="Fig1" />
+  <div class="captionHolder">
+    <p><b>Figure 1a.</b> Typical Eastern Pacific winter bathythermograph</p>
+    <p><b>Figure 1b.</b> Sound velocity profile corresponding to the bathy shown in Fig 1a.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<p>In Fig 1 the isothermal layer extends down about 75m. The temperature in this layer is 17&deg;C.</p>
+<p>Fig 1b shows the corresponding sound speed profile. In the isothermal layer the sound speed is about 1512&nbsp;m/sec while below 100m the sound speed has fallen to below 1500&nbsp;m/sec due to the decreased temperature. The sound speed then rapidly falls with the lower temperature, until the deeper layers where the pressure dominates and the sound speed increases again.</p>
+
+<p>In higher latitude, colder waters less solar radiation results in a small isothermal surface layer or none at all. A typical cold water profile is shown in Fig 2a. The temperature continuously declines with depth.</p>
+<p>The corresponding sound profile, shown in Fig 2b is typical of high latitudes. The marked differences in acoustic conditions in different locations indicate that sonar conditions in one area may not be applicable to another area or season.</p>
+<p>Knowledge of the temperature profile and hence the sound speed profile, enables the prediction of sound transmission paths. Such information serves as input to the tactical environment in which submarine and surface navies operate.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig2-[52,-38].PNG" alt="Fig1" />
+  <div class="captionHolder">
+    <p><b>Figure 2a.</b> Bathy with no isothermal surface layer.</p>
+    <p><b>Figure 2b.</b> Sound speed profile corresponding to the bathythermograph of Fig&nbsp;2a.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<p>Ships employ eXpendable BathyThermographs (XBT) to measure the water temperature as a function of depth. These probes sink at a known rate. The temperature measurements are sent back to the ship's receiver via a fine copper wire unreeling from the probe and are logged or displayed (on an appropriate scale) as sound speed versus depth.</p>
+<p> Submarines use a similar device, the SSXBT, which is ejected from the dived submarine, floats to the surface and then sinks at a known rate.</p>
+
+<h2>Sound ray tracing</h2>
+
+<p>The propagation paths of sound in the ocean may predicted using much the same techniques employed to predict the reflection and refraction of light rays.</p>
+
+<p>In crossing the interface between the different media, such as from air to glass, the light ray is refracted or bent. The angle of refraction depends on the ratio of the speed of light in the two media, this is Snells law. A similar process occurs with sound transmission in the ocean.</p>
+
+<p>For calculating the ray paths, the ocean may be considered as a set of thin layers of water of different sound speeds.</p>
+<p> Fig 3 illustrates Snells Law for refraction of sound rays.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig3-SnellsLaw.jpg" alt="Fig3" style="width: 350px">
+  <div class="captionHolder">
+    <p><b>Figure 3.</b> Diagram of the refraction of sound rays.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<p>Referring to Fig 3, Snells law for sound in water may be stated as:</p>
+
+$$\frac{\cos(B_1)}{\cos(B_2)} = \frac{C_1}{C_2} \qquad (2)$$
+
+<p>Hence, if the angle of a ray to the horizontal is <i>B<sub>1</sub></i>, in a region of sound speed <i>C<sub>1</sub></i>, then the refracted ray angle, <i>B<sub>2</sub></i> as it passes into region with sound speed <i>C<sub>2</sub></i> can be calculated.</p>
+
+<p>From Eqn 2, if <i>C<sub>1</sub>&gt;C<sub>2</sub></i> then <i>cos(B<sub>1</sub>)&gt;cos(B<sub>2</sub>)</i> and hence <i>B<sub>1</sub>&lt;B<sub>2</sub></i>, i.e. for a ray passing into a slower sound speed layer, the ray angle is larger, it bends away from the horizontal. Conversely, if <i>C<sub>l</sub>&lt;C<sub>2</sub></i> then <i>B<sub>l</sub>&gt;B<sub>2</sub></i> and the ray is shallower, nearer to horizontal.  When the sound speed increases the ray angle tends to decrease.</p>
+<p>Snells law may be restated for acoustic rays: "<i>sound rays passing from one medium to another bend toward the medium with the slower wave speed</i>"</p>
+<p>If a bathy has been taken, the sound speed <i>C</i> as a function of temperature and depth is known and the angles through which sound rays will bend as they pass through different depths can be calculated and the ray paths plotted.</p>
+
+<p>Fig 4 shows some ray paths which may occur for the bathy in Fig 1.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig4.PNG" alt="Fig4" />
+  <div class="captionHolder">
+    <p><b>Figure 4.</b> Possible ray paths for the bathy in Fig 1.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<p>For a sound source located in the isothermal layer near the surface, the sound speed will increase with depth hence there a ray starting downwards will be bent back toward the surface. There will be a ray launch angle which just becomes horizontal at the bottom of the mixed layer. This ray and all smaller angle rays are trapped in the isothermal layer as they don't cross into the negative thermocline. The isothermal layer forms a sonar duct for these rays.</p>
+<p>The launch angle of this critical ray is given by putting <i>B<sub>1</sub> = 0</i> and hence <i>cos(B<sub>1</sub>) = 1</i> in Eqn (2), and substituting the appropriate values for the sound speed.</p>
+
+$$B_2 = \cos^{-1}\left(\frac{C_2}{C_1}\right)$$
+
+<p>For a source depth of 5&nbsp;m, a typical depth for a surface ship active sonar, the source angle for rays to be trapped in the duct is given by:</p>
+
+$$B_s = \cos^{-1}\left(\frac{1512 + 0.017 \times 5}{1512 + 0.017 \times 60}\right) = 2^\circ$$
+
+<p>The same ray angle applies for rays that start in an upwards direction as these are merely reflected at the sea surface and then pass through the source depth at 2&deg; declination. Hence rays that leave the sonar within 2&deg; of horizontal are trapped within the duct (see Fig 6).</p>
+
+<p>It follows that rays which start at steeper angles can penetrate below the layer. A ray that starts with a steeper angle escapes the duct and is immediately refracted downward towards the colder water, slower sound speed region. It follows that there is a region through which rays don't pass, called the SHADOW ZONE. This is the region where a submarine may be relatively invisible to a surface ship active sonar.</p>
+
+<h2>Deep ocean propagation</h2>
+<p>Water temperature deep in the oceans is very nearly constant and in such regions the sound speed is dominated by its dependence on the water pressure which increases with depth. Rays which escape the duct are initially refracted downward toward the colder water which has a lower sound speed. Depending on the depth of water the sound may hit the sea floor and be reflected back up, but if the water is sufficiently deep, the sound penetrates to depths where the sound speed has increased significantly. The rays begin to bend back toward the slower sound speed at shallower depths without hitting the bottom.</p>
+
+<p>For this REFRACTED transmission mode to occur, the deep water sound speed must at least equal the sound speed at the source. The sound rays starting horizontal near the surface will become horizontal again at this depth and then bend upward toward the slower sound speed layers above. Rays starting out at steeper angles require deeper water with even higher sound speeds to become horizontal and then turn back toward the surface.</p>
+
+<p>Once the sound has been refracted upwards it travels to the source depth where it again encounters higher sound speeds and bends back to the horizontal. The same process can then be repeated.</p>
+
+<p>For sound rays transmitted near the surface to loop back to the surface without encountering the bottom the deep water sound speed must equal the surface sound speed. The higher sea surface temperature, the deeper the water must be for the deep sound speed to equal the surface speed. So in temperate zones this type of transmission can only occur in deep ocean basins. For example, a surface temperature of 23&deg;C which indicates a sound speed of about 1530&nbsp;m/sec and the equivalent water depth required is a little over 4000&nbsp;m. So the phenomenon can occur at reasonable high water temperatures in the ocean basins which are typically 5000&nbsp;m deep, shallower water requires cooler surface temperatures for the effect to develop.</p>
+
+<p>Fig 5 shows a bathy east of Hawaii in very deep water.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig5-[22,-143].PNG" alt="Fig1" />
+  <div class="captionHolder">
+    <p><b>Figure 5a.</b> Bathy east of Hawaii showing a typical January temperature profile in deep water.</p>
+    <p><b>Figure 5b.</b> Sound speed profile showing the formation of a low sound speed layer in deep water.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+
+<h3>Convergence Zones</h3>
+<p>When refracted transmission occurs the rays returning to the surface tend to do so at a more or less constant range from the source resulting in a higher level sound level being observed in an annulus about the source. The sound reflecting off the surface then repeats the cycle looping back to the surface at regular distances of about 50 to 70&nbsp;km, depending on the surface water temperature. The regions of higher sound strength are termed CONVERGENCE ZONES.</p>
+
+<p>Fig 6 shows a plot of convergence zone formation with the bathy from Fig 5. </p>
+
+<p></p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig6-[37,157].PNG" alt="Fig6" />
+  <div class="captionHolder">
+    <p><b>Figure 6.</b> Deep water sound ray paths showing convergence zones.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<h3>Bottom Bounce</h3>
+<p>In a region where the water depth is too shallow for refracted transmission paths, sound rays will intersect the sea floor and be reflected. More energy is reflected if the sound speed in the bottom material is hard with much faster sound speed than water. A rocky bottom will reflect sound more efficiently than a muddy bottom.</p>
+
+<p> Thus reflection depends on the characteristics of the bottom and is generally frequency sensitive, with the result that energy in higher frequency bands is reflected better than energy at lower frequencies. Nevertheless BOTTOM BOUNCE can be utilized to advantage.</p>
+
+<p>Fig 7 shows such an application. Energy from a near surface source, a hull mounted active sonar is initially refracted down and intersects the sea floor, where it is reflected. Depending on the ray angle, this reflected energy may be able to reach a region that could not be ensonified by direct transmission paths. Active sonars can use this mode to ensonify the shadow zone.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig7-[37,157].PNG" alt="Fig7" />
+  <div class="captionHolder">
+    <p><b>Figure 7.</b> Ray paths using bottom bounce.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<h3>SOFAR propagation</h3>
+
+<p>If the sound source is below the layer, then a variation of the refracted propagation paths may be sustained. This is illustrated by Fig 7. Because the sound speed increases both above and below the source depth, rays become trapped in this deep sound channel without suffering a lossy reflection at bottom or surface. This is known as SOFAR propagation. The acronym being derived from Sound Fixing And Ranging but indicating that sound in this low loss transmission mode travels so far.</p>
+
+<div class="figHolder">
+  <img src="Figures/UW-Fig8-[37,157].PNG" alt="Fig8" />
+  <div class="captionHolder">
+    <p><b>Figure 8.</b> SOFAR propagation for deep launched rays.</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<h2>Spreading laws and propagation loss</h2>
+
+<p>Intensity, <i>I</i>, of sound is a measure of energy flowing across a unit area perpendicular to the direction of propagation. As sound energy travels through the ocean and spreads over a larger volume, the intensity of the sound decreases.</p>
+
+<p>The term TRANSMISSION LOSS describes the drop in sound energy level as it propagates from one point in the ocean to another. The transmission loss is defined as the ratio of the acoustic intensity at the particular point, to the level at some reference position. If the reference is the source level of a transmitter, then the reference position is taken at a distance of 1m from the source (1 yard in the Imperial system). Hence, the transmission or propagation loss at a point P is given by,</p>
+
+$$\frac{I_p}{I_{ref}}$$
+
+<p>where I<sub>p</sub> and I<sub>ref</sub> are the respective acoustic intensities at point P and at the reference position.</p>
+<p>As sound energy travels from the source it spreads out over the surface of a sphere which increases in radius R. For a given amount of energy emitted the intensity of the sound will be determined by the size of the sphere over which it has spread. At a distance <i>R</i> from the source the Intensity, <i>I</i> is inversely proportional to the surface area of sphere.</p>
+
+<p style="margin-left:2em">\(I = \frac{k}{R^2}\) where \(k\) is a constant.</p>
+
+<p>If R is the distance to the reference point, 1 metre from the source, then the transmission loss for spherical spreading, expressed in decibels (dB) is given by:</p>
+
+$$TL = 20 \log (R)$$
+
+<p>The source level of sonar transmitters are quoted as the level 1&nbsp;m from the transmitter, for a high power anti-submarine sonar this is typically about 220dB re 1&micro;Pa. This formula for transmission loss due to spherical spreading implies that every time the range doubles, the sound intensity falls by 6dB. So 2m from the source the level is only 214dB and so on. Doubling the range 10 times gives a sound level 60dB down at 1024m, ie. approximately 1km from the source the level has dropped to 160db. At 16km range, the level would be down to 136dB.</p>
+<p>Another factor which affects propagation in the ocean is ABSORPTION. Sound energy is dissipated by a lossy interaction with some of the salts in the water. The process is non-linear with the rate of absorption varying roughly as the square of the frequency, as well as being a function of salinity and temperature. A plot of the absorption of sound in sea water according to temperature and frequency are shown in Fig 8.</p>
+<p>The effect of the extra absorption loss is to modify the transmission loss equation so that it now becomes;</p>
+
+<p style="margin-left:2em">\(TL = 20 \log (R) + aR\) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where \(a\) is the absorption in dB per metre.</p>
+
+<div class="figHolder"  style="width: 400px">
+  <img src="Figures/UW-Fig9.jpg" alt="Fig9" />
+  <div class="captionHolder">
+    <p><b>Figure 9.</b> Absorption of sound in sea water (20&deg;C).</p>
+  </div>  <!-- captionHolder -->
+</div>
+
+<p>The absorption of sound energy causes a fall in sound pressure level for every kilometre the sound travels in addition to the fall due to spherical spreading. This additional absorption loss is small to negligible for frequencies less than 1kHz. But for higher frequency sonars the loss is very significant. For a sonar operating at 15&nbsp;kHz the loss is 2dB per km. So at 16km there will be a 32dB loss in addition to the 84dB spreading loss.</p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

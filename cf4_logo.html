@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Circle Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- IE 9: display inline SVG -->
+    <meta http-equiv="X-UA-Compatible" content="IE=9">
+<script type="text/javascript" src="http://brython.info/src/brython_dist.js"></script>
+<script type="text/javascript" src="http://cptocadp-2015fallhw.rhcloud.com/static/Cango-7v13.js"></script>
+<script type="text/javascript" src="http://cptocadp-2015fallhw.rhcloud.com/static/Cango2D-6v13.js"></script>
+<script type="text/javascript" src="http://cptocadp-2015fallhw.rhcloud.com/static/CangoAxes-1v33.js"></script>
+
+</head>
+<body>
+
+<script>
+window.onload=function(){
+brython(1);
+}
+</script>
+
+<canvas id="plotarea" width="800" height="800"></canvas>
+
+<script type="text/python">
+from javascript import JSConstructor
+from browser import window
+import math
+
+cango = JSConstructor(window.Cango)
+cobj = JSConstructor(window.Cobj)
+cgo = cango("plotarea")
+
+cgo.setGridboxSVG()
+cgo.setWorldCoords(-50, -50, 100, 100) 
+
+cgo.drawAxes(0, 50, 0, 60, {
+    "strokeColor":"#aaaaaa",
+    "fillColor": "#aaaaaa",
+    "xTickInterval": 5,
+    "xLabelInterval": 5,
+    "yTickInterval": 5,
+    "yLabelInterval": 5 })
+        
+#cgo.drawText("使用 Cango 繪圖程式庫!", 0, 0, {"fontSize":60, "fontWeight": 1200, "lorg":5 })
+
+chamber = "M -6.8397, -1.4894 \
+                 A 7, 7, 0, 1, 0, 6.8397, -1.4894 \
+                 A 40, 40, 0, 0, 1, 6.8397, -18.511 \
+                 A 7, 7, 0, 1, 0, -6.8397, -18.511 \
+                 A 40, 40, 0, 0, 1, -6.8397, -1.4894 z"
+
+#cgoChamber = window.svgToCgoSVG(chamber, 10, 20)
+cgoChamber = window.svgToCgoSVG(chamber)
+
+cmbr = cobj(cgoChamber, "SHAPE", {
+        "fillColor":"lightyellow",
+        "border": True,
+        "strokeColor": "tan",
+        "lineWidth": 8 })
+
+cgo.setGridboxSVG()
+cgo.setWorldCoords(-50, -50, 100, 100) 
+
+cgo.render(cmbr)
+#cgo.render(cmbr, 0, -20, 1, 0)
+
+</script>
+</body>
+</html>

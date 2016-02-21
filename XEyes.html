@@ -1,0 +1,360 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>JavaScript XEyes</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="xeyes, javascript xeyes, moving eyes, eyes follow cursor, em to pixels, text resize event" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+
+    #frame {
+      position: relative;
+      z-index: 0;
+      float: left;
+      margin: 2em 0 2em 15em;
+      padding: 5px;
+      border: 0;
+      background-color: #aaaaaa;
+    }
+
+    #picHolder {
+      position: relative;
+      float: left;      /* to wrap the image */
+      z-index: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background-color: #f9f9f6;
+    }
+
+    #face {
+    	position: relative;       /* must be positioned to obey z-index, and get wrapped*/
+      display: block;
+      width: 320px;   /* 16x eye width (if changed then change eye width by same factor) */
+      z-index: 1;
+    }
+
+    #leftEye {
+      position: absolute;
+      left: 122px;       /* approx, reset in initEyes */
+      top: 165px;
+      width: 20px;
+      z-index: 0;
+    }
+
+    #rightEye {
+      position: absolute;
+      left: 212px;      /* approx, reset in initEyes */
+      top: 165px;
+      width: 20px;
+      z-index: 0;
+    }
+
+    #cvs1 {
+      position: relative;
+      float: right;
+      margin: 1em;
+      border: 1px solid black;
+      padding: 0;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="xEyes-17.js"></script>
+
+  <script type="text/javascript">
+    function initEyes()
+    {
+      var e1Lft = 41.50;   // %width to center wrt face top left  166/400=41.50
+      var e1Top = 34.08;   // %height      ''         ''          212/622=34.08
+      var e2Lft = 69.75;   //                                     279/400=69.25
+      var e2Top = 34.24;   //                                     213/622=34.24
+      var e1Radius = 2.3;  // %width of face
+      var e2Radius = 2.3;
+      // Xeyes(faceId, e1Id, e1Lft, e1Top, e1Radius, e2Id, e2Lft, e2Top, e2Radius);
+      Xeyes("face", "leftEye", e1Lft, e1Top, e1Radius, "rightEye", e2Lft, e2Top, e2Radius);
+    }
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      enableStickyNav();
+      initEyes();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>JavaScript Xeyes</h1>
+        <div class="text_01">
+
+<h2>What is Xeyes</h2>
+<p>Xeyes is a small program that shows a pair of eyes whose pupils move to follow the location of the cursor about the screen. It was originally written for the NeXT operating system and was then ported to X-Windows where it became a standard graphics demo program.</p>
+
+<div id="frame">
+  <div id="picHolder">
+    <img id="face" src="Images/Dali-52c-face.gif" alt="face" />
+    <img id="leftEye" src="Images/Dali-52c-eye.gif" alt="eye" />
+    <img id="rightEye" src="Images/Dali-52c-eye.gif" alt="eye" />
+  </div>
+</div>
+
+<h2 style="clear:left">Basic principle of Xeyes</h2>
+<p>The basic idea of xeyes is simple, every time the cursor is moved calculate the direction of the cursor from the centre of each eye, then move the pupils of the eyes in the direction of the cursor, but only as far as the radius of the eye socket. If the cursor is inside the radius of one of the eyes that pupil is moved to the location of the cursor.</p>
+<p>Simple xeyes demonstrations often just represent the eyes as two circles and the pupils as two filled circles constrained to lie within them. More complex eye images, as shown in the Salvador Dali image above require three layers of images to achieve the realistic effect.</p>
+<p>The bottom layer image provides the color for the 'whites' of the eyes. Over this are positioned the images of the pupils. These are <i>gif</i> or <i>png</i> images with the round pupil solid color and the rest of the image transparent to allow the 'whites' of the eyes to show around the pupils.</p>
+<p>The top most layer is the face acting as a mask. This is again a <i>gif</i> so that the eyes can be transparent areas with the pupil and whites showing through. Since the eye holes in the face aren't circular, the edges of the eyes will partly obscure the pupils as they move around as is the case with real eyes.</p>
+
+<h3>Xeyes geometry</h3>
+<p>A schematic of the xeyes geometry is shown in the diagram to the right. </p>
+
+<img id="cvs1" src="Images/xEyesSchematic.png" alt="" />
+
+<p>In this diagram the cursor is outside the radius of the eye socket. The cursor location is <i>csrX, csrY</i> measured from the top left of the page. The location of the eye centre is <i>e1x, e1y</i> again measured with respect to the top left of the page. The x and y displacement of the cursor from the centre of the eye is given by:</p>
+<div class="srcFmt">
+<pre>
+dx = csrX - e1x
+dy = csrY - e1y.
+</pre>
+</div>
+<p>The maximum radius of movement of the pupil, r, depends on the size of the eye socket rendered on the screen. It is shown in the diagram as the thin grey circle. When the cursor is outside this circle the center of the pupil is on this circle in the direction of the cursor. The offset of the pupil from the centre of the eye and the offset of the cursor from the centre of the eye, form similar triangles. So the distance to move the pupil in the x and y directions is given by:</p>
+<div class="srcFmt">
+<pre>
+x = (r/R)*dx
+y = (r/R)*dy.
+</pre>
+</div>
+<p>The value of R is readily calculated from Pythagoras's theorem:</p>
+<div class="srcFmt">
+<pre>
+R = Math.sqrt(dx*dx+dy*dy);
+</pre>
+</div>
+<p>The function called for any cursor move is shown below:</p>
+<div class="srcFmt" style="max-height: 660px">
+<pre>
+function moveEyes(e)
+{
+  var csrX, csrY,
+      x, y,
+      dx, dy,
+      R, d;
+
+  if (e.pageX)
+  {
+    csrX = e.pageX;
+    csrY = e.pageY;
+  }
+  else
+  {
+    // IE case
+    d = (document.documentElement && document.documentElement.scrollLeft != null) ?
+           document.documentElement : document.body;
+    csrX = e.clientX + d.scrollLeft;
+    csrY = e.clientY + d.scrollTop;
+  }
+  // eye 1 first
+  dx = csrX - e1x;
+  dy = csrY - e1y;
+  R = Math.sqrt(dx*dx+dy*dy);     // distance from eye centre to csr
+  x = (R &lt; r1)? dx : dx*r1/R;
+  y = (R &lt; r1)? dy : dy*r1/R;
+  eye1Obj.style.left = x + e1xLoc + "px";
+  eye1Obj.style.top = y + e1yLoc + "px";
+  // now for eye 2
+  dx = csrX - e2x;
+  dy = csrY - e2y;
+  R = Math.sqrt(dx*dx+dy*dy);
+  x = (R &lt; r2)? dx : dx*r2/R;
+  y = (R &lt; r2)? dy : dy*r2/R;
+  eye2Obj.style.left = x + e2xLoc + "px";
+  eye2Obj.style.top = y + e2yLoc + "px";
+}
+</pre>
+</div>
+<p>The cursor coordinates, e.clientX and e.clientY gives the cursor position relative to the top left of the screen, the browser viewport. But the coordinates of the page elements are all referred to the top left of the page. The viewport may have been scrolled so that the top left of the page is not the top left of the screen. The terms <i>document.documentElement.scrollLeft</i> and <i>...scrollTop</i> correct for any scrolling so that csrX and csrY refer to the offset from the top left of the page.</p>
+
+<h3>Implementation details</h3>
+<p>To get the basic geometry to work in operational code, rather than just tutorial examples, some additional points should be noted.</p>
+<h4>HTML Code</h4>
+<p>The set of images required for xeyes (face, leftEye, rightEye and maybe a background image for the sockets) should all be children of a wrapper DIV element. This wrapper must have CSS style <i>position: absolute</i>, or <i>position: relative</i> to serve as a parent. The wrapper DIV should have border:0 and padding:0 to make sure the 'face' image has the same top and left position values as the wrapper. This is necessary as the position calculations are made relative to face top, left but the actual positioning of the eyes is done relative to the wrapper top, left.</p>
+<h4>Get Element Position</h4>
+<p>The left and top offset of several elements of this page are required. All elements are positioned using CSS styling. Cursor location is only accessible in units of pixels. To calculate the offset of an elements position from the cursor location, the position of the element with respect to the top left of the page (in units of pixels) is required.</p>
+<p>The cross browser method for retrieving an element's top, left position written by <a href="http://www.kirupa.com/html5/finding_element_x_y_position.htm">Kirupa Chinnathambi</a> is as follows:</p>
+<div class="srcFmt">
+<pre>
+function getPosition(element)
+{
+  var xPosition = 0;
+  var yPosition = 0;
+
+  while(element)
+  {
+    xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+    yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+    element = element.offsetParent;
+  }
+  return { x: xPosition, y: yPosition };
+}
+</pre>
+</div>
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

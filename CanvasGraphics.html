@@ -1,0 +1,657 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>CANGO Canvas Graphics</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="JavaScript graphics, canvas graphics, plotting data with canvas, Cango, canvas graphics library, canvas grpahics object" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+
+    .cvsEg {
+      position: relative;   /* positioned to parent bottom menus */
+      display: block;       /* must have for position canvas elements */
+      margin: 20px auto;
+      padding: 0;
+      background-color: lightyellow;
+      border: 1px solid black;
+    }
+
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03.js"></script>
+  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+
+  <script type="text/javascript">
+    function drawHullo(cvsID)     // canvas ID passed as a string
+    {
+      var g = new Cango(cvsID);   // create a graphics context
+      g.setGridboxRHC();          // use RHCartesian on full canvas
+      g.setWorldCoords(-1, -25, 2, 50); // grid origin = (-1,-25)
+                                        // gridbox width 2, height 50
+      g.drawText("Hullo World", 0, 0, {
+        fillColor:'black',
+        fontSize:24,              // fontSize 24 px
+        fontWeight: 700,
+        lorg:5 });                // 5 = center,center alignment
+    }
+
+    function drawMulti(cvsID)
+    {
+      var g1 = new Cango(cvsID);
+      g1.clearCanvas();   // clear all previous drawing and text
+      g1.deleteAllLayers();
+      g1.setGridboxRHC(0, g1.heightPW/2, 50, g1.heightPW/2);
+      g1.fillGridbox("#eeeed0");
+      g1.setGridboxRHC(9, g1.heightPW/2+5, 40, 25);
+
+      barChart(g1);
+
+      var g2 = new Cango(cvsID);
+      g2.setGridboxRHC(52, g2.heightPW/2, 48, g2.heightPW/2);
+      g2.fillGridbox("#eeddee");
+
+      drawShapes(g2);
+
+      var g3 = new Cango(cvsID);
+      var splash = new Cobj("Cango", "TEXT", {
+        fillColor:"lightblue",
+        fontSize:30,
+        fontWeight: 700,
+        lorg:9,
+        border: true,
+        strokeColor: "blue",
+        lineWidthWC:3,
+        shadowOffsetX:20,
+        shadowOffsetY:-20,
+        shadowBlur:30,
+        shadowColor:"#303030" });
+      g3.setGridboxRHC(25, 2, 32, 30);
+
+      drawPaths(g3);
+      g3.render(splash, -70, 500, 1.6, 30);
+
+      var g4 = new Cango(cvsID);
+      g4.setGridboxRHC(58, 2, 40, 30);
+      g4.fillGridbox("#303a30");
+      g4.setGridboxRHC(63, 5, 34, 23);
+
+      drawUpper(g4);
+    }
+
+    function barChart(g)
+    {
+      var data = [200, 8, 300, 47, 400, 65, 500, 56, 600, 35, 700, 12];
+
+      g.setWorldCoords(0, 0, 900, 80);
+      g.setPropertyDefault("strokeColor", "#202020");
+      g.drawAxes(0, 900, 0, 80, {
+        xTickInterval: 100,
+        yTickInterval: 10,
+        xLabelInterval: 200,
+        yLabelInterval: 10,
+        yLabel: "Performance"
+      });
+      g.drawText("Bar Chart", 900, 60, {"fillColor":"#202020", "fontSize":14, "lorg":3});
+
+      var bars = [];
+      for (var i=0; i<data.length/2; i++)
+      {
+        bars.push('M',data[2*i],0);              // 2*i = x,
+        bars.push('L',data[2*i],data[2*i+1]);    // 2*i+1 = y
+      }
+      var barsObj = new Cobj(bars, "PATH", {"strokeColor":"#aa88aa", "lineWidthWC":50});
+      g.render(barsObj);
+
+      var arrowData = shapeDefs.arrow(100,10, 200,70, 7, 4, g);
+      g.drawShape(arrowData, 0, 0, {"fillColor":'red'});
+
+      var arcData = shapeDefs.arrowArc(180, 30, 90, false, 12);
+      g.drawShape(arcData, 0, 0, {"fillColor":'green'});
+    }
+
+    function drawPaths(g)
+    {
+      var Triangle = "M 100 100 L 300 100 L 200 300 z",
+          CubicBezier = "M100,200 C100,100 250,100 250,200 S400,300 400,200",
+          QuadBezier2 = "M200,300 Q400,50 600,300 T1000,300",
+          Arc1 = "M300,200 h-150 a150,150 0 1,0 150,-150 z",
+          Arc2 = "M275,175 v-150 a150,150 0 0,0 -150,150 z",
+          Arc3 = "M600,350 l 50,-25a25,25 -30 0,1 50,-25 l 50,-25\
+                  a25,50 -30 0,1 50,-25 l 50,-25a25,75 -30 0,1 50,-25 l 50,-25\
+                  a25,100 -30 0,1 50,-25 l 50,-25";
+
+      g.fillGridbox("snow");     // fill viewport with pale yellow
+      g.setWorldCoords(0, 0, 1000); // square pixels
+
+      g.drawShape(svgToCgoRHC(Triangle), 100, 950, {"fillColor":'red'});
+      g.drawPath(svgToCgoRHC(CubicBezier), 400, 1000, {"strokeColor":'red'});
+      g.drawPath(svgToCgoRHC(QuadBezier2), -100, 750, {"strokeColor":'red'});
+      g.drawShape(svgToCgoRHC(Arc1), 50, 400, {fillColor:'red', border:true, strokeColor:'blue'});
+      g.drawShape(svgToCgoRHC(Arc2), 50, 400, {fillColor:"yellow", border:true, strokeColor:'blue'});
+      g.drawPath(svgToCgoRHC(Arc3), -100, 400, {"strokeColor":'red'});
+    }
+
+    function drawShapes(g)
+    {
+      var x1 = 80, y1 = 10,
+          cx1 = 90, cy1 = 60,
+          x2 = 120, y2 = 50,
+          cx2 = 130, cy2 = 10,
+          cx3 = 150, cy3 = 60,
+          x3 = 180, y3 = 30,
+          dot = new Cobj(shapeDefs.circle(4), "SHAPE", {fillColor:'red'});
+
+      g.fillGridbox("wheat");
+      g.setWorldCoords(0, 0, 200, 70);
+
+      // draw a quadratic bezier from x1,y2 to x2,y2
+      g.drawPath(['M', x1, y1, 'Q', cx1, cy1, x2, y2], 0, 0, {strokeColor:'blue'});
+      g.drawPath(['M', x1, y1, 'L', cx1, cy1, x2, y2], 0, 0, {strokeColor:'blue', dashed:[3]});
+       // show the control point
+      g.render(dot, cx1, cy1);
+      // now draw a cubic bezier (from current point x2,y2 to x3,y3)
+      g.drawPath(['M', x2, y2, 'C', cx2, cy2, cx3, cy3, x3, y3], 0, 0, {strokeColor:'green'});
+      g.drawPath(['M', x2, y2, 'L', cx2, cy2], 0, 0, {strokeColor:'green', dashed:[3]});
+      g.render(dot, cx2, cy2);
+      g.drawPath(['M', x3, y3, 'L', cx3, cy3], 0, 0, {strokeColor:'green', dashed:[3]});
+      g.render(dot, cx3, cy3);
+
+      var grad = new RadialGradient(-9, 9, 4, 0, 0, 32);
+      grad.addColorStop(0, 'red');
+      grad.addColorStop(1, '#442222');
+
+      g.drawShape(shapeDefs.circle(50), 35, 20, {"fillColor":grad, 'iso':true});
+
+      var sq2 = new Cobj(shapeDefs.rectangle(40, 30, 7), "SHAPE", {
+        fillColor: "rgba(64, 64, 200, 0.5)",
+        border: true,
+        strokeColor: "yellow" });
+      g.render(sq2, 58, 12);
+
+      var sq1 = new Cobj(shapeDefs.square(18), "PATH", {
+        strokeColor:"#00ff00",
+        lineWidthWC:2,
+        iso:true,
+        shadowOffsetX:3,
+        shadowOffsetY:-3,
+        shadowBlur:4,
+        shadowColor:"#505050" });
+      g.render(sq1, 15, 55);
+      // now scale this to see line width scale too
+      sq1.scale(2);
+      g.render(sq1, 30, 55);
+
+      var blueLine = new Cobj([30, 50, 150, 10], "PATH", {
+        strokeColor:'blue',
+        lineWidthWC:12,
+        lineCap:'round' });
+      g.render(blueLine);
+
+      var tri = new Cobj(shapeDefs.triangle(50), "SHAPE", {"fillColor":'orange'});
+      var hole = new Cobj(shapeDefs.circle(20), "PATH");
+      hole.revWinding();
+      tri.appendPath(hole);
+      g.render(tri, 120, 15);
+    }
+
+    function drawUpper(g)
+    {
+      var data = [], i;
+      g.setWorldCoords(0, -10, 1200, 20);
+      g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL", fontSize: 9});
+      for (i=0; i<=200; i++)
+      {
+        data.push(i*6, 5*Math.sin(i/6));
+      }
+      g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+    }
+
+//==============================================================
+
+    function drawChamber(cvsID)
+    {
+      var chamber = "M 289.16,447.14 \
+                   C 233.33,399.03 267.47,290.34 364.53,265.28 \
+                     408.88,269.91 448.14,282.58 483.22,303.79 \
+                     391.79,287.12 292.99,369.50 331.90,451.11 \
+                     318.79,447.43 302.35,446.61 289.16,447.14 z",
+          cgoChamber = svgToCgoSVG(chamber, -287, -536),
+          cmbr = new Cobj(cgoChamber, "SHAPE", {
+            fillColor:"lightyellow",
+            border: true,
+            strokeColor: "tan",
+            lineWidthWC:4 }),
+          gc = new Cango(cvsID);
+
+      gc.setGridboxSVG();                   // whole canvas
+      gc.setWorldCoords(-50, -300, 300);    // square pixels
+      gc.render(cmbr);
+    }
+
+    function drawSpiral(cvsID)
+    {
+      var chamber = "M 289.16,447.14 \
+                     C 233.33,399.03 267.47,290.34 364.53,265.28 \
+                       408.88,269.91 448.14,282.58 483.22,303.79 \
+                       391.79,287.12 292.99,369.50 331.90,451.11 \
+                       318.79,447.43 302.35,446.61 289.16,447.14 z",
+          cgoChamber = svgToCgoSVG(chamber, -287, -536),
+          cObj = new Cobj(cgoChamber, "SHAPE", {
+            fillColor:"lightyellow",
+            strokeColor:"tan",
+            lineWidthWC:4,
+            border:true }),
+          i, scl,
+          g = new Cango(cvsID);
+
+      g.setGridboxSVG();
+      g.setWorldCoords(0, 0, 500);
+      g.drawShape(shapeDefs.circle(8), 250, 320, {fillColor:"tan"});
+      for (i=0, scl=1; i<50; i++)
+      {
+        g.render(cObj, 250, 320, scl/=1.08, i*24.5);
+      }
+    }
+
+//==============================================================
+
+    var rotGC;
+    var jane;
+    function drawJane1(cvsID)
+    {
+      rotGC = new Cango(cvsID);
+      var xmin = 0, xmax = 24000;
+      var ymin = -300, ymax = 600;
+      rotGC.setGridboxRHC(15, 5, 75, 80);
+      rotGC.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+
+      rotGC.drawAxes(xmin, xmax, ymin, ymax, {xOrigin: 0, yOrigin: 0});
+
+      jane = rotGC.drawImg("Images/JaneAvril2.jpg", 10000, 0, {imgWidth:7000, lorg:8});
+    }
+
+//==============================================================
+
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+
+      drawHullo('hullo');
+      drawMulti('cg2');
+      drawChamber('shellChamber');
+      drawSpiral('shellSpiral');
+      drawJane1('cgJane');
+
+      enableStickyNav();
+    });
+  </script>
+
+</head>
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Canvas Graphics Library</h1>
+        <div class="text_01">
+
+<h2>Cango, a user friendly canvas graphics context</h2>
+<p>Cango (Canvas Graphics Object) is a JavaScript graphics context for object oriented drawing on the HTML5 canvas element. The <a href="CangoUserGuide.html">Cango User Guide</a> has a description of all the Cango methods. The current version of Cango is 8v03, and the source code is available at <a href="Cango-8v03.js" download>Cango-8v03.js</a>.</p>
+
+<p>Cango provides the graphics engine for the <a href="FilterDesign.html">Filter&nbsp;Design</a>, <a href="ArmstrongPattern.html">Armstrong&nbsp;Pattern&nbsp;Guns</a>, <a href="ThreadDrawing.html">Screw&nbsp;Thread&nbsp;Drawing</a>, <a href="SpectrumAnalyser.html">Spectrum&nbsp;Analyser</a> and <a href="ZoomFFT.html">Zoom&nbsp;FFT</a> pages.</p>
+
+<p>A note of caution, the Cango library is still under development, its methods are evolving, if a method would be more efficient with different parameters, they are changed. So users should take care in assuming backward compatibility when a new version is released. Version 8 makes changes to the API so code written for earlier versions will require some modification to run with the Version 8 without modification.</p>
+
+<h3>Cango basic drawing capability</h3>
+
+  <canvas id="cg2" class="cvsEg" width="640" height="450"></canvas>
+
+<div class="captionHolder" style="width: 600px">
+  <p><b>Figure 1.</b> Examples of Bar Chart, Point and Line graph and various shapes.</p>
+</div>  <!-- captionHolder -->
+
+<h3>Features of Cango</h3>
+<ul style="margin-top:1em">
+<li>
+<b>User defined World Coordinates</b> - Cango supports independent X and Y scaling. Data may to be plotted in its original units removing the need to scale all values to canvas pixels. Each Cango instance has its own world coordinates. Multiple graphics contexts may exist together on a single canvas.
+</li>
+<li>
+<b>Both Cartesian and SVG coordinate systems support</b> - Cango supports both RHC (Right Handed Cartesian) coordinates which have Y values increasing UP the canvas, and SVG (Scalar Vector Graphics) coordinates which have Y values increase DOWN the canvas. Since each Cango context instance has its own world coordinates, the different coordinate systems may co-exist on a canvas.
+</li>
+<li>
+<b>Canvas Layers</b> - The functionality of a <a href="CanvasLayers.html">CanvasStack</a> is built into Cango. Transparent canvas overlays can be created to assist in drawing cursors and data overlays and animation without re-drawing any static objects on the background canvas or other layers.
+</li>
+<li>
+<b>Object Oriented</b> - All items drawn with Cango are instances of a <b>Cobj</b> JavaScript object. The Cobj object can encapsulate paths, shapes, images or text. All Cobj objects are rendered to the canvas with the single <i>cgo</i>.render method. Once created a Cobj can be rendered and re-rendered onto the canvas with arbitrary translation, scaling and rotation.
+</li>
+<li>
+<b>Compact SVG notation</b> - Cango uses the compact SVG path syntax to define all path and shape outlines. The Cango version of the syntax is called <b>Cgo2D</b> format, which only differs from the SVG path specification by always specifying the path in a JavaScript Array and allowing either RHC or SVG sign convention for coordinates. SVG path data can be copied from an SVG editor as a string and converted to Cgo2D format by the <b>svgToCgoRHC</b> or <b>svgToCgoSVG</b> utilities. Cgo2D data may be exported as an SVG string using the <b>Cgo2DtoSVG</b> utility.
+</li>
+<li>
+<b>Predefined shapes</b> - Cango provides a <b>shapeDefs</b> object which has methods <b>circle</b>, <b>ellipse</b>, <b>square</b>, <b>triangle</b>, <b>cross</b>, <b>ex</b>, <b>rectangle</b>, <b>arrow</b> and <b>arrowArc</b>. These functions take object dimensions as arguments and return a Cgo2D data array specifying the object's outline.
+</li>
+<li>
+<b>Paths and Shapes</b> - PATH and SHAPE type Cobj are defined by their outline path. Paths are always stroked with either solid or dashed lines, shapes are always filled with color. Gradient color fills are supported. Cango provides control of shapes' winding direction, so shapes can encompass other shapes with opposite winding to achieve cut-out effects. When drawn in world coordinates that have different X and Y scaling PATH and SHAPE Cobj can have their aspect ratio maintained by setting the object's 'iso' property.
+</li>
+<li>
+<b>Text</b> - Text may be positioned in world coordinates with 9 default alignment options, arbitrarily rotated and with variable font size, and font weight.
+</li>
+<li>
+<b>Images</b> - Images can be loaded and rendered with arbitrary positioning, scaling and rotation with 9 default internal drawing origins for easy alignment.
+</li>
+<li>
+<b>Drag and Drop</b> - If the <a href="CangoDragAndDropManual.html">CangoDragAndDrop</a> extension module is loaded all objects can be enabled for drag-n-drop, all the event handling support code is built-in, just specify the callback functions.
+</li>
+<li>
+<b>Zoom and Pan</b> - The <a href="CangoDragAndDropManual.html">CangoDragAndDrop</a> extension module also supplies a Zoom and Pan utility function <b>initZoomPan</b> which creates an overlay canvas holding zoom and pan controls which can be configured to zoom and pan any of the canvases in the stack.
+</li>
+<li>
+<b>Animation</b> - If the <a href="CangoAnimationManual.html">CangoAnimation</a> extension module is loaded then any object's position, size, rotation angle or its various style properties can be animated. All animations are synchronized even if drawn on different layers with user control of play, pause, step and stop.
+</li>
+<li>
+<b>Axes</b> - If the <a href="CangoAxesManual.html">CangoAxes</a> extension module is loaded then methods for drawing various styles of axes are added, with auto or manual tick spacing. This module also adds arrow shapes both straight and circular arc style. It also adds some utilities to draw HTML text overlaying the canvas and a JavaScript version of the 'sprintf' utility.
+</li>
+</ul>
+
+<h3>Using Cango</h3>
+<p>Cango requires an HTML canvas element within the body of the web page. The only attribute required by Cango is a unique <b>id</b>. To use the Cango, download the minified version: <a href="Cango-8v03-min.js" download>Cango-8v03-min.js</a>. Store the file directory accessible to JavaScript code running in the web page, then add the following line to the web page header:</p>
+<div class="srcFmt">
+<pre>
+&lt;script type="text/javascript" src="[directory path]/Cango-8v03-min.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+
+<h4>The Cango drawing context</h4>
+<p>Each graphics context is an instance of the Cango object, with its own set of properties such as world coordinate system, stroke color, fontSize and so on. Multiple Cango instances may exist simultaneously on the same canvas. Drawing calls to a different context may be interspersed without affecting any other contexts' settings. A graphics context is created as follows:</p>
+<div class="srcFmt">
+<pre>
+var g = new Cango(<i>canvasID</i>);
+</pre>
+</div>
+<p>The returned object <b>g</b>, has the Cango drawing methods such as <b>setWorldCoords</b>, <b>drawPath</b>, <b>render</b> and so on.</p>
+<p>JavaScript graphics drawing code using the Cango will look something like this:</p>
+
+<div style="margin: 1em; float:right;">
+  <canvas id="hullo" width="220" height="200" style="background-color:lightyellow"></canvas>
+  <div class="captionHolder" style="width: 220px">
+    <p class="caption"><b>Figure 1.</b> Cobj "TEXT" example.</p>
+  </div>
+</div>
+
+<div class="srcFmt">
+<pre>
+function drawHullo(cvsID)     // canvas ID passed as a string
+{
+  var g = new Cango(cvsID);   // create a graphics context
+  g.setGridboxRHC();          // use RHCartesian on full canvas
+  g.setWorldCoords(-1, -25, 2, 50); // grid origin = (-1,-25)
+                                    // gridbox width 2, height 50
+  g.drawText("Hullo World", 0, 0, {
+    fontSize:24,              // fontSize 24 px
+    fontWeight:700,
+    lorg:5 });                // 5 = center,center alignment
+}
+</pre>
+</div>
+
+<h3>Cango examples</h3>
+<h4>Re-rendering objects</h4>
+<p>Drawing a Nautilus shell is a good example of Cango object oriented drawing. Firstly a photo of a sectioned shell was imported in the 'Inkscape' SVG editor and one chamber was traced in just four cubic Bézier curves. The XML data of the chamber outline path was copied into the following string.</p>
+<div class="srcFmt">
+<pre style="margin-left: 2px; margin-right: 2px">
+"M 289.16,447.14 C 233.33,399.03 267.47,290.34 364.53,265.28 408.88,269.91 448.14,282.58 483.22,303.79
+  391.79,287.12 292.99,369.50 331.90,451.11 318.79,447.43 302.35,446.61 289.16,447.14 z"
+</pre>
+</div>
+
+<p>To draw the chamber in Cango, the string is converted to Cgo2D format using the <b>svgToCgoSVG</b> utility. This utility can also shift the origin of the path. Drawing a spiral is easier if the origin is at the center of the spiral (after a bit of fiddling the offsets to achieve this were found to be -287, -536). The Cgo2D data array returned is then used to create  a Cobj object of type "SHAPE" ready to be drawn onto the canvas.</p>
+<p>To draw this object, a Cango instance on the canvas is created then a coordinate grid is defined. For this example an SVG grid has been chosen. Then the Cango 'render' method is called passing the Cobj. The resulting drawing of the chamber is shown in Fig. 2, alongside the source code to generate the drawing.</p>
+
+<div style="margin: 1em; float:right;">
+  <canvas id="shellChamber" width="220" height="200" style="background-color:lightblue"></canvas>
+  <div class="captionHolder" style="width: 220px">
+    <p class="caption"><b>Figure 3a.</b> Nautilus shell chamber.</p>
+  </div>
+</div>
+<div class="srcFmt">
+<pre>function drawChamber(cvsID)
+{
+  var chamber = "M 289.16,447.14 \
+                 C 233.33,399.03 267.47,290.34 364.53,265.28 \
+                  408.88,269.91 448.14,282.58 483.22,303.79 \
+                  391.79,287.12 292.99,369.50 331.90,451.11 \
+                  318.79,447.43 302.35,446.61 289.16,447.14 z",
+      cgoChamber = svgToCgoSVG(chamber, -287, -536),
+      cmbr = new Cobj(cgoChamber, "SHAPE", {
+        fillColor:"lightyellow",
+        border: true,
+        strokeColor: "tan",
+        lineWidthWC:4 }),
+      gc = new Cango(cvsID);
+
+  gc.setGridboxSVG();                   // whole canvas
+  gc.setWorldCoords(-50, -300, 300);    // square pixels
+  gc.render(cmbr);
+}
+</pre>
+</div>
+
+<p>The power of the Cango object re-use is shown by drawing the whole Nautilus spiral shell. The Nautilus shell comprises a set of chambers, each chamber is built 1.08 times the size of the previous chamber as the Nautilus grows. The spiral moves about 24.5&deg; as each chamber added. To draw a 50 chamber Nautilus spiral (backwards) the code for one chamber can be scaled by 1/1.08 and rotated by 24.5&deg; as follows:</p>
+<div class="srcFmt">
+<pre>function drawSpiral(cvsID)
+{
+  var chamber = "M 289.16,447.14 \
+                 C 233.33,399.03 267.47,290.34 364.53,265.28 \
+                   408.88,269.91 448.14,282.58 483.22,303.79 \
+                   391.79,287.12 292.99,369.50 331.90,451.11 \
+                   318.79,447.43 302.35,446.61 289.16,447.14 z",
+      cgoChamber = svgToCgoSVG(chamber, -287, -536),
+      cObj = new Cobj(cgoChamber, "SHAPE", {
+        fillColor:"lightyellow",
+        strokeColor:"tan",
+        lineWidthWC:4,
+        border:true }),
+      i, scl,
+      g = new Cango(cvsID);
+
+  g.setGridboxSVG();
+  g.setWorldCoords(0, 0, 500);
+  g.drawShape(shapeDefs.circle(8), 250, 320, {fillColor:"tan"});
+  for (i=0, scl=1; i&lt;50; i++)
+  {
+    g.render(cObj, 250, 320, scl/=1.08, i*24.5);
+  }
+}
+</pre>
+</div>
+
+<p>Fig 3 shows the resulting spiral.</p>
+
+<canvas id="shellSpiral" class="cvsEg" width="400" height="400" style="background-color:lightblue"></canvas>
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 3.</b> A Nautilus shell composed from 50 scaled, rotated copies of one chamber shown in Fig 3a.</p>
+</div>  <!-- captionHolder -->
+
+<h4>Image handling</h4>
+<p>Cango can load, draw and manipulate images just as well as paths and shapes. The Cobj constructor with type "IMG", accepts a pre-loaded Image object or an image URL string as its data argument. If a URL is passed then the image in loaded into an Image object which is stored along with the user requested size of the image (in world coordinates) and any other properties that have been passed in the 'options' object. The Cobj is then available for future rendering with arbitrary positioning, scaling and rotation. The <b>drawImg</b> method is a wrapper for creating the Cobj and then calling 'render' to draw the object to the canvas.</p>
+<p>The image drawing origin is set by the <b>lorg</b> (locate origin) parameter which takes a numeric value 1 through 9; lorg=1 uses the top-left of the image as the reference point, 2 top-center, 3 top-right, 4 left-center and so on, through to 9 being the bottom-right.</p>
+<p>As a demonstration, an image has been loaded into Fig&nbsp;4 at point x=10000, y=0 and use lorg&nbsp;8, i.e. the (center-bottom) of the image will be at 10000,0. The image will be scaled to have width 7000 (X axis units). The Cobj returned is stored in the variable 'jane'. The code line to do this is:</p>
+<div class="srcFmt">
+<pre>
+  jane = rotGC.drawImg("Images/JaneAvril2.jpg", 10000, 0, {imgWidth:7000, lorg:8});
+</pre>
+</div>
+
+<canvas id="cgJane" class="cvsEg" width="450" height="400"></canvas>
+
+<div class="captionHolder" style="width: 450px">
+  <p class="caption"><b>Figure 4.</b> Image rotation and independent world coordinate rotation example.</p>
+</div>  <!-- captionHolder -->
+
+<p>To re-render 'jane' translated to a new x,y position (20000,0), scaled by a factor of 1.3 and rotated by 50&deg;, the following command can be used:</p>
+<div class="srcFmt">
+<pre>
+&lt;a href="" onclick="rotGC.render(jane, 20000, 0, 1.3, 50); return false">here&lt;/a>
+</pre>
+</div>
+<p>Click <a href="" onclick="rotGC.render(jane, 20000, 0, 1.3, 50); return false">here</a> to see the effect.</p>
+
+
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

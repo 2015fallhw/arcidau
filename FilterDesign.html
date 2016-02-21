@@ -1,0 +1,610 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Digital Filter Design</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="DSP, Digital Signal Processing, Digital Filter Design, Kaiser-Bessel Window, Kaiser Filter Design, Finite Impulse Response Filter, FIR Filter" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+    @import "frontPanel-19.css";
+
+    #coeffsList {
+      height: 17em;
+      margin: 0.5em 0 0 2em;
+      font-family: Inconsolata, monospace;  /* force the font to load */
+      font-size: 13px;
+      line-height:17px;
+      text-align: right;
+      border: 2px solid;
+      border-color: #c4c4b0 #f8f7f3 #f8f7f3 #c4c4b0;
+      resize: none;
+    }
+
+    .valueReadout {
+      margin-bottom: 4px;
+    }
+
+    .led {
+      float: left;
+      width: 8em;
+      margin-top: 0.5em;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="firFilter-11.js"></script>
+  <script type="text/javascript" src="dspUtils-11.js"></script>
+  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+
+  <script type="text/javascript">
+
+    function genFilter()
+    {
+      var panel = document.getElementById("panelSA1"),
+          Fs = parseFloat(panel.fs.value),
+          Fa = parseFloat(panel.fa.value),
+          Fb = parseFloat(panel.fb.value),
+          M = parseFloat(panel.nPts.value),
+          Att = parseFloat(panel.att.value),
+          stopBand = panel.fType[3].checked,
+          kb1 = new KaiserFIR(Fs, Fa, Fb, M, Att),
+          j;
+
+      if (stopBand)
+      {
+        for(j=0; j<kb1.M; j++)
+        {
+          kb1.coeffs[j] *= -1;
+        }
+        kb1.coeffs[kb1.Np] += 1;
+      }
+      kb1.plotFreqResp("scrn1");
+      kb1.plotCoeffs("scrn2");
+      kb1.listCoeffs("coeffsList");
+    }
+
+    function setType(type)
+    {
+      var panel = document.getElementById("panelSA1"),
+          Fs = parseFloat(panel.fs.value);
+
+      // re-enable on any change
+      panel.fa.disabled = false;
+      panel.fb.disabled = false;
+
+      if (type == 1)
+      {
+        panel.fa.value = 0;
+        panel.fa.disabled = true;
+        panel.fb.value = Math.round(0.4*Fs);
+      }
+      if (type == 2)
+      {
+        panel.fa.value = Math.round(0.1*Fs);
+        panel.fb.value = Math.round(Fs/2);
+        panel.fb.disabled = true;
+      }
+
+      plotShape('grph1', type)
+    }
+
+    function checkForm()
+    {
+      var panel = document.getElementById("panelSA1"),
+          Fa = parseInt(panel.fa.value),
+          Fb = parseInt(panel.fb.value),
+          Fs = parseInt(panel.fs.value),
+          Att = parseInt(panel.att.value),
+          Df = parseInt(panel.df.value),
+          N = parseInt(panel.nPts.value);
+
+      if (Att<21)
+      {
+        Att = 21;
+      }
+      if (N < 3)
+      {
+        N = 3;
+      }
+      if (2*Math.floor(N/2) == N)   // if even
+      {
+        N += 1;   // force oddness
+      }
+      if (N>500)
+      {
+        alert("N too large (N<500)");
+        N = 499;
+      }
+      if (Fa<0)
+      {
+        Fa = 0;
+      }
+      if (Fb<1)
+      {
+        Fb = 1;
+      }
+      if (Fb>Fs/2)
+      {
+        Fb = Math.round(Fs/2);
+      }
+      if (Fa>Fs/2)
+      {
+        Fb = Math.round(Fs/2)-1;
+      }
+      if (Fa>Fb)
+      {
+        Fa = Fb-1;
+      }
+      if (Fb<Fa)
+      {
+        Fb = Fa+1;
+      }
+
+      panel.fa.value = Fa;
+      panel.fb.value = Fb;
+      panel.nPts.value = N;
+      panel.df.value = Math.round(Fs*(Att-8)/(28.72*(N-1)));
+      panel.fs.value = Fs;
+      panel.att.value = Att;
+    }
+
+    function plotShape(cvsID, type)
+    {
+      var g = new Cango(cvsID);
+
+      g.setGridboxRHC();
+      g.clearCanvas();
+      g.setGridboxRHC(10,15,70,50);
+      g.setWorldCoords(0, 0, 100, 100);
+      // draw grid
+      g.drawPath(['M',0,0, 'L',100,0, 'M',0,0, 'L',0,70, 'M',100,0, 'L',100,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
+      g.drawText("0", 0, -10, {fillColor:'black', fontSize:12, lorg:2});
+      g.drawText("Fs/2", 100, -10, {fillColor:'black', fontSize:12, lorg:2});
+      switch (type)
+      {
+        case 1:
+        default:
+          g.drawPath(['M',0,50, 'L',40,50, 40,0, 100,0], 0, 0, {strokeColor:'black'});
+          g.drawPath(['M',40,0, 'L',40,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", 0, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", 40, 80, {fillColor:'black', fontSize:12, lorg:8});
+          break;
+        case 2:
+          g.drawPath(['M',0,0, 'L',60,0, 60,50, 100,50], 0, 0, {strokeColor:'black'});
+          g.drawPath(['M',60, 0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", 100, 80, {fillColor:'black', fontSize:12, lorg:8});
+          break;
+        case 3:
+          g.drawPath(['M',0,0, 'L',30,0, 30,50, 60,50, 60,0, 100,0], 0, 0, {strokeColor:'black'});
+          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", 30, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
+          break;
+        case 4:
+          g.drawPath(['M',0,50, 'L',30,50, 30,0, 60,0, 60,50, 100,50], 0, 0, {strokeColor:'black'});
+          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", 30, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
+          break;
+       }
+    }
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      displayAlign: "left",
+      displayIndent: "2em",
+      TeX: {
+        extensions: ["AMSmath.js"],
+        TagIndent: "20em"
+      },
+      styles: {
+        ".MathJax": { color: "#404040" }
+      },
+      "HTML-CSS": { scale: 95 }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+      plotShape('grph1', 1);
+      checkForm();
+      genFilter();
+      enableStickyNav();
+
+      addEvent(window, 'resize', genFilter);
+    });
+  </script>
+
+</head>
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>FIR Filter Design</h1>
+        <div class="text_01">
+
+          <h2>Window method of FIR filter design</h2>
+          <p>The basic idea behind the Window method of filter design is that the ideal frequency response of the filter is equal to 1 for all the pass band frequencies, and equal to 0 for all the stop band frequencies. The filter impulse response is obtained by taking the Discrete Fourier Transform (DFT) of the ideal frequency response. Unfortunately, the filter response would be infinitely long since it has to reproduce the infinitely steep discontinuities at the band edges in the ideal frequency response. To create a Finite Impulse Response (FIR) filter, the time domain filter coefficients must be restricted in number by multiplying by a window function of a finite width. The simplest window function is the rectangular window which corresponds to truncating the sequence after a certain number of terms.</p>
+
+          <p>Rectangular windowing in the time domain will result in a frequency spectrum with the width of the pass band close to the desired value but with side lobes appearing at the band edges (the effects of time domain windowing on the frequency spectrum are discussed in more detail in the <a href="SpectrumAnalyser.html">Spectrum Analyser</a> page). To suppress the side lobes and make the filter frequency response approximate more closely to the ideal, the width of the window must be increased and the window function tapered down to zero at the ends. This will increase the width of the transition region between the pass and stop bands but will lower the side lobe levels outside the pass band.</p>
+
+          <h3>Kaiser-Bessel filter generator</h3>
+          <p>The Kaiser-Bessel window function is simple to calculate and its parameters can be adjusted to produce the desired maximum side lobe level for a near minimal filter length. To demonstrate the power and simplicity of this technique, a Kaiser-Bessel filter generator is provided below. To use it, set the sample rate and the type of filter desired; low pass, band pass or high pass, then set the frequency of ideal filter edges and the minimum attenuation required in the stop band. Then press the "CALC FILTER" button. The filter coefficients are calculated and plotted along with a graph of the frequency response of the filter. The actually algorithm and the JavaScript code to implement it are presented at the bottom of the page.</p>
+
+
+<div class="consoleHolder">
+<div class="console">
+  <div class="bezel">
+    <div class="scrnBevel" >
+
+      <div class="screenHolder" style="width:700px; height:600px">
+
+        <div class="ctrlPanel" style="width:19.9em;">
+
+          <div class="blkTop" style="height:278px">
+            <div class="blkTitle">Kaiser FIR Design</div>
+              <form id="panelSA1" action="#" name="panelSA1">
+                <table style="vertical-align:bottom">
+                  <tr>
+                    <td style="width:50%;">
+                      <div class="led" style="margin-top: 0">
+                        <input type="radio" name="fType" value="lp" id="typelp" onclick="setType(1)" checked="checked">
+                        <label for="typelp"><span>Low&nbsp;Pass</span></label>
+                      </div>
+                      <div class="led">
+                        <input type="radio" name="fType" value="hp" id="typehp" onclick="setType(2)">
+                        <label for="typehp"><span>High&nbsp;Pass</span></label>
+                      </div>
+                      <div class="led">
+                        <input type="radio" name="fType" value="bp" id="typebp" onclick="setType(3)">
+                        <label for="typebp"><span>Band&nbsp;Pass</span></label>
+                      </div>
+                      <div class="led">
+                        <input type="radio" name="fType" value="bs" id="typebs" onclick="setType(4)">
+                        <label for="typebs"><span>Band&nbsp;Stop</span></label>
+                      </div>
+                    </td>
+                    <td>
+                      <div>
+                        <canvas id="grph1" width="125" height="80" style="margin-top:0.5em;"></canvas>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr style="vertical-align:bottom; height:1.4em">
+                    <td>
+                      <label class="valueLabel" for="fa">Fa</label>
+                    </td>
+                    <td style="">
+                      <label class="valueLabel" for="fb">Fb</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <input id="fa" class="valueReadout" value="0" style="text-align:right; width:5em" type="text" onchange="checkForm()"/>
+                      <label class="valueLabel" for="fa" style="margin: 6px 0 0 7em">Hz</label>
+                    </td>
+                    <td>
+                      <input id="fb" class="valueReadout" value="600" style="text-align:right; width:5em" type="text" onchange="checkForm()"/>
+                      <label class="valueLabel" for="fb" style="margin: 6px 0 0 7em">Hz</label>
+                    </td>
+                  </tr>
+                  <tr style="vertical-align:bottom">
+                    <td>
+                    <label class="valueLabel">M(odd) length</label>
+                  </td>
+                  <td>
+                    <label class="valueLabel">dF/2</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <input id="nPts" class="valueReadout" value="37" style="text-align:right; width:5em" type="text" onchange="checkForm()"/>
+                    <label class="valueLabel" for="nPts" style="margin: 6px 0 0 7em">Pts</label>
+                  </td>
+                  <td>
+                    <input id="df" class="valueReadout" value="412" style="text-align:right; width:5em" type="text" disabled="disabled" onchange="checkForm()"/>
+                    <label class="valueLabel" for="df" style="margin: 6px 0 0 7em">Hz</label>
+                  </td>
+                </tr>
+                <tr style="vertical-align:bottom">
+                  <td>
+                    <label class="valueLabel">Fs (Sample Freq)</label>
+                  </td>
+                  <td>
+                    <label class="valueLabel">Att (>21dB)</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <input id="fs" class="valueReadout" value="4096" style="text-align:right; width:5em" type="text" onchange="checkForm()"/>
+                    <label class="valueLabel" for="fs" style="margin: 6px 0 0 7em">Hz</label>
+                  </td>
+                  <td>
+                    <input id="att" class="valueReadout" value="60" style="text-align:right; width:5em" type="text" onchange="checkForm()"/>
+                    <label class="valueLabel" for="att" style="margin: 6px 0 0 7em">dB</label>
+                  </td>
+                </tr>
+                <tr style="vertical-align:bottom; height:2.1em">
+                  <td colspan="2" style="text-align:center;">
+                    <button type="button" id="calcFIR" class="button-link" onclick="genFilter();" style="display:inline;width: 12em">CALCULATE&nbsp;&nbsp;FILTER</button>
+                  </td>
+                </tr>
+              </table>
+            </form>
+          </div>
+
+          <div class="blkTop" style="margin-top: 20px; height:243px">
+            <div class="blkTitle">FIR Listing</div>
+            <textarea id="coeffsList" rows="16" cols="15" readonly="readonly"></textarea>
+          </div>
+        </div>
+
+        <div class="screenCvs">
+          <canvas id="scrn1" width="385" height="285" style="background-color: #303f30"></canvas>
+        </div>
+
+        <div class="screenCvs">
+          <canvas id="scrn2" width="385" height="250" style="background-color: #303f30"></canvas>
+        </div>
+
+      </div> <!-- screenHolder  -->
+    </div>   <!-- scrnBevel -->
+
+  </div>  <!-- bezel -->
+  <div style="clear: both"></div>
+</div> <!-- console -->
+
+</div>   <!-- consoleHolder -->
+
+          <h3>Kaiser-Bessel filter design formulae</h3>
+          <p>The methods used in this FIR generator were taken from the paper by J. F. Kaiser, "Nonrecursive digital filter design using I<sub>0</sub>-sinh window function". In this paper Kaiser presented empirical formulae for calculating the shape parameter of the Kaiser-Bessel window required to achieve a desired stop band side lode attenuation.</p>
+
+          <p>The values of window shape parameter \(\alpha\) needed to achieve the attenuation <i>Att</i> may be calculated from:</p>
+
+$$\alpha = \left\{ \begin{array}{l l} 0.1102(Att - 8.7) &amp; \quad Att &gt; 50\\ 0.5842(Att - 21)^{0.4} + 0.07886(Att - 21) &amp; \quad 21 \le Att \le 50\\ 0 &amp; \quad Att &lt; 21 \end{array}\right.$$
+
+          <p>The transition band is defined as the difference in frequency from the edge of the pass band, where ripple is typically &lt;0.2dB, and the edge of stop band, where the side lobes fall below the specified level. The edge frequency of the ideal filter is in the center of this transition region. The relation between the transition bandwidth \(dF\), and the filter length \(M\), is given by:</p>
+
+$$M \ge \frac{Att - 8}{14.36\ dF/{Fs}}$$
+
+          <p>The formula to actually generate the Kaiser-Bessel window coefficients is as follows:</p>
+
+$$w[j] = \frac {I_0\left(\alpha\sqrt{1-\left(\displaystyle\frac{j-N\!p}{N\!p}\right)^2}\right)}{I_0(\alpha)} \qquad \mbox{for}\ \ 0 \le j &lt; M$$
+          <p style="margin-left: 2em">where:</p>
+<p style="margin-left: 2em">\(M\) is the number of points in the filter,</p>
+<p style="margin-left: 2em">\(N\!p = (M - 1)/2\),</p>
+<p style="margin-left: 2em">\(\alpha\) is the Kaiser-Bessel window shape factor,</p>
+<p style="margin-left: 2em">\(I_0()\) is the \(0^{th}\) order Bessel function of the first kind.</p>
+
+          <p>The two band-edge frequencies, Fa and Fb, determine the shape of the sinc function impulse response of the ideal filter. This sinc function may be calculated analytically. The formulae for this impulse response is:</p>
+
+$$A[j] = \frac{\sin \left(2\pi j \displaystyle\frac{F\!b}{F\!s}\right) - \sin \left(2\pi j \displaystyle\frac{F\!a}{F\!s}\right)}{\pi j}$$
+
+          <p>Truncating this impulse response to just <i>M</i> points and suppressing the side lobes to the required level is achieved by windowing the ideal impulse response \(A[\ ]\), by the Kaiser-Bessel window \(w[\ ]\). The required filter coefficients are given by:</p>
+
+$$H[j] = A[j] w[j] \qquad \mbox{for} \ \ 0 \le j &lt; M$$
+
+          <h3>Kaiser-Bessel filter design source code</h3>
+          <p>The JavaScript code fragments to implement these formulae are shown below. The symmetry of the window function about the center point (j=Np) means that the window coefficients need only be calculated for <i>0&lt;j&lt;=Np</i>.</p>
+          <p>JavaScript code to calculate the impulse response of the ideal filter.</p>
+          <div class="srcFmt">
+<pre>
+A[0] = 2*(Fb-Fa)/Fs;
+for(j=1; j&lt;=Np; j++)
+{
+  A[j] = (Math.sin(2*j*pi*Fb/Fs)-Math.sin(2*j*pi*Fa/Fs))/(j*pi);
+}
+</pre>
+          </div>
+          <p>The JavaScript code to calculate the desired shape Kaiser-Bessel window.</p>
+          <div class="srcFmt">
+<pre>
+if (Att&lt;21)
+{
+  Alpha = 0;
+}
+else if (Att>50)
+{
+  Alpha = 0.1102*(Att-8.7);
+}
+else
+{
+  Alpha = 0.5842*Math.pow((Att-21), 0.4)+0.07886*(Att-21);
+}
+// Window the ideal response with the Kaiser-Bessel window
+Inoalpha = Ino(Alpha);
+for (j=0; j&lt;=Np; j++)
+{
+  H[Np+j] = A[j]*Ino(Alpha*Math.sqrt(1-(j*j/(Np*Np))))/Inoalpha;
+}
+for (j=0; j&lt;Np; j++)
+{
+  H[j] = H[M-1-j];
+}
+</pre>
+          </div>
+          <p>The code to generate the \(0^{th}\) order Bessel function used in the code above is:</p>
+          <div class="srcFmt">
+<pre>
+function Ino(x)
+{
+  /*
+   * This function calculates the zero<sup>th</sup> order Bessel function
+   */
+  var d = 0, ds = 1, s = 1;
+  do
+  {
+    d += 2;
+    ds *= x*x/(d*d);
+    s += ds;
+  }
+  while (ds > s*1e-6);
+  return s;
+}
+</pre>
+          </div>
+          <p>These algorithms are all that is needed to generate the filter coefficients for "low pass", "high pass" and "band pass" filters. The "band stop" filter type requires one additional manipulation. The coefficients start out the same as the equivalent "band pass" filter but then the center coefficient \(H[N\!p]\), is replaced with \(1 - H[N\!p]\), and all the other coefficients are inverted \(H[j] = -H[j]\).</p>
+
+           <p>The complete JavaScript source code of the functions is all in the file <a href="dspUtils-11.js" download>dspUtils-11.js</a></p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>

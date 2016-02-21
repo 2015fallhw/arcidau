@@ -1,0 +1,992 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Armstrong-Frederick Gun Design of 1760</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="underwater acoustics, sound level measurement, underwater sounds, sound in air and water, sound levels compared" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <style type="text/css" media="screen">
+    @import "contentStyle-18.css";
+    @import "console-43.css";
+
+    blockquote p, blockquote h3 {
+      font-style: italic;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    td.fillGreen {
+      background-color: #99FF66;
+    }
+
+    td.fillBlue {
+      background-color: #33FFCC;
+    }
+    .txtTbl td {
+        padding: 5px 2px 5px 2px;
+    }
+
+    #cvs1, #cvs2 {
+      background-color: floralwhite;
+    }
+
+    .console select, .console input {
+      border-width: 2px;
+      border-radius: 3px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var sidebar = null,
+        sidebar_top = 100;
+
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+
+    if (typeof addEvent === "undefined")
+    {
+      var addEvent = function(element, eventType, handler)
+      {
+        if (element.attachEvent)
+        {
+          return element.attachEvent('on'+eventType, handler);
+        }
+        return element.addEventListener(eventType, handler, false);
+      };
+    }
+
+    function cancelBubble(e)
+    {
+      var evt = e ? e:window.event;
+      if (evt.stopPropagation) evt.stopPropagation();
+      if (evt.cancelBubble!=null) evt.cancelBubble = true;
+    }
+
+    /* -------------------------------------------------------------------------
+     * buildMenu(dataArray)
+     *
+     * dataArray should be in JSON format as follows
+     * [ {"url":"url of file", "title":"String to display in index"},
+     *   {"url":"url of file", "title":"String to display in index",
+     *    "chapters": [
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       {"url":"url of file", "title":"String to display in index"},
+     *       ...
+     *       {"url":"url of file", "title":"String to display in index"}
+     *     ]
+     *   },
+     *   {"url":"url of file", "title":"String to display in index"},
+     *   ...
+     * ]
+     * Then build HTML anchors from the array.
+     *--------------------------------------------------------------------------*/
+    function buildMenu(dataArray)
+    {
+      var menuNode = document.getElementById("sideNav"),
+          htmlStr = "",
+          currPage,
+          i;
+
+      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
+      {
+        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
+      }
+
+      function parseAry(obj)
+      {
+        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
+            i;
+        for (i=0; i<obj.length; i++)
+        {
+          if (obj[i].chapters)
+          {
+            htmlStr += "<ul>";
+            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
+            parseAry(obj[i].chapters);
+            htmlStr += "</ul></li>";
+          }
+          else
+          {
+            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
+            // check if this index entry is the current page, if open this section to show link
+            if (currPage == obj[i].url)
+            {
+              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
+            }
+          }
+        }
+      }
+
+      parseAry(dataArray);
+      menuNode.innerHTML += htmlStr;
+    }
+
+    function toggleSection(btn)
+    {
+      if (btn && btn.parentNode.className === "sectClosed")
+      {
+        btn.parentNode.className = "sectOpen";
+      }
+      else if (btn && btn.parentNode.className === "sectOpen")
+      {
+        btn.parentNode.className = "sectClosed";
+      }
+      return false;   // is used with anchor will prevent going to href
+    }
+
+    function enableStickyNav()
+    {
+      var stickyElements = document.getElementsByClassName('sticky');
+
+      for (var i = stickyElements.length - 1; i >= 0; i--) {
+          Stickyfill.add(stickyElements[i]);
+      }
+    }
+  </script>
+
+<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested.js"></script>
+  <script src="stickyfill.js"></script>
+
+  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="CangoSVGtext-1v01.js"></script>
+  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
+  <script type="text/javascript" src="armstrongGunUtils-03.js"></script>
+
+  <script type="text/javascript">
+    var gunLengths = [
+        {"nat":42, "txts":["9\u00BD ft", "10 ft"], "vals":[9.5, 10]},
+        {"nat":32, "txts":["9\u00BD ft", "10 ft"], "vals":[9.5, 10]},
+        {"nat":24, "txts":["9 ft", "9\u00BD ft"], "vals":[9, 9.5]},
+        {"nat":18, "txts":["9 ft"], "vals":[9]},
+        {"nat":12, "txts":["7\u00BD ft", "8\u00BD ft", "9 ft"], "vals":[7.5, 8.5, 9]},
+        {"nat":9,  "txts":["7 ft", "7\u00BD ft", "8 ft", "8\u00BD ft", "9 ft"], "vals":[7, 7.5, 8, 8.5, 9]},
+        {"nat":6,  "txts":["6 ft", "6\u00BD ft", "7 ft", "7\u00BD ft", "8 ft", "8\u00BD ft", "9 ft"], "vals":[6, 6.5, 7, 7.5, 8, 8.5, 9]},
+        {"nat":4,  "txts":["5\u00BD ft", "6 ft"], "vals":[5.5, 6]},
+        {"nat":3,  "txts":["4\u00BD ft"], "vals":[4.5]} ];
+
+    var prefLength = {"42": 9.5,
+                      "32": 9.5,
+                      "24": 9,
+                      "18": 9,
+                      "12": 8.5,
+                      "9": 7.5,
+                      "6": 7,
+                      "4": 6,
+                      "3": 4.5 };
+
+    function drawGun(nat, len)
+    {
+      "use strict";
+      var g1, g2,
+          g2ovlID, g2ovl,
+          orgPx,                 // save the original offset to the origin for positioning the scale
+          selectedVals, title;
+
+      function drawPlanElev()
+      {
+        var ruleSVG, scaleSVG, ft,
+            ll = g2ovl.toWorldCoords(orgPx.x, g2ovl.rawHeight-20),   // world coords of point (orgPx.x, 20) px from lower left
+            ul = g2ovl.toWorldCoords(20, 20);   // world coords of point (20, 20) px from upper left
+
+         // Note: calc ll to undo the effect of zoom and pan on the position of the scale (size zooms but positon is fixed)
+        genGunPartOutlines();
+        // plot paln and elevation view
+        g1.clearCanvas();
+        // ===================== elevation  ===========================
+        g1.drawPath(barrel);
+        g1.drawPath(baseRing);
+        g1.drawPath(astragal1);
+        g1.drawPath(reinforceRing1);
+        g1.drawPath(reinforceRing2);
+        g1.drawPath(astragal2);
+        g1.drawPath(astragal3);
+        g1.drawPath(trunnionFace);       // only in elevation view
+        g1.drawPath(ventfield);          // only in elevation view
+        g1.drawPath(vent, 0,0, {strokeColor:'lightgray'});
+        g1.drawPath(bore, 0,0, {strokeColor:'lightgray'});
+        g1.drawPath(muzzle);
+        g1.drawPath(cascable);
+        // ======================  plan  ===================================
+        g1.drawPath(barrel, 0, -8);
+        g1.drawPath(baseRingPlan, 0, -8);
+        g1.drawPath(astragal1Plan, 0, -8);
+        g1.drawPath(reinforceRing1, 0, -8);
+        g1.drawPath(reinforceRing2, 0, -8);
+        g1.drawPath(astragal2, 0, -8);
+        g1.drawPath(astragal3, 0, -8);
+        g1.drawPath(trunnionTopArm, 0, -8);     // only in plan view
+        g1.drawPath(trunnionBotArm, 0, -8);     // only in plan view
+        g1.drawPath(bore, 0, -8, {strokeColor:'lightgray'});
+        g1.drawPath(ventPlan, 0, -8, {strokeColor:'lightgray'});
+        g1.drawPath(ventfieldPlan, 0, -8);      // only in plan view
+        g1.drawPath(muzzle, 0, -8);
+        g1.drawPath(cascable, 0, -8);
+
+        // scales etc
+        selectedVals.mValTxt, selectedVals.sValTxt;
+        title = new Cobj("Armstrong pattern "+selectedVals.mValTxt+", barrel length "+selectedVals.sValTxt, "TEXT", {
+          fillColor:"black",
+          fontSize:18,
+          lorg:1,
+          fontFamily: "serif" });
+        g2ovl.render(title, ul.x, ul.y);
+        ruleSVG = ["M",0,15/calibre, "l",12*length/calibre,0];       // length scale (units are calibre)
+        for (ft=0; ft<=length; ft++)
+        {
+          ruleSVG.push("M",ft*12/calibre,15/calibre, "l",0,5/24);   // ft tick marks (units are calibre)
+        }
+        g2ovl.drawPath(ruleSVG, ll.x, ll.y, {strokeColor:"darkgray"});
+
+        scaleSVG = genScale(nature, length);
+        g2ovl.drawPath(scaleSVG, ll.x, ll.y, {strokeColor:"darkgray"});
+      }
+
+      calcGunDimensions(nat, len);
+      selectedVals = presetSelect(gunLengths, nat, len);
+
+      g1 = new Cango("cvs1");
+      g1.deleteAllLayers();
+      g1.setGridboxRHC();  //full canvas
+      g1.setWorldCoords(-3.5, -17, 34); // square pixels
+
+      g2ovl = new Cango("cvs1");
+      g2ovl.dupCtx(g1);
+      orgPx = g2ovl.toPixelCoords(0, 0);                    // find pixel coords of 0,0
+
+      initZoomPan(g1.createLayer(), [g1, g2ovl], drawPlanElev);   // zoom bkgCanvas and the scale overlay
+
+      drawPlanElev();
+    }
+
+    function drawLabels(natLbl, lenLbl)
+    {
+      var captionNat = document.getElementById("currNature"),
+          captionLen = document.getElementById("currLength");
+
+      captionNat.innerHTML = natLbl;
+      captionLen.innerHTML = lenLbl;
+    }
+
+    function presetSelect(optionsTbl, masterVal, slaveVal)
+    {
+      var masterList = document.getElementById("selNature"),
+          slaveList = document.getElementById("selLength"),
+          mIdx, sIdx,
+          masterTxt, slaveTxt;
+
+      function genSlaveOptns()
+      {
+        var srcTxts = optionsTbl[mIdx].txts,
+            srcVals = optionsTbl[mIdx].vals,
+            newOpt,
+            i;
+        // clear out the old slave list
+        while (slaveList.options.length)
+        {
+          slaveList.remove(0);
+        }
+        // create a new list from the array of allowed lengths for current calibre
+        if (srcTxts)
+        {
+          for (i=0; i<srcTxts.length; i++)
+          {
+            newOpt = document.createElement("option");
+            newOpt.text = srcTxts[i];
+            newOpt.value = srcVals[i];
+            slaveList.add(newOpt);  // add the new option to the old list stub
+          }
+        }
+      }
+
+      function getSelIdx(sel, val)
+      {
+        var i=sel.options.length-1;
+        while ((i>=0)&&(sel.options[i].value != val))
+        {
+          i--;
+        }
+        return i;
+      }
+      // pre-select the options for this masterVal and slaveVal
+      // de-select the current selection
+      masterList.options[masterList.selectedIndex].removeAttribute("selected");
+      mIdx = getSelIdx(masterList, masterVal); // find index of the requested nature
+      if (mIdx === -1)
+      {
+        mIdx = 0;  // just selct the top option
+        masterVal = masterList.options[mIdx].value;
+      }
+      masterList.options[mIdx].setAttribute("selected", "selected");
+      masterTxt = masterList.options[mIdx].text;
+      // fix the slave select
+      genSlaveOptns();
+      sIdx = getSelIdx(slaveList, slaveVal);   // find the requested val in the new slave array
+      if (sIdx !== -1)
+      {
+        slaveList.options[sIdx].setAttribute("selected", "selected");
+      }
+      else  // requested val not available for this master val
+      {
+        slaveVal = prefLength[masterVal]       // get preferred slave value for this master
+        // pre-select his length
+        sIdx = getSelIdx(slaveList, slaveVal);
+        slaveList.options[sIdx].setAttribute("selected", "selected");  // mark preferred length as selected
+      }
+      slaveTxt = slaveList.options[sIdx].text;
+
+      return {"mVal":masterVal, "sVal":slaveVal, "mValTxt": masterTxt, "sValTxt": slaveTxt};
+    }
+
+    function handleNature()
+    {
+      var lengthList = document.getElementById("selLength"),
+          natureList = document.getElementById("selNature"),
+          currNatIdx = natureList.selectedIndex,
+          currNat = natureList.options[currNatIdx].value,
+          currLen = lengthList.options[lengthList.selectedIndex].value,
+          selectedVals;
+
+      selectedVals = presetSelect(gunLengths, currNat, currLen);
+      drawLabels(selectedVals.mValTxt, selectedVals.sValTxt);
+      drawGun(selectedVals.mVal, selectedVals.sVal);
+    }
+
+    function handleLength()
+    {
+      var lengthList = document.getElementById("selLength"),
+          natureList = document.getElementById("selNature"),
+          currNat = natureList.options[natureList.selectedIndex].value,
+          currLen = lengthList.options[lengthList.selectedIndex].value,
+          selectedVals = presetSelect(gunLengths, currNat, currLen);   // values must be OK but need the labels generated
+
+      drawLabels(selectedVals.mValTxt, selectedVals.sValTxt);
+      drawGun(currNat, currLen);
+    }
+
+    function handleCell(cell)
+    {
+      "use strict";
+      // handler for 1761 Establishment gun lengths
+      // 'this' is the table cell
+      var natures = [0, 42, 32, 24, 18, 12, 9, 6, 4, 3, 2, 1],
+          lengthStr = [4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10],
+          nat = natures[cell.parentNode.rowIndex-1],
+          len = lengthStr[cell.cellIndex-1],
+          selectedVals;
+
+      selectedVals = presetSelect(gunLengths, nat, len);
+      drawLabels(selectedVals.mValTxt, selectedVals.sValTxt);
+      drawGun(selectedVals.mVal, selectedVals.sVal);
+    }
+
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+
+      buildMenu(indexData);
+      enableStickyNav();
+
+      handleLength();      // fake a selection from drop down options
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.htm"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Armstrong Pattern Guns of 1760</h1>
+        <div class="text_01">
+
+          <h2>Scale drawings of Armstrong pattern guns</h2>
+
+          <p>The historic drafting instructions for an Armstrong pattern a gun have been implemented in JavaScript to generate the SVG (or Cgo2D) data for the drawing. The code can generate a drawings of any of the 1761-64 establishment guns and display it on the HTML canvas element. The data is in  vector coordinates format and so may be zoomed and panned to see details. It is hoped that the drawings may be of use to historians in the identification of relics by comparison of dimensions and for model makers requiring accurate dimensions.</p>
+
+          <h2>Royal Navy guns of the late 18th century</h2>
+
+          <p>The Armstrong pattern guns became the standard issue for the Royal Navy through the later years of the 18th century. The evolution of the design from 1720s, culminating in the final 1760 pattern is described in the <a href="Cannon.html">Cannon</a> page.</p>
+
+          <p>British guns of the era where categorized by their 'nature', the weight of round shot they fired. The round shot weights were standardized to the set of 3, 4, 6, 9, 12, 18, 24, 32 and 42 pounds. The dimensions of any Armstrong pattern gun scale according the calibre (diameter of the bore) of the gun and its barrel length measured from the rear of the base ring to the front of the muzzle.</p>
+
+          <p>The list of Royal Navy ships along with the number of guns each carried, their nature and length are listed as the Establishment of the Fleet. Table 1 shows the barrel lengths of guns for each nature listed in the establishment of 1761 and 1764.</p>
+
+          <table class="txtTbl" style="width:500px" cellpadding="1" cellspacing="0" border="1">
+            <tbody style="text-align: right">
+              <tr>
+                <th rowspan="2" style="width: 22%">Nature (lb)<br/>=shot weight</th>
+                <th colspan="12">Length of gun (ft)</th>
+              </tr>
+
+              <tr>
+                <th style="width: 6.5%">4&frac12;</th>
+                <th style="width: 6.5%">5</th>
+                <th style="width: 6.5%">5&frac12;</th>
+                <th style="width: 6.5%">6</th>
+                <th style="width: 6.5%">6&frac12;</th>
+                <th style="width: 6.5%">7</th>
+                <th style="width: 6.5%">7&frac12;</th>
+                <th style="width: 6.5%">8</th>
+                <th style="width: 6.5%">8&frac12;</th>
+                <th style="width: 6.5%">9</th>
+                <th style="width: 6.5%">9&frac12;</th>
+                <th style="width: 6.5%">10</th>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>42</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillBlue" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>32</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillBlue" onclick="handleCell(this)"></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>24</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td id="gun24pdr" class="fillGreen" onclick="handleCell(this)"></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>18</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>12</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen center" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>9</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen center" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>6</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillGreen center" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                        <td class="fillGreen" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>4</b></td>
+                <td><br /></td>
+                <td><br /></td>
+                        <td class="fillBlue center" onclick="handleCell(this)"></td>
+                        <td class="fillBlue" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 3em"><b>3</b></td>
+                        <td class="fillGreen center" onclick="handleCell(this)"></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+            </tbody>
+          </table><!-- ************************************************************************** -->
+
+          <div class="captionHolder" style="width:500px">
+            <p><b>Table 1.</b> Standard barrel lengths for guns of each different nature listed in the Royal Navy establishment of 1761 and 1764. A green square indicates a listed gun length for that calibre, a blue-green indicates a gun size only present in the 1764 establishment.<br/><br/>
+<b>Colored squares are clickable, corresponding calibre and length gun will be drawn.</b></p>
+          </div>  <!-- captionHolder -->
+
+<div class="consoleHolder" style="margin-top: 30px">
+  <div class="console">
+      <div class="bezel">
+
+        <label style="margin: 0 0 5px 20px">Nature:</label>
+        <select id="selNature" onchange="handleNature()"  style="width: 75px; margin: 0 0 5px 0">
+          <option value="42">42 pdr</option>
+          <option value="32">32 pdr</option>
+          <option value="24" selected>24 pdr</option>
+          <option value="18">18 pdr</option>
+          <option value="12">12 pdr</option>
+          <option value="9">9 pdr</option>
+          <option value="6">6 pdr</option>
+          <option value="4">4 pdr</option>
+          <option value="3">3 pdr</option>
+        </select>
+        <label style="margin: 0 0 5px 20px">Length:</label>
+        <select id="selLength" onchange="handleLength()" style="width: 70px;">
+          <option value="9">9 ft</option>
+          <option value="9.5">9&frac12; ft</option>
+        </select>
+
+      <div class="scrnBevel" >
+        <canvas id="cvs1" width="660" height="500"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+<div class="caption-holder" style="margin:15px 60px">
+  <p><b>Figure 1.</b> Scale drawing of Armstrong pattern <span id="currNature">24</span> pounder, with barrel length <span id="currLength">9ft 6 in</span>.</p>
+</div>
+
+
+
+<h2>Armstrong pattern design instructions</h2>
+
+          <p>The instructions for drawing a design template for an Armstrong pattern gun were recorded by Isaac Landman, Professor of Fortification and Artillery, Royal Military Academy in his "Notes on Artillery" in 1788. It is these instructions that have been converted to JavaScript code to produce the drawing above. The source code used to create the drawings is available in the file <a href="armstrongGunUtils-03.js" download>armstrongGunUtils-03.js</a>.</p>
+
+<p>Here is a transcript of Landman's original drawing instructions:</p>
+
+          <blockquote>
+            <p>A scale must be formed of the Calibre or Diameter of the Bore, divided into sixteen equal parts, from whence the thickness of metal in Guns of different Natures is given in the following table.</p>
+
+            <table class="txtTbl" style="width: 620px;">
+              <!--    <colgroup span="2"></colgroup>  -->
+              <thead>
+                <tr>
+                  <th style="width: 30%">Nature</th>
+                  <th style="width: 7%">42</th>
+                  <th style="width: 7%">32</th>
+                  <th style="width: 7%">24</th>
+                  <th style="width: 7%">18</th>
+                  <th style="width: 7%">12</th>
+                  <th style="width: 7%">9</th>
+                  <th style="width: 7%">6</th>
+                  <th style="width: 7%">4</th>
+                  <th style="width: 7%">3</th>
+                  <th style="width: 7%">1</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">Diameter of Calibre</td>
+                  <td class="left">7.018</td>
+                  <td class="left">6.410</td>
+                  <td class="left">5.823</td>
+                  <td class="left">5.292</td>
+                  <td class="left">4.623</td>
+                  <td class="left">4.200</td>
+                  <td class="left">3.668</td>
+                  <td class="left">3.204</td>
+                  <td class="left">2.913</td>
+                  <td class="left">2.019</td>
+                </tr>
+                <tr>
+                  <th class="center">Thickness of metal</th>
+                  <td class="right" colspan="10"></td>
+                </tr>
+                <tr>
+                  <td class="center">Breech (parts)</td>
+                  <td class="right">32</td>
+                  <td class="right">34</td>
+                  <td class="right">36</td>
+                  <td class="right">38</td>
+                  <td class="right">40</td>
+                  <td class="right">42</td>
+                  <td class="right">44</td>
+                  <td class="right">44</td>
+                  <td class="right">44</td>
+                  <td class="right">44</td>
+                </tr>
+                <tr>
+                  <td class="center">2nd Reinforce (parts)</td>
+                  <td class="right">27</td>
+                  <td class="right">28</td>
+                  <td class="right">29</td>
+                  <td class="right">30</td>
+                  <td class="right">31</td>
+                  <td class="right">32</td>
+                  <td class="right">33</td>
+                  <td class="right">33</td>
+                  <td class="right">33</td>
+                  <td class="right">33</td>
+                </tr>
+                <tr>
+                  <td class="center">Muzzle astragal (parts)</td>
+                  <td class="right">18</td>
+                  <td class="right">19</td>
+                  <td class="right">20</td>
+                  <td class="right">21</td>
+                  <td class="right">22</td>
+                  <td class="right">23</td>
+                  <td class="right">24</td>
+                  <td class="right">24</td>
+                  <td class="right">24</td>
+                  <td class="right">24</td>
+                </tr>
+             </tbody>
+          </table>
+
+          <div class="captionHolder" style="width:620px">
+            <p><b>Table 2.</b> Several dimensions of the metal thickness in guns of different nature. Scale units are the calibre divided into 32 equal parts.</p>
+          </div>  <!-- captionHolder -->
+
+          <p>On a given line AB representing the axis of the piece, set off in feet and inches the given length of the piece, and draw lines CD, EF each distant from it the semi diameter of the calibre, which will represent the bore.</p>
+          <p>The length of the piece is divided into seven equal parts. From the two sevenths G a line GH is drawn perpendicular to the axis AB, for the length of the first reinforce, the length GI of the second reinforce is equal to one seventh plus one diameter of the calibre terminated by a line IK perpendicular to the axis, and the remainder IL will be for the chase.</p>
+          <p>The breech AM is equal to the greatest thickness of metal NO equal to 36 parts, or one diameter and four parts.
+The thickness of metal PK, at the extremity of the second reinforce is equal to 29 parts, to which two parts KR are added, then in the direction O and R a line QH is drawn, representing the exterior surface of the first reinforce. The second reinforce is determined by a line KS drawn through K parallel to the exterior surface of the first reinforce.</p>
+          <p>The breadth of the base ring and mouldings Aa is equal to <sup>1</sup>/<sub>32</sub> part of the length of the piece AB.</p>
+          <p>The first and second reinforce rings and their mouldings be, de. are each equal to &frac34; the base ring and mouldings Aa. The ogees are equal to their respective rings. The astragals and fillets f are one third the base ring and ogee, and all the fillets are half the astragals.</p>
+          <p>The projection of the mouldings are half the fillets, excepting those of the muzzle, which are the whole breadth of the fillets.</p>
+          <p>The length FV of the muzzle is equal to the diameter of the second reinforce ring.</p>
+          <p>The thickness of metal at the beginning of the chase, PT, is also diminished by two parts, and its outline TV is drawn to the muzzle astragal, where the thickness of metal UV is equal to 20 parts.</p>
+          <p>The axis XY of the trunnions is perpendicular to the axis of the piece, placed at 3/7 of the length of the piece from the extremity of the breech. The centre Z of the trunnions is placed half a calibre below the axis of the piece; their diameters are one calibre and their length the same, allowing for the projection of the second reinforce ring; their faces bi are parallel to the axis of the piece.</p>
+          <p>The vent field ag is determined by placing the vent astragal f one quarter of the calibre before the bottom of the bore M.</p>
+          <p>The breadth ek of the chase girdle is equal to the breadth ag of the vent field.</p>
+          <p>The diameter of the base ring lm is determined by lines produced touching the extremities of the first and second reinforce rings.</p>
+          <p>The pan M extends from the base ring to the centre of the vent astragal; its breadth is 2&frac12; inches, and its sides are made parallel to the axis of the piece; its projection is determined by a line lo drawn through I the extremity of the diameter of the base ring parallel to the exterior surface of the vent field.</p>
+          <p>The vent no is two tenths of an inch in diameter, it is situated at the bottom of the bore in n, and its direction is such that when produced it may meet the lower surface of the bore at 4 parts of the calibre from its extremity N.</p>
+          <p>The bottom Nn of the bore is a plane surface meeting the sides in a small arc, described with a radius of 1/24 parts of the calibre.</p>
+
+          <h3>The Muzzle PL</h3>
+          <p>The length DE of the muzzle is equal to the diameter of the second reinforce ring. The length DN of the neck is equal to 1/5 DE the length of the muzzle, and through N a line is drawn parallel to the axis of the piece which will determine the thickness of metal at the face.</p>
+          <p>Take BA equal to the breadth of one of the reinforce rings and ogees, for the centre of the swell, and its diameter HK is made equal to that of the second reinforce ring.</p>
+          <p>Take KI equal to 1/4 AB, from I as a centre and with IK as a radius describe the arc RKS, draw IR parallel to the axis of the piece, which will determine the diameter of the fillet RP. Take KS equal to 1/3 KR; and from N and S as diameters centres and with 5 diameters of the bore FG as a radius describe two arcs cutting each other in O; from O as centre and with the same radius NO describe the hollow or cavetto NS.</p>
+          <p>After having drawn the two fillets R and E, the ogee ab is described by equilateral triangles.</p>
+
+          <h3>The Cascable PL</h3>
+          <p>The length AB of the cascable is equal to two diameters and nine parts of the calibre.</p>
+          <p>The distance Bh from the extremity B of the breech to the last fillet EF is equal to 24 parts.</p>
+          <p>The diameter EF of the last fillet is one diameter and 16 parts.</p>
+          <p>The breadths Be, gf of the ovolos are each equal to four parts.</p>
+          <p>The ogee CK is described by isosceles triangles.</p>
+          <p>The diameter of the button mn is one calibre 8 parts, the diameter of the neck is equal to that of the bore, from G as a centre and with 34 parts as a radius describe an arc in M, and from e with a radius of 14 parts cut the former arc and from their intersection as centre and with ME as a radius describe the arc EKN.</p>
+</blockquote>
+
+          <h2>Effect of barrel length on Armstrong gun failures</h2>
+          <p>A standardized gun designs of the 18th century were described in units of calibre, the diameter of the bore. The barrel length scaled with calibre too and a length of 22 calibre was typical for well designed gun. The Armstrong pattern has a 1st reinforce whose length is a fixed at 2/7 of the barrel length. The metal is thickest along the 1st reinforce so that it covers the length of gunpowder charge where the stresses on the gun will be greatest. The pressure in the barrel drops as the ball travels down the barrel and the gases occupy the increasing volume behind the ball. All guns must be tested with a proof charge before they are accepted into service. The proof charge for British guns was equal in weight to the round shot weight, so a 9 pounder would be proofed by firing a 9 pound ball with 9 pounds of gunpowder. By contrast the service charge was for many decades just half the weight of the round shot, when stronger powder became common this was dropped to a third the shot weight. If the 1st reinforce failed to extend beyond the length of the proofing gunpowder charge then the gun will likely fail proof firing as the thinner walled 2nd reinforce will be exposed to the maximum pressure of the burning powder.</p>
+
+<p>The length of the large nature Armstrong pattern guns would be unwieldy aboard ship and so the 12, 18 and 24 pdrs were restricted to 9ft in length and the 32 pounder to 9'6". This meant that the 1st reinforce would be too short to cover the proof charge and so the proof charge for guns with nature greater than 12 pounders were proofed with smaller charge.</p>
+
+<p>Despite this minimum length requirement the Establishment of the Fleet shows guns that were made with barrel lengths too short for the length of the first reinforce to extend beyond the length of the standard proof charge length. The actual lengths of proof charge compared to the distance from the breech end of the bore to the front of the first reinforce, has been calculated for all gun lengths of each different nature gun and the results shown in Table 3. The length of the proof charge is calculated assuming a powder density of 0.0329 lb/in<sup>3</sup>. Guns where the proof charge is longer than the length of the bore covered by the first reinforce are indicated in red, these guns would be more prone to fail proof firing.</p>
+
+<p>Table 3 is calculated from the average gunpowder density of 0.0329 pounds/in<sup>3</sup> and the regulation proof charges shown in column 2.</p>
+
+          <table class="txtTbl" style="width:620px" cellpadding="1" cellspacing="0" border="1">
+            <tbody style="text-align: right">
+              <tr>
+                <th rowspan="2" style="width: 9%">Nature<br/>(lb)</th>
+                <th rowspan="2" style="width: 9%">Proof charge (lb)</th>
+                <th rowspan="2" style="width: 10%">Proof charge length (in)</th>
+                <th colspan="12">Bore length from breech to end of first reinforce (in)</th>
+              </tr>
+
+              <tr>
+                <th style="width: 6%">4&frac12;'</th>
+                <th style="width: 6%">5'</th>
+                <th style="width: 6%">5&frac12;'</th>
+                <th style="width: 6%">6'</th>
+                <th style="width: 6%">6&frac12;'</th>
+                <th style="width: 6%">7'</th>
+                <th style="width: 6%">7&frac12;'</th>
+                <th style="width: 6%">8'</th>
+                <th style="width: 6%">8&frac12;'</th>
+                <th style="width: 6%">9'</th>
+                <th style="width: 6%">9&frac12;'</th>
+                <th style="width: 6%">10'</th>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>42</b></td>
+                <td style="padding-right: 1em">25</td>
+                <td style="padding-right: 1em">19.6</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td>25.6</td>
+                <td>27.3</td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>32</b></td>
+                <td style="padding-right: 1em">21.5</td>
+                <td style="padding-right: 1em">20.3</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td>25.8</td>
+                <td>27.5</td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>24</b></td>
+                <td style="padding-right: 1em">18</td>
+                <td style="padding-right: 1em">20.5</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td>24.3</td>
+                <td>26.0</td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>18</b></td>
+                <td style="padding-right: 1em">15</td>
+                <td style="padding-right: 1em">20.7</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td>24.6</td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>12</b></td>
+                <td style="padding-right: 1em">12</td>
+                <td style="padding-right: 1em">21.7</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><span style="color: #ff0000">19.9</span></td>
+                <td><br /></td>
+                <td>23.4</td>
+                <td>25.1</td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>9</b></td>
+                <td style="padding-right: 1em">9</td>
+                <td style="padding-right: 1em">19.7</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><span style="color: #ff0000">18.5</span></td>
+                <td>20.2</td>
+                <td>21.9</td>
+                <td>23.6</td>
+                <td>25.3</td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>6</b></td>
+                <td style="padding-right: 1em">6</td>
+                <td style="padding-right: 1em">17.3</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><span style="color: #ff0000">15.5</span></td>
+                <td>17.2</td>
+                <td>19.0</td>
+                <td>20.7</td>
+                <td>22.4</td>
+                <td>24.1</td>
+                <td>25.8</td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>4</b></td>
+                <td style="padding-right: 1em">4</td>
+                <td style="padding-right: 1em">15.1</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><span style="color: #ff0000">14.5</span></td>
+                <td>16.2</td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+              <tr>
+                <td style="padding-right: 1.2em"><b>3</b></td>
+                <td style="padding-right: 1em">3</td>
+                <td style="padding-right: 1em">13.7</td>
+                <td><span style="color: #ff0000">11.4</span></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+                <td><br /></td>
+              </tr>
+
+            </tbody>
+          </table><!-- ************************************************************************** -->
+
+          <div class="captionHolder" style="width:620px">
+            <p><b>Table 3.</b> Length of the bore occupied by proof charge compared to the length of bore within the first reinforce for standard barrel lengths for each different nature Armstrong pattern gun. Guns where the proof charge extends significantly into the second reinforce (shown in red) will be more prone to fail proof firing.</p>
+          </div>  <!-- captionHolder -->
+
+        </div>  <!-- text_01 -->
+      </div>  <!-- content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+</html>
