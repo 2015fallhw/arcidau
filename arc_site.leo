@@ -14,6 +14,7 @@
 <v t="amd.20160221114817.2"><vh>@data qt-gui-plugin-style-sheet</vh></v>
 <v t="amd.20160221114817.3"><vh>@string initial_split_orientation = horizontal</vh></v>
 </v>
+<v t="amd.20160221122211.1"><vh>github pages site</vh></v>
 <v t="amd.20160221103934.2"><vh>@edit cf4_logo.html</vh></v>
 <v t="amd.20160221114827.1"><vh>@edit index.html</vh></v>
 </vnodes>
@@ -94,5 +95,6 @@ QLineEdit#editorLabel {
 }</t>
 <t tx="amd.20160221114817.3">horizontal: body pane to the left
 vertical: body pane on the botton</t>
+<t tx="amd.20160221122211.1">http://2015fallhw.github.io/arcidau/</t>
 </tnodes>
 </leo_file>
