@@ -1,16 +1,18 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/Calendar.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:00 GMT -->
 <head>
   <title>Historical Calendar</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="JavaScript Calendar, perpetual calendar, Julian Calendar, Gregorian Calendar, Julian Day number, calendar conversion algorithms"/>
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "calendar-24.css";
-    @import "DDmenu-16.css";
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="calendar-24.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="DDmenu-16.css" media="all" type="text/css" />
 
+  <style type="text/css" media="screen">
     #yearMenu {
       top: 3px;
       left: 278px;
@@ -52,9 +54,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -70,115 +69,13 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
   <script type="text/javascript" src="calendarUtils-22.js"></script>
   <script type="text/javascript">
-
     var calendar1,
         minYear = 1000,
         maxYear = 2100;
@@ -295,14 +192,12 @@
     addLoadEvent( function(){
       buildMenu(indexData);
       initCal();
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -443,4 +338,6 @@
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/Calendar.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:01 GMT -->
 </html>

@@ -1,19 +1,33 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/CannonBallistics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:35:54 GMT -->
 <head>
   <title>Smooth Bore Cannon Ballistics</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="ballistics theory, smoothbore cannon, smooth bore cannon, cannonball ballistics, interior ballistics, exterior ballistics" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -29,138 +43,68 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+  <script type="text/javascript" src="katex-render-tags.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
+  <script type="text/javascript" src="ballistic-trajectory-06.js"></script>
+
+  <script type="text/javascript">
+    function plotTracks(cvsID)
+    {
+      var mass = 24,       // mass of ball  (lb)
+          charge = 8,      // mass of powder charge (lb)
+          elev = 10,       // elevation (deg)
+          height = 7;      // muzzle height (ft)
+
+      var U = MuzzleVelocity(mass, charge), // muzzle velocity (ft/sec)
+          dia = bore[mass]/12;              // diameter of bullet (ft)
+
+      var xmin = 0,
+          ymin = 0,
+          xspan = 4000,
+          yspan = 400;
+
+      var track;
+
+      // set up canvas graphics
+      cgo = new Cango(cvsID);
+      cgo.gridboxPadding(10, 8, 3, 3);
+      cgo.setWorldCoordsRHC(xmin, ymin, xspan, yspan);
+      cgo.drawAxes(xmin, xmin+xspan, ymin, ymin+yspan, {xLabel:"yd", yLabel:"yd"});
+
+      track = genTrack(Newton_Drag, dia, mass, U, elev, height);
+      cgo.drawPath(track, {strokeColor:"green"});
+
+      track = genTrack(GS_Drag, dia, mass, U, elev, height);
+      cgo.drawPath(track, {strokeColor:"red"});
+
+      track = genTrack(SphereDrag, dia, mass, U, elev, height);
+      cgo.drawPath(track, {strokeColor:"blue"});
+    }
   </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
+
+      // render all the tagged equations separately to get the tag working
+      renderTaggedEqns();
+      renderMathInElement(document.body);
+       
+      plotTracks('cvs1');
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -195,57 +139,80 @@
 
 <p>The work of Benjamin Robins resulted in the first useful model of the interior ballistics of guns. Robins' formula for muzzle velocity may be expressed as follows;</p>
 
-<p>The force of the gas pressure on the ball accelerating it down the barrel is given by</p>
+<p>The force of the gas pressure on the ball accelerating it down the barrel is given by:
 
-$$ F(x) = \frac{R P_{atm} A c}{x}   \tag{1}$$
+  <div class="tagged">
+    F(x) = \frac{R P_{atm} A c}{x}  \tag{1}
+  </div>
 
-$$\mbox{where:} \\
-\mbox{x = is the distance the ball has moved down the barrel} \\
-\mbox{R = initial ratio of hot gas pressure to atmospheric pressure (Robins calculated to be 1000)} \\
-P_{atm}\mbox{ = atmospheric pressure} \\
-\mbox{A = cross-sectional area of the ball or bore} \\
-\mbox{c = the length of the barrel occupied by the powder charge before ignition. } \\
-$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(x\) is the distance the ball has moved down the barrel <br/>
+\(R\) is the initial ratio of hot gas pressure to atmospheric pressure (Robins calculated to be 1000) <br/>
+\(P_{atm}\) is atmospheric pressure <br/>
+\(A\) is the cross-sectional area of the ball or bore <br/>
+\(c\) is the length of the barrel occupied by the powder charge before ignition. <br/>
+</div>
+</p>
 
-<p>from Newton's 2nd law, the integral of the force over the distance it moves the ball will equal the kinetic energy of the ball. Hence:
-$$ \tfrac{1}{2} m v^2 = \int_{c}^{L} F(x) dx  \tag{2}$$
+<p>From Newton's 2nd law, the integral of the force over the distance it moves the ball will equal the kinetic energy of the ball.<br/>
+Hence:
+<div class="tagged">
+ \tfrac{1}{2} m v^2 = \int_{c}^{L} F(x) dx \tag{2}
+</div>
 
-$$ \mbox{where:} \\
-\mbox{m = mass of the cannonball} \\
-\mbox{v = muzzle velocity, velocity of ball a distance L down the barrel} \\
-\mbox{c = length of the powder charge in the barrel, equal to the initial position of the ball down the barrel} \\
-\mbox{L = full length of the barrel} \\
-$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(m\) is the mass of the cannonball <br/>
+\(v\) is muzzle velocity, ie. velocity of ball a distance L down the barrel <br/>
+\(c\) is the length of the powder charge in the barrel, equal to the initial position of the ball down the barrel <br/>
+\(L\) is the full length of the barrel.
+</div>
+</p>
 
-Rearranging:
+<p>Rearranging:
 
-$$ v^2 = \frac{2 R P_{atm}}{m}\frac{\pi d^2 c}{4} ln(\frac{L}{c})  \tag{3}$$
-$$ \mbox{where:} \\
-\mbox{d = barrel diameter, the bore} \\
-\mbox{L = full length of the barrel} \\
-\mbox{c = length of the powder charge, distance to the initial position of the ball} $$
+  <div class="tagged">
+    v^2 = \frac{2 R P_{atm}}{m}\frac{\pi d^2 c}{4} ln(\frac{L}{c})  \tag{3}
+  </div>
 
-Given the density of the gunpowder \( \eta \), then the mass of the powder change \(p\) is given by:
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(d\) = barrel diameter, the bore <br/>
+\(L\) = full length of the barrel <br/>
+\(c\) = length of the powder charge, distance to the initial position of the ball.
+</div>
+</p>
 
-$$ p = \frac{\pi d^2 c }{4}\eta  \tag{4}$$
+<p>Given the density of the gunpowder \( \eta \), then the mass of the powder change \(p\) is given by:
+
+  <div class="tagged">
+    p = \frac{\pi d^2 c }{4}\eta  \tag{4}
+  </div>
 
 Substituting this expression for the powder charge into eqn 3, yields:
 
-$$ v = \sqrt{\frac{2 R P_{atm}}{m}\frac{p}{\eta} ln(\frac{L}{c})}  \tag{5} $$
+<div class="tagged">
+  v = \sqrt{\frac{2 R P_{atm}}{m}\frac{p}{\eta} ln(\frac{L}{c})}  \tag{5}
+</div>
 
 </p>
 
-<p>Atmospheric pressure is 14.7&times;144&times;32.2 lbw/ft<sup>2</sup> and the density of gun powder is 55 lb/ft<sup>3</sup> [2]. The ratio of the initial pressure of exploding powder to atmospheric pressure, <i>R</i>,  was measured by Robins to be roughly 1000. Later Hutton's measurements [1, pp79] put this figure between 1500 and 1600. The values are empirical and depend on the quality of the gunpowder and the loss of pressure due to windage. Early 18th century muzzle velocities are better modelled with a value of R near 1500 and the early 19th century muzzle velocities, with higher quality powder and smaller windage, a value of 1600 is more appropriate.</p>
+<p>Atmospheric pressure is 14.7&times;144&times;32.2 lbw/ft<sup>2</sup> and the density of gun powder is 55 lb/ft<sup>3</sup> [2]. The ratio of the initial pressure of exploding powder to atmospheric pressure, \( R \),  was measured by Robins to be roughly 1000. Later Hutton's measurements [1, pp79] put this figure between 1500 and 1600. The values are empirical and depend on the quality of the gunpowder and the loss of pressure due to windage. Early 18th century muzzle velocities are better modelled with a value of \( R \) near 1500 and the early 19th century muzzle velocities, with higher quality powder and smaller windage, a value of 1600 is more appropriate.</p>
 
 <p>The original Robins' model may be refined by correcting for the energy required to accelerate the mass of burning powder and gas along the barrel as well as the ball, this effectively increases the mass of the ball by about one third of the weight of the powder charge [2][4].</p>
 
 <p>Hence, the average muzzle velocity of 18th century smooth bore cannon may be expressed, in units of ft/sec by:
 
-$$ v = 1928 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{6}$$
+    <div class="tagged">
+      v = 1928 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{6}
+    </div>
 
 and 19th century guns are better modelled by:
 
-$$ v = 1991 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{7}$$
+<div class="tagged">
+  v = 1991 \sqrt{\frac{p}{m + \tfrac{1}{3}p} ln(\frac{L}{c})}  \tag{7}
+</div>
 
 </p>
 
@@ -374,78 +341,83 @@ function MuzzleVelocity(m, p) // mass of ball (lb), mass of charge (lb)
 
 <h3>Projectile Kinematics</h3>
 
-<p>The instantaneous aerodynamic drag force on a projectile travelling at velocity <i>v</i>, is given by the formula:
+<p>The instantaneous aerodynamic drag force on a projectile travelling at velocity \( v \), is given by the formula:
 
-$$ F = \frac{1}{2} C_D \rho A v^2    \tag{1} $$
+    <div class="tagged">
+      F = \frac{1}{2} C_D \rho A v^2    \tag{1}
+    </div>
 
-$$ \text{where } C_D \text{ is the dimensionless drag coefficient,} \\
-\rho \text{ is the density of air at sea level,} \\
-A \text{ is the cross-sectional area of the object in the direction of motion, and} \\
-v \text{ is the instantaneous velocity of the projectile relative to the air.}
-$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\( C_D \) is the dimensionless drag coefficient, <br/>
+\( \rho \) is the density of air at sea level, <br/>
+\( A \) is the cross-sectional area of the object in the direction of motion, and <br/>
+\( v \) is the instantaneous velocity of the projectile relative to the air.
+</div>
+</p>
 
-for a spherical projectile,
+<p>For a spherical projectile,
 
-$$ F_D = \frac{1}{2} \rho C_D(v,d) \frac{\pi d^2}{4} v^2   \tag{2} $$
+    <div class="tagged">
+      F_D = \frac{1}{2} \rho C_D(v,d) \frac{\pi d^2}{4} v^2   \tag{2}
+    </div>
 
-$$
-\mbox{where } d = \mbox{ diameter of the spherical projectile.}
-$$
+where \( d \) = diameter of the spherical projectile.</p>
 
-The expression for <i>C<sub>D</sub>(v)</i> is given by
+<p>The expression for \( C_D(v,d) \) is given by
 
 $$ C_D = SphereDrag(v, d). $$
 
 </p>
 
-<p>For high trajectories the force should be corrected for the reduction in density of the air with increasing altitude, <i>y</i>. The dimensionless correction factor is given by:
+<p>For high trajectories the force should be corrected for the reduction in density of the air with increasing altitude, \( y \). The dimensionless correction factor is given by:
 
-$$ H(y) = e^{-3.158E-05y} \quad \text{ where y is in ft} $$
+  <div class="tagged">
+    H(y) = e^{-3.158E-05y}    \tag{3}
+  </div>
+  
+where \( y \) is in ft</p>
 
-This drop in density with altitude is only significant for shot fired at very high angles of elevation and may be omitted for sea service cannon where the gun carriage and gun ports restricted elevation to less than ~12&deg;
+<p>This drop in density with altitude is only significant for shot fired at very high angles of elevation and may be omitted for sea service cannon where the gun carriage and gun ports restricted elevation to less than ~12&deg; </p>
+
+<p>If the projectile has mass, \( m \), it follows from Newton's 2nd law of motion, \( F = ma \) that the deceleration due to drag is given by
+
+    <div class="tagged">
+      a_D =  \frac{\pi}{8} \rho H(y) C_D(v,d) \frac{d^2}{m} v^2   \tag{4}
+    </div>
+
+Assuming that the air is still, the velocity of the projectile relative to the ground is equal to the velocity relative to the air and the direction of the drag force \( F_D \) is opposite the direction of the bullet velocity \( v \). The \( x \), and \( y \) components of the acceleration are then given by:
+
+$$ \begin{aligned}
+a_x &= -a_D cos(\theta) \\
+a_y &= -g -a_D sin(\theta) 
+\end{aligned} $$
+
+where \( \theta \) is the instantaneous angle of the trajectory w.r.t. the horizontal.</p>
+
+<p>From eqn 4,
+
+$$ \begin{aligned}
+a_x &= -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 cos(\theta)\\
+a_y &= -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 sin(\theta)
+\end{aligned}  $$
 </p>
 
-<p>If the projectile has mass, <i>m</i>, it follows from Newton's 2nd law of motion, \(F = ma \) that the deceleration due to drag is given by
+<p>Now \(v_x cos(\theta) \) and \( v_y sin(\theta) \) are the \( x \) and \( y \) components of the velocity vector \( v \), whose magnitude is \( V \), then:
 
-$$ a_D =  \frac{\pi}{8} \rho H(y) C_D(v,d) \frac{d^2}{m} v^2   \tag{4} $$
-
-Assuming that the air is still, the velocity of the projectile relative to the ground is equal to the velocity relative to the air and the direction of the drag force <i>F<sub>D</sub></i> is opposite the direction of the bullet velocity <i>v</i>. The x, and y components of the acceleration are then given by:
-
-$$ \begin{eqnarray}
-a_x & = & -a_D cos(\theta) \\
-a_y & = & -g -a_D sin(\theta) \\
-\end{eqnarray} $$
-
-where \( \theta \) is the instantaneous angle of the trajectory w.r.t. the horizontal.<br/>
-
-From eqn 4,
-
-$$ \begin{eqnarray}
-a_x & = & -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 cos(\theta)\\
-a_y & =&  -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} v^2 sin(\theta)\\
-\end{eqnarray}  $$
-
-Now \(v_x cos(\theta) \text{ and } v_y sin(\theta)\) are the <i>x</i> and <i>y</i> components of the velocity vector <i>v</i>, whose magnitude is <i>V</i><br />
-then
-
-$$ \begin{eqnarray}
-a_x & =&  -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_x\\
-a_y & =&  -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_y\\
- \end{eqnarray} $$
+$$ \begin{aligned}
+a_x &=  -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_x\\
+a_y &=  -g -\frac{\pi}{8} \rho H(y) C_D(v) \frac{d^2}{m} V v_y
+ \end{aligned} $$
 </p>
 
 <h3>Ballistic Trajectory Source Code</h3>
 
-<p>Having developed an expression for the acceleration of a projectile throughout its flight, the actual coordinates of its path may be calculated numerically and plotted. The values for the shot mass, powder charge and elevation may be user defined. Here is the JavaScript code to generate the trajectory data as a JavaScript array in the format [x0, y0, x1, y1, x2, y2 ... ]:</p>
+<p>Having developed an expression for the acceleration of a projectile throughout its flight, the actual coordinates of its path may be calculated numerically ready for plotting. The values for the shot mass, powder charge and elevation may be user defined. Here is the JavaScript code to generate the trajectory data as a JavaScript array in the format [x0, y0, x1, y1, x2, y2 ... ]:</p>
 
 <div class="srcFmt" style="max-height:700px">
 <pre>
-/*================================================================
-  Plot ballistic trajectory of cannonball
-  please give credit to A.R.Collins [www.arc.id.au]
-  last rev: 01Feb16
-  ================================================================*/
-function plotTrack(dragFn, d, m, u, theta, y0)
+genTrack = function(dragFn, d, m, u, theta, y0)
 {
   var g = 32.2,            // acceleration due to gravity (9.8 m/s)
       rho = 0.074,         // density of air  (1.225 kg/m^3)
@@ -476,22 +448,21 @@ function plotTrack(dragFn, d, m, u, theta, y0)
     y = y + vy*dt + ay*dt*dt/2;
     trackData.push(x/3, y/3);
   }
-
+  
   return trackData;
-}
+};
 </pre>
 </div>
 
-<p>Figure 1 shows the effect of different drag models on cannonball trajectory. The blue track was generated with the software listed above. The red track was plotted using the GS ballistic table, scaled for a 5.78" diameter sphere. The GS drag over-estimates the sub-sonic drag for large spheres. The green track is a reference plot which uses constant (Newtonian) drag with Cd = 0.47. Constant drag model does not take into account the rise in drag near the speed of sound.</p>
+<p>Figure 1 shows the effect of different drag models on cannonball trajectory. The blue track was generated with the software listed above. The red track was plotted using the GS ballistic table, scaled for a 5.78" diameter sphere. The GS drag over-estimates the sub-sonic drag for large spheres. The green track is a reference plot which uses constant (Newtonian) drag with \( Cd = 0.47 \). Constant drag model does not take into account the rise in drag near the speed of sound.</p>
 
-<div class="figHolder">
-  <img src="Images/Traj-24lb-GS-N-ARC.png" style="width:600px" alt="" />
-</div>    <!-- figHolder -->
-
-<div class="captionHolder" style="width:600px">
+  <div class="figHolder" style="width:640px">
+    <canvas id="cvs1" width="600" height="400" style="margin:0 auto"></canvas>
+    <div class="captionHolder">
   <p><b>Figure 1.</b> Blue track is the trajectory plot of 24 lb cannonball fired with 8 lb charge at 10&deg;.<br/>
   For comparison: Red track GS drag scaled for 5.78" ball, Green track Newtonian sphere drag (constant Cd=0.47).</p>
-</div>   <!-- captionHolder -->
+    </div>  <!-- captionHolder -->
+  </div>
 
 <h3>Comparison with Historical Range data</h3>
 
@@ -712,4 +683,6 @@ function plotTrack(dragFn, d, m, u, theta, y0)
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/CannonBallistics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:00 GMT -->
 </html>

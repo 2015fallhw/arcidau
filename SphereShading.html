@@ -1,20 +1,34 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/SphereShading.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:18 GMT -->
 <head>
   <title>Sphere Shading with CSS</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="css shading, sphere shading, drawing a sphere in HTML, 3D shading effects, shading a ball" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -30,114 +44,16 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
 <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
 
   <script type="text/javascript">
 
@@ -283,16 +199,14 @@
           phi = delta + Math.PI/2 - tau,
           sAng = tau - phi,
           vS = {x:4*Math.cos(sAng), y:4*Math.sin(sAng)},
-          arcData;
-      // use degrees for Cango
-      var deltaDeg = 180*delta/Math.PI,
+          deltaDeg = 180*delta/Math.PI, // use degrees for Cango
           phiDeg = 180*phi/Math.PI,
           sDeg = 180*sAng/Math.PI;
 
       // plot
       cgo.clearCanvas();
-      cgo.setGridboxRHC(5, 38, 90, 90);
-      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.gridboxPadding(5, 38, 5, 5);
+      cgo.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
       cgo.drawAxes(xmin, xmax, -2, ymax, {
         strokeColor: "gray",
         xOrigin: 0,
@@ -300,46 +214,39 @@
         xTickInterval:0,
         yTickInterval:0 });
 
-      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+      cgo.drawPath(shapeDefs.circle(2*R), {strokeColor:'blue'});
 
-      cgo.drawPath(["M", 0, 0, "L", 3*vP.x, 3*vP.y], 0, 0, {strokeColor:"orange", dashed:[5,3]});
-      cgo.drawPath(["M", vP.x, vP.y, "L", vO.x, vO.y], 0, 0, {strokeColor:"green", lineWidth: 2});
-      cgo.drawPath(["M", 0, 0, "L", vS.x, vS.y], vP.x, vP.y, {strokeColor:"red", lineWidth: 2});
-      cgo.drawPath(["M", 0, 0, "L", 2, 0], vP.x, vP.y, {strokeColor:"gray", dashed:[5]});
+      cgo.drawPath(["M", 0, 0, "L", 3*vP.x, 3*vP.y], {strokeColor:"orange", dashed:[5,3]});
+      cgo.drawPath(["M", vP.x, vP.y, "L", vO.x, vO.y], {strokeColor:"green", lineWidth: 2});
+      cgo.drawPath(["M", 0, 0, "L", vS.x, vS.y], {x:vP.x, y:vP.y, strokeColor:"red", lineWidth: 2});
+      cgo.drawPath(["M", 0, 0, "L", 2, 0], {x:vP.x, y:vP.y, strokeColor:"gray", dashed:[5]});
 
-      cgo.drawPath(["M", 0, 0, "L", 4*Math.cos(Math.PI/2+delta), 4*Math.sin(Math.PI/2+delta)], 0, 0, {strokeColor:"lightgray", dashed:[5]});
+      cgo.drawPath(["M", 0, 0, "L", 4*Math.cos(Math.PI/2+delta), 4*Math.sin(Math.PI/2+delta)], {strokeColor:"lightgray", dashed:[5]});
 
-      cgo.drawShape(shapeDefs.circle(0.15), vO.x, vO.y, {fillColor:"black"});
-      cgo.drawHTMLtext("O&nbsp;(0,h)", 0.2,6.3, "black", 12);
-      cgo.drawHTMLtext("S", 4.5,3.8, "black", 10);
-      cgo.drawShape(shapeDefs.circle(0.15), vP.x, vP.y, {fillColor:"black"});
-      cgo.drawHTMLtext("P", 0.65,1.25, "black", 12);
+      cgo.drawShape(shapeDefs.circle(0.15), {x:vO.x, y:vO.y, fillColor:"black"});
+      cgo.drawHTMLText("O&nbsp;(0,h)", {x:0.2, y:6.3, fillColor:"black", fontSize:14});
+      cgo.drawHTMLText("S", {x:4.5, y:3.8, fillColor:"black"});
+      cgo.drawShape(shapeDefs.circle(0.15), {x:vP.x, y:vP.y, fillColor:"black"});
+      cgo.drawHTMLText("P", {x:0.65, y:1.25, fillColor:"black", fontSize:14});
       // arcs
-      arcData = shapeDefs.arrowArc(2, tauDeg, tauDeg+phiDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&phi;", 1.0,3.8, "black", 10);
-      arcData = shapeDefs.arrowArc(2, sDeg, sDeg+phiDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&phi;", 2.1,3.3, "black", 10);
-      arcData = shapeDefs.arrowArc(1.4, 0, sDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, vP.x, vP.y, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&sigma;", 2.2,2.0, "black", 10);
-      arcData = shapeDefs.arrowArc(3.6, -90, -90+deltaDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, vO.x, vO.y, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&delta;", 0.2,2.4, "black", 10);
-      arcData = shapeDefs.arrowArc(0.6, 0, tauDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&tau;", 0.7,0.6, "black", 10);
+      cgo.drawArrowArc(2, tauDeg, tauDeg+phiDeg, {x:vP.x, y:vP.y, clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&phi;", {x:1.0, y:3.8, fillColor:"black"});
+      cgo.drawArrowArc(2, sDeg, sDeg+phiDeg, {x:vP.x, y:vP.y, clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&phi;", {x:2.1, y:3.3, fillColor:"black"});
+      cgo.drawArrowArc(1.4, 0, sDeg, {x:vP.x, y:vP.y, clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&sigma;", {x:2.2, y:2.0, fillColor:"black"});
+      cgo.drawArrowArc(3.6, -90, -90+deltaDeg, {x:vO.x, y:vO.y, clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&delta;", {x:0.2, y:2.4, fillColor:"black"});
+      cgo.drawArrowArc(0.6, 0, tauDeg, {clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&tau;", {x:0.7, y:0.6, fillColor:"black"});
+      cgo.drawArrowArc(3.6, 90, 90+deltaDeg, {clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&delta;", {x:-0.3, y:3.4, fillColor:"lightgray"});
 
-      arcData = shapeDefs.arrowArc(3.6, 90, 90+deltaDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&delta;", -0.3,3.4, "lightgray", 10);
-
-      cgo.drawText("elevation view", 2, -2, {lorg:7});
+      cgo.drawText("elevation view", {x:2, y:-2, lorg:7});
 
       // draw plan view
-      cgo.setGridboxRHC(5, 2, 90, 90);
-      cgo.setWorldCoords(xmin, -2, xmax-xmin);
+      cgo.gridboxPadding(5, 2, 5, 5);
+      cgo.setWorldCoordsRHC(xmin, -2, xmax-xmin);
       cgo.drawAxes(xmin, xmax, -2, 3, {
         strokeColor: "gray",
         xOrigin: 0,
@@ -347,10 +254,10 @@
         xTickInterval:0,
         yTickInterval:0 });
 
-      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+      cgo.drawPath(shapeDefs.circle(2*R), {strokeColor:'blue'});
 
-      cgo.drawShape(shapeDefs.circle(0.3*R), vP.x, 0, {fillColor:'gray'});
-      cgo.drawText("observer view", 2, -2, {lorg:7});
+      cgo.drawShape(shapeDefs.circle(0.3*R), {x:vP.x, y:0, fillColor:'gray'});
+      cgo.drawText("observer view", {x:2, y:-2, lorg:7});
     }
 
     function hemiSphere(HWminorAxis, r)
@@ -375,19 +282,18 @@
       var cgo = new Cango(cvsID),
           xmin = -5,
           xmax = 5,
-          ymin = -3,
+          ymin = -2.5,
           ymax = 3,
           R = 1.5,            // sphere radius
           h = 6,              // independent variable
-          arcData;
-      var sDeg = 30,
+          sDeg = 30,
           sAng = Math.PI*sDeg/180,
           vS = {x:5*Math.cos(sAng), y:5*Math.sin(sAng)};
 
       // plot
       cgo.clearCanvas();
-      cgo.setGridboxRHC(5, 50, 90, 90);
-      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.gridboxPadding(5, cgo.heightPW/2-2, 5, 8);
+      cgo.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
       cgo.drawAxes(xmin, xmax, -2.5, ymax, {
         strokeColor: "gray",
         xOrigin: 0,
@@ -395,7 +301,7 @@
         xTickInterval:0,
         yTickInterval:0 });
 
-      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+      cgo.drawPath(shapeDefs.circle(2*R), {strokeColor:'blue'});
 
       var ofs, t, x, obj;
       var a1 = (sDeg+90)*Math.PI/180,
@@ -403,40 +309,33 @@
           vP1 = {x:R*Math.cos(a1), y:R*Math.sin(a1)},
           vP2 = {x:R*Math.cos(a2), y:R*Math.sin(a2)};
 
-      cgo.drawPath(["M", vP1.x, vP1.y, "L", vP2.x, vP2.y], 0, 0, {strokeColor:"black"});
+      cgo.drawPath(["M", vP1.x, vP1.y, "L", vP2.x, vP2.y], {strokeColor:"black"});
 
       ofs = -5*R/4;
-      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
-      cgo.render(obj, 0, 0, 1, sDeg);
+      cgo.drawPath(["M", -vS.x/2, ofs, "L", vS.x, ofs], {degs:sDeg, strokeColor:"red"});
       ofs = -R;
-      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
-      cgo.render(obj, 0, 0, 1, sDeg);
+      cgo.drawPath(["M", -vS.x/2, ofs, "L", vS.x, ofs], {degs:sDeg, strokeColor:"red"});
       for (ofs=-3*R/4; ofs<R; ofs+=R/4)
       {
         t = Math.asin(ofs/R);
         x = R*Math.cos(t);
-        obj = new Cobj(["M", x, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
-        cgo.render(obj, 0, 0, 1, sDeg);
+        cgo.drawPath(["M", x, ofs, "L", vS.x, ofs], {degs:sDeg, strokeColor:"red"});
       }
       ofs = R;
-      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
-      cgo.render(obj, 0, 0, 1, sDeg);
+      cgo.drawPath(["M", -vS.x/2, ofs, "L", vS.x, ofs], {degs:sDeg, strokeColor:"red"});
       ofs = 5*R/4;
-      obj = new Cobj(["M", -vS.x/2, ofs, "L", vS.x, ofs], "PATH", {strokeColor:"red"});
-      cgo.render(obj, 0, 0, 1, sDeg);
+      cgo.drawPath(["M", -vS.x/2, ofs, "L", vS.x, ofs], {degs:sDeg, strokeColor:"red"});
 
       // arcs
-      arcData = shapeDefs.arrowArc(1.4, 0, sDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, R, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&sigma;", 3.1,0.6, "black", 10);
-      arcData = shapeDefs.arrowArc(1.0, 90, 90+sDeg, false, 0.03, 7);
-      cgo.drawShape(arcData, 0, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
-      cgo.drawHTMLtext("&sigma;", -0.4,1.4, "black", 10);
+      cgo.drawArrowArc(1.4, 0, sDeg, {x:R, y:0, clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&sigma;", {x:3.1, y:0.6, fillColor:"black"});
+      cgo.drawArrowArc(1.0, 90, 90+sDeg, {clockwise:false, shaftWidth: 1, headSize: 7, fillColor:"#aaaaaa"});
+      cgo.drawHTMLText("&sigma;", {x:-0.4, y:1.4, fillColor:"black"});
 
-      cgo.drawText("elevation view", 2, -2, {lorg:4});
+      cgo.drawText("elevation view", {x:2, y:-2, lorg:4});
 
-      cgo.setGridboxRHC(5, 1, 90, 90);
-      cgo.setWorldCoords(xmin, ymin, xmax-xmin);
+      cgo.gridboxPadding(5, 4, 5, cgo.heightPW/2+4);
+      cgo.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
       cgo.drawAxes(xmin, xmax, ymin, ymax, {
         strokeColor: "gray",
         xOrigin: 0,
@@ -444,14 +343,14 @@
         xTickInterval:0,
         yTickInterval:0 });
 
-      cgo.drawPath(shapeDefs.circle(2*R), 0, 0, {strokeColor:'blue'});
+      cgo.drawPath(shapeDefs.circle(2*R), {strokeColor:'blue'});
 
       var hw = -Math.sin(sAng);
       // draw outline of the hemisphere in shadow
-      cgo.drawShape(hemiSphere(hw, R), 0, 0, {fillColor:'gray'});
-      cgo.drawPath(shapeDefs.ellipse(2*R*hw, 2*R), 0, 0, {fillColor:'gray', dashed:[5]});
+      cgo.drawShape(hemiSphere(hw, R), {fillColor:'gray'});
+      cgo.drawPath(shapeDefs.ellipse(2*R*hw, 2*R), {fillColor:'gray', dashed:[5]});
 
-      cgo.drawText("observer view", 2, -2, {lorg:4});
+      cgo.drawText("observer view", {x:2, y:-2, lorg:4});
     }
   </script>
 
@@ -650,22 +549,6 @@
 
   </script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
   <script type="text/javascript">
     var s1, s2,
         R = 80,
@@ -675,6 +558,8 @@
 
     addLoadEvent(function(){
       buildMenu(indexData);
+
+      renderMathInElement(document.body);
 
       s1 = document.getElementById("slider-1");
       s2 = document.getElementById("slider-2");
@@ -691,15 +576,12 @@
       demo(5, "step5", 20, 145, 230, 40, -0.3, 0.58, 60)
       geometryDef('cvs1');
       shadowGeometry('cvs2');
-
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -968,19 +850,28 @@ function demo5(holderId, rVal, gVal, bVal, R, shadowOffset, specularOffset, azim
     </div>  <!-- caption-holder -->
   </div>
 
-<p>From the diagram:</p>
-$$ \begin {align}
+<p>From the diagram:
+
+$$ \begin {aligned}
 \tau &= \phi + \sigma \\
 \phi &= \delta + (\frac{\pi}{2} - \tau) \\
-Substi&tuting for \phi \\
+\end {aligned}$$
+
+Substi&tuting for \phi
+
+$$ \begin {aligned}
 \sigma &= \tau - \delta - \frac{\pi}{2} + \tau \\
       &= 2\tau - \frac{\pi}{2} - \delta \\
-Since, \\
-\delta &= sin^{-1}(\frac{P.x}{\lvert OP \rvert}) \\
-Hence, \\
-\sigma &= 2\tau - \frac{\pi}{2} - \frac{P.x}{\lvert OP \rvert} \\
-\end {align}
-$$
+\end {aligned}$$
+
+Since,
+
+$$ \delta = sin^{-1}(\frac{P.x}{\lvert OP \rvert}) $$
+
+Hence,
+
+$$ \sigma = 2\tau - \frac{\pi}{2} - \frac{P.x}{\lvert OP \rvert} $$
+</p>
 
 <p>Given the elevation of the sun and the location of the observer the point of reflection can be calculated. An analytic solution is rather difficult [ref 1] and a simple binary search has been used to determine the coordinates radial offset of P.</p>
 
@@ -1060,4 +951,6 @@ hw  = -Math.sin(&sigma;);   //minor axis half length
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/SphereShading.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:20 GMT -->
 </html>

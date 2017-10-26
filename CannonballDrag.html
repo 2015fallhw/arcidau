@@ -1,19 +1,33 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/CannonballDrag.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:38:56 GMT -->
 <head>
   <title>Cannonball Aerodynamic Drag</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="external ballistics, sphere drag, drag coefficient, air resistance, aerodynamic drag, cannonballs" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-  </style>
-
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+  
+    <style type="text/css" media="screen">
+      .katex-display {
+        text-align: left;
+        margin-left: 4em; 
+        position: relative;
+      }
+  
+      .katex-display .katex .eqno {
+        display: inline-block;
+        position: absolute;
+        left: 0;
+        width: 450px;
+        text-align: right;
+      }
+    </style>
+  
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -29,138 +43,27 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+  <script type="text/javascript" src="katex-render-tags.js"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
+
+      // render all the tagged equations separately to get the tag working
+      renderTaggedEqns();
+      renderMathInElement(document.body);
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -193,15 +96,20 @@
 
 <h3>Historical Background</h3>
 
-<p>Newton's experiments to determine the nature of fluid resistance formed the basis of Book II of his famous "Principia", Newton contended that fluid resistance is proportional to the square of the object's speed through the fluid, the spherical body's cross-sectional area and the density of the medium. Hence the drag force may be formulated by the equation:</p>
+<p>Newton's experiments to determine the nature of fluid resistance formed the basis of Book II of his famous "Principia", Newton contended that fluid resistance is proportional to the square of the object's speed through the fluid, the spherical body's cross-sectional area and the density of the medium. Hence the drag force may be formulated by the equation:
 
-$$ F = \frac{1}{2} C_D \rho A v^2    \tag{1}$$
+  <div class="tagged">
+    F = \frac{1}{2} C_D \rho A v^2    \tag{1}
+  </div>
 
-$$ \mbox{where } C_D \mbox{ is the non-dimensional drag coefficient,} \\
-\rho \mbox{ is the fluids density,} \\
-A \mbox{ is the cross-sectional area of the object, and} \\
-v \mbox{ is the velocity of the body through the fluid.}
-$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(C_D\) is the non-dimensional drag coefficient, <br/>
+\(\rho\) is the fluid density, <br/>
+\(A\) is the cross-sectional area of the object, and <br/>
+\(v\) is the velocity of the body through the fluid.
+</div>
+</p>
 
 <p>Newton experiments yielded the first accurate measurements of fluid drag forces. He measured the drag coefficient of a sphere to be 0.5, in good agreement with currently accepted value of 0.44 to 0.47 for low speed drag on a smooth sphere.</p>
 
@@ -219,14 +127,17 @@ $$
 
 <p>The aerodynamic drag force on a projectile is governed by two major influences. The first relates to the work required to move the air flow out of the projectile's path which depends of the density and viscosity of the air and the speed and size of the projectile. These effects are incorporated into a dimensionless quantity called the Reynolds number, R<sub>e</sub>, given by the expression
 
-$$ R_e = \frac{vd\rho}{\eta}   \tag{2}$$
+  <div class="tagged">
+    R_e = \frac{vd\rho}{\eta}   \tag{2}
+  </div>
 
-$$
-\mbox{where } v \mbox{ is the velocity of the projectile} \\
-d \mbox{ is the diameter of the cross section of the projectile} \\
-\rho \mbox{ is the density of air, and} \\
-\eta \mbox{ is the viscosity of air.}
-$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(v\) is the velocity of the projectile <br/>
+\(d\) is the diameter of the cross section of the projectile <br/>
+\(\rho\) is the density of air, and <br/>
+\(\eta\) is the viscosity of air.
+</div>
 </p>
 
 <p>The value of the Reynolds number for a situation described by these variables will indicate the type of flow that can be expected; turbulent, laminar, vortex shedding etc.</p>
@@ -291,7 +202,7 @@ $$
 
 $$ C_D  = k(Mn) + f(Mn)*SphereDragVsRe(s*Re). $$
 
-The expressions for k(Mn), t(Mn), s(Mn) are combined in the function SphereDrag(v, d) taking as parameters the instantaneous velocity, v, and the sphere diameter, d. Hence the drag coefficient for large spheres in the speed range Mach 0.2 to 2.0 is given by
+The expressions for \(k(Mn), t(Mn), s(Mn)\) are combined in the function \(SphereDrag(v, d)\) taking as parameters the instantaneous velocity, v, and the sphere diameter, d. Hence the drag coefficient for large spheres in the speed range Mach 0.2 to 2.0 is given by
 
 $$ C_D  = SphereDrag(v, d). $$
 </p>
@@ -315,25 +226,33 @@ $$ C_D  = SphereDrag(v, d). $$
 </div>    <!-- figHolder -->
 
 <h4>Notes on Mathematical Methods</h4>
-<p>The three functions, k(Mn), t(Mn) and s(Mn), used to model the fluid dynamics all have a basic <i>arctan</i> shape. The function <i>s(Mn)</i> is symmetric and is expressed as a simple <i>arctan</i> function,</p>
 
-$$ s(Mn) = 0.78+0.22*Math.atan(-12*(Mn-0.23)). $$
+<p>The three functions, \( k(Mn), t(Mn) \) and \( s(Mn) \) used to model the fluid dynamics all have a basic \( atan \) shape. The function \( s(Mn) \) is symmetric and is expressed as a simple \( atan \) function,
 
-<p>The <i>k(Mn)</i> and <i>t(Mn)</i> functions are not symmetric and were modelled with a cubic Bezier function. The Bezier control points were adjusted to get a good fit to the experimental data. The general cubic Bezier, in parametric form, is given by,</p>
+$$ s(Mn) = 0.78+0.22 \; atan(-12 (Mn-0.23)) $$
 
-$$ \text{If the 4 control points are } (P0.x,P0.y) \: (P1.x,P1.y) \: (P2.x,P2.y) \: \text{ and } \: (P3.x,P3.y). $$
+The \( k(Mn) \) and \( t(Mn) \) functions are not symmetric and were modelled with a cubic Bezier function. The Bezier control points were adjusted to get a good fit to the experimental data.</p>
 
-$$ x(u) = P0.x * ( 1 - u )^3 + P1.x * 3 * u * ( 1 - u )^2 + P2.x * 3 * u^2 * ( 1 - u ) + P3.x * u^3 $$
-$$ y(u) = P0.y * ( 1 - u )^3 + P1.y * 3 * u * ( 1 - u )^2 + P2.y * 3 * u^2 * ( 1 - u ) + P3.y * u^3 $$
+<p>If the 4 control points are \( (P0.x,P0.y), \: (P1.x,P1.y), \: (P2.x,P2.y) \) and \( (P3.x,P3.y) \). The general cubic Bezier, in parametric form, is given by:
 
-\( \text{where } u \text{ varies from 0 to 1}. \)
+$$ x(u) = P0.x\; ( 1 - u )^3 + P1.x\; 3 u ( 1 - u )^2 + P2.x\; 3 u^2 ( 1 - u ) + P3.x\;  u^3 \\
+ y(u) = P0.y\; ( 1 - u )^3 + P1.y\; 3 u ( 1 - u )^2 + P2.y\; 3 u^2 ( 1 - u ) + P3.y\; u^3 $$
 
-<p>In this notation, the Mach number, Mn, is the <i>x</i> variable and the drag coefficient, Cd, is the <i>y</i> variable.</p>
-$$
-\text{ The 4 control points for }\textbf{k(Mn)} \text{ are: P0 = (0.1, 0.0), P1 = (0.95, 0.0), P2 = (0.55, 0.95), P3 = (1.5, 1.0). } \\
-\text{ The 4 control points for }\textbf{t(Mn)} \text{ are: P0 = (0.0, 1.1), P1 = (0.85, 1.1), P2 = (0.57, 0.05), P3 = (1.0, 0.0). } $$
+where \( u \) varies from \( 0 \) to \( 1 \).</p>
 
-<p>The parametric form of the Bezier equations prevents direct substitution of an <i>x</i> value to return a <i>y</i> value. To overcome this problem and still use the simple form of the Bezier functions, a Bezier value finder function, <i><b>bezier4pt</b></i> has been provided. This uses <a href="http://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm">de Casteljau's algorithm</a> to recursively find the point of the Bezier curve as close as desired to the target x value and returns the corresponding y value. The <i><b>bezier4pt</b></i> function only works on cubic Bezier functions that are single valued for all x in the range. The source code for <i><b>bezier4pt</b></i> is included in the listing below.</p>
+<p>In this notation, the Mach number, \( Mn \), is the \( x \) variable and the drag coefficient, \( Cd \), is the \( y \) variable.</p>
+
+<p>The 4 control points for \( k(Mn) \) are:
+
+$$ P0 = (0.1, 0.0), P1 = (0.95, 0.0), P2 = (0.55, 0.95), P3 = (1.5, 1.0). $$
+
+The 4 control points for \( t(Mn) \) are:
+
+$$ P0 = (0.0, 1.1), P1 = (0.85, 1.1), P2 = (0.57, 0.05), P3 = (1.0, 0.0). $$
+
+</p>
+
+<p>The parametric form of the Bezier equations prevents direct substitution of an \( x \) value to return a \( y \) value. To overcome this problem and still use the simple form of the Bezier functions, a Bezier value finder function, <i><b>bezier4pt</b></i> has been provided. This uses <a href="http://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm">de Casteljau's algorithm</a> to recursively find the point of the Bezier curve as close as desired to the target \( x \) value and returns the corresponding \( y \) value. The <i><b>bezier4pt</b></i> function only works on cubic Bezier functions that are single valued for all \( x \) in the range. The source code for <i><b>bezier4pt</b></i> is included in the listing below.</p>
 
 <h3>Software Listing</h3>
 <div class="srcFmt">
@@ -343,7 +262,7 @@ $$
   Calculation of aerodynamic drag coefficient for a sphere at
   speeds near the speed of sound.
   Free to use. Please give credit to A.R.Collins [www.arc.id.au]
-  last rev: 03Aug12
+  last rev: 08Mar16
   ================================================================*/
 
 /*---------------------------------------------------------------
@@ -354,37 +273,53 @@ $$
 */
 function bezier4pt(x, x1, y1, x2, y2, x3, y3, x4, y4, dx)
 {
-  var xerr = dx || 0.0005;  // acceptable x error
-  if (x&lt;=x1) return y1;
-  if (x>=x4) return y4;
   // Calculate mid-points of line segments
-  var x12   = (x1 + x2) / 2;
-  var y12   = (y1 + y2) / 2;
-  var x23   = (x2 + x3) / 2;
-  var y23   = (y2 + y3) / 2;
-  var x34   = (x3 + x4) / 2;
-  var y34   = (y3 + y4) / 2;
-  var x123  = (x12 + x23) / 2;
-  var y123  = (y12 + y23) / 2;
-  var x234  = (x23 + x34) / 2;
-  var y234  = (y23 + y34) / 2;
-  var x1234 = (x123 + x234) / 2;
-  var y1234 = (y123 + y234) / 2;
+  var x12   = (x1 + x2) / 2,
+      y12   = (y1 + y2) / 2,
+      x23   = (x2 + x3) / 2,
+      y23   = (y2 + y3) / 2,
+      x34   = (x3 + x4) / 2,
+      y34   = (y3 + y4) / 2,
+      x123  = (x12 + x23) / 2,
+      y123  = (y12 + y23) / 2,
+      x234  = (x23 + x34) / 2,
+      y234  = (y23 + y34) / 2,
+      x1234 = (x123 + x234) / 2,
+      y1234 = (y123 + y234) / 2,
+      xerr = dx || 0.0005;  // acceptable x error
+
+  if (x&lt;=x1)
+  {
+    return y1;
+  }
+
+  if (x>=x4)
+  {
+    return y4;
+  }
 
   // x1234, y1234 is on the curve and between x1 and x4
   if (x>=x1234) // x is on new shorter curve between x1234 and x4
   {
     if ((x-x1234) > xerr)
+    {
       return bezier4pt(x, x1234, y1234, x234, y234, x34, y34, x4, y4);
+    }
     else
+    {
       return y1234;
+    }
   }
   else   // x is on new shorter curve between x1 and x1234
   {
     if ((x1234-x) > xerr)
+    {
       return bezier4pt(x, x1, y1, x12, y12, x123, y123, x1234, y1234);
+    }
     else
+    {
       return y1234;
+    }
   }
 }
 
@@ -395,18 +330,30 @@ function bezier4pt(x, x1, y1, x2, y2, x3, y3, x4, y4, dx)
 */
 function SphereDragVsRe(Re)
 {
-  function log10(val) { return Math.log(val) / Math.log(10); }
   var Cd;
 
+  function log10(val)
+  {
+    return Math.log(val) / Math.log(10);
+  }
+
   if (Re > 2E6)
+  {
     Cd = 0.15;
+  }
   if (Re > 1.2E6)
+  {
     Cd = 0.19 - 8E4/Re;
+  }
   else if (Re > 4.77E5)
+  {
     Cd = -0.485 + 0.1*log10(Re);
+  }
   else
-    Cd = 24/Re + (2.6*(Re/5))/(1+Math.pow(Re/5,1.52))+ \
-    (0.411*Math.pow(Re/263000,-7.94))/(1+Math.pow(Re/263000,-8)) + Math.pow(Re,0.8)/461000;
+  {
+    Cd = 24/Re + (2.6*(Re/5))/(1+Math.pow(Re/5,1.52)) + \
+        (0.411*Math.pow(Re/263000,-7.94))/(1+Math.pow(Re/263000,-8)) + Math.pow(Re,0.8)/461000;
+  }
 
   return Cd;
 }
@@ -417,26 +364,34 @@ function SphereDragVsRe(Re)
   'Sphere Drag at Mach Numbers from 0.3 to 2.0'
   Miller & Bailey [J.Fluid Mech, 1979].
 */
-function SphereDrag(v, d)  // speed, diameter
+SphereDrag = function(v, d)  // speed, diameter
 {
   // Imperial units
-  var SSpd = 1116;   // sound speed at sea level (340.2 m/s)
-  var rho = 0.074;   // density of air  (1.225 kg/m^3)
-  var eta = 3.75E-7; // viscosity of air (1.81E-5 kg/m.s)
+  var SSpd = 1116,    // sound speed at sea level (340.2 m/s)
+      rho = 0.074,    // density of air  (1.225 kg/m^3)
+      eta = 3.75E-7,  // viscosity of air (1.81E-5 kg/m.s)
+      Mn = v/SSpd,    // Mach number
+      Re, k, t, sf,
+      Cd;
 
-  var Mn = v/SSpd;         // Mach number
-  if (Mn&lt;0.2) Mn = 0.2;
-  if (Mn>1.5) Mn = 1.5;
-  var Re = v*d*rho/eta;    // Reynolds number
-  var k = (Mn>=1.5)? 1.0: bezier4pt(Mn, 0.1, 0.00, 0.95, 0.0, 0.55, 0.95, 1.5, 1.0);
-  var t = (Mn>1.0)? 0.0: bezier4pt(Mn, 0.0, 1.1, 0.85, 1.1, 0.57, 0.05, 1.0, 0.0);
-  var sf = 0.78+0.22*Math.atan(-12*(Mn-0.23));
+  if (Mn&lt;0.2)
+  {
+    Mn = 0.2;
+  }
+  if (Mn>1.5)
+  {
+    Mn = 1.5;
+  }
 
-  var Cd = k + t*SphereDragVsRe(sf*Re);
+  Re = v*d*rho/eta;    // Reynolds number
+  k = (Mn>=1.5)? 1.0: bezier4pt(Mn, 0.1, 0.00, 0.95, 0.0, 0.55, 0.95, 1.5, 1.0);
+  t = (Mn>1.0)? 0.0: bezier4pt(Mn, 0.0, 1.1, 0.85, 1.1, 0.57, 0.05, 1.0, 0.0);
+  sf = 0.78+0.22*Math.atan(-12*(Mn-0.23));
+
+  Cd = k + t*SphereDragVsRe(sf*Re);
 
   return Cd;
-}
-
+};
 </pre>
 </div>
 
@@ -454,4 +409,6 @@ function SphereDrag(v, d)  // speed, diameter
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/CannonballDrag.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:39:02 GMT -->
 </html>

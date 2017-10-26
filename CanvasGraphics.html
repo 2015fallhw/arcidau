@@ -1,13 +1,22 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
+
+<!-- Mirrored from www.arc.id.au/CanvasGraphics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:01 GMT -->
 <head>
   <title>CANGO Canvas Graphics</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="keywords" content="JavaScript graphics, canvas graphics, plotting data with canvas, Cango, canvas graphics library, canvas grpahics object" />
+  <meta name="keywords" content="JavaScript graphics, canvas graphics, plotting data with canvas, Cango, canvas graphics library, canvas graphics object" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
+    .cvsWrapper {
+      position:relative;
+      display: table;
+      padding: 0;
+      margin: 0 auto;
+    }
 
     .cvsEg {
       position: relative;   /* positioned to parent bottom menus */
@@ -17,13 +26,9 @@
       background-color: lightyellow;
       border: 1px solid black;
     }
-
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -39,169 +44,146 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03.js"></script>
-  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
 
   <script type="text/javascript">
-    function drawHullo(cvsID)     // canvas ID passed as a string
+    var armCtx;
+
+    function excavatorDemo(cvsID)
     {
-      var g = new Cango(cvsID);   // create a graphics context
-      g.setGridboxRHC();          // use RHCartesian on full canvas
-      g.setWorldCoords(-1, -25, 2, 50); // grid origin = (-1,-25)
-                                        // gridbox width 2, height 50
-      g.drawText("Hullo World", 0, 0, {
-        fillColor:'black',
-        fontSize:24,              // fontSize 24 px
-        fontWeight: 700,
-        lorg:5 });                // 5 = center,center alignment
+      var cx1 = 231.65, cy1 = -(380.52-550),
+          cx2 = 530.88, cy2 = -(43.55-550),
+          cx3 = 596.88, cy3 = -(189.33-550),
+          baseData = "M 366.95,376.16 347.69,237.74 H 238.34 L 226.59,309.75 H 72.026 L 60.499,375.74 186.3,376.29 186.25,399.11 277.29,399.3 277.25,376 Z",
+          windowData = "M 346.87,244.77 361.8,353.59 279.85,335.08 262.96,307.81 262.91,244.77 Z",
+          treadData = "M 405.06,399.49 C 424.6,399.66 442.7,413.68 442.74,435.7 442.77,457.72 426.24,472.74 406.74,472.73 L 135.19,472.61 C 116.1,472.6 99.922,457.7 99.802,435.98 99.681,414.27 115.62,399.45 134.96,399.49 L 209.36,399.02 209.43,383.09 C 209.65,370 217.98,360.22 231.91,360.49 245.84,360.77 253.53,369.99 253.5,383.06 L 253.53,399.32 C 304.04,399.3 354.55,399.42 405.06,399.49 Z",
+          hiLiteData = "M 209.31,399.11 H 253.67 M 164,447.61 164.23,423.19 380.59,423.86 V 447.61 Z M 425.49,435.9 C 425.49,446.54 416.86,455.17 406.22,455.17 395.57,455.17 386.94,446.55 386.94,435.9 386.94,425.25 395.57,416.62 406.22,416.62 416.87,416.62 425.49,425.25 425.49,435.9 Z M 155.73,436.07 C 155.73,446.97 146.9,455.8 136,455.8 125.1,455.8 116.27,446.97 116.27,436.07 116.27,425.17 125.1,416.34 136,416.34 146.9,416.34 155.73,425.17 155.73,436.07 Z M 110.99,344.17 H 148.66",
+          seg1Data = "M 536.62,54.65 C 541.42,51.54 545.87,44.49 541.4,37.38 536.93,30.265 530.44,30.165 523.94,33.5 L 288.62,160.14 215.44,371.97 C 211.8,382.52 215.37,392.71 225.51,396.72 235.65,400.72 244.71,394.73 248.72,385.92 L 337.4,185.3 Z",
+          seg2Data = "M 600.54,197.98 C 595.9,199.9 591.02,198.08 588.07,193.04 L 507.67,48.462 506.99,0.1271 551.78,29.32 605.76,185.5 C 607.7,191.06 605.18,196.07 600.54,197.98 Z",
+          seg3Data = "M 583.24,184.51 610.58,251.8 607.27,283.22 654.05,216.95 C 654.05,216.95 662.49,198.84 649.98,182.71 636.79,165.73 621.55,172.82 621.55,172.82 Z",
+          base, window, tread, hiLites,
+          seg1, seg2, seg3,
+          armGrp, seg1Grp, seg2Grp, seg3Grp,
+          animData;
+
+      base = new Shape(svgToCgo2D(baseData, 0,-550), {fillColor:'darkgray', border:true, lineWidth:2, strokeColor:"#222"});
+      window = new Path(svgToCgo2D(windowData, 0,-550));  // already reverse winding to base
+      base.appendPath(window);
+      tread = new Shape(svgToCgo2D(treadData, 0,-550), {fillColor:'darkgray', border:true, lineWidth:2, strokeColor:"#222"});
+      hiLites = new Path(svgToCgo2D(hiLiteData, 0,-550), {lineWidth:2, strokeColor:"#888"});
+      seg1 = new Shape(svgToCgo2D(seg1Data, 0,-550), {fillColor:'darkgray', border:true, lineWidth:2, strokeColor:"#222"});
+      seg1.translate(-cx1, -cy1);
+      seg2 = new Shape(svgToCgo2D(seg2Data, 0,-550), {fillColor:'darkgray', border:true, lineWidth:2, strokeColor:"#222"});
+      seg2.translate(-cx2, -cy2);
+      seg3 = new Shape(svgToCgo2D(seg3Data, 0,-550), {fillColor:'darkgray', border:true, lineWidth:2, strokeColor:"#222"});
+      seg3.translate(-cx3, -cy3);
+      axle1 = new Shape(shapeDefs.circle(20), {fillColor:'gray', border: true, lineWidth:2, strokeColor:"#222"});
+      axle1.translate(cx1, cy1);
+      axle2 = new Shape(shapeDefs.circle(20), {fillColor:'gray', border: true, lineWidth:2, strokeColor:"#222"});
+      axle3 = new Shape(shapeDefs.circle(10), {fillColor:'gray', border: true, lineWidth:2, strokeColor:"#222"});
+
+      // now make groups to enable inherited movement
+      seg1Grp = new Group(seg1);
+      armGrp = new Group(base, seg1Grp, tread, hiLites, axle1); // draw tread after seg1 to be in front
+
+      seg2Grp = new Group(seg2, axle2);
+      seg1Grp.addObj(seg2Grp);
+
+      seg3Grp = new Group(seg3, axle3);
+      seg2Grp.addObj(seg3Grp);
+
+      // now set up animation
+      animData = {s1: [0, -40, -30, 0, 15, 0],
+                  s2: [0, 90, 5, -20, -30, 0],
+                  s3: [60, 0, -15, -70, -90, 60]};
+
+      armTwnr = new Tweener(0, 5000, 'loop');
+
+      function initArm(opts)
+      {
+        seg1Grp.transform.translate(cx1, cy1);
+        seg2Grp.transform.translate(cx2-cx1, cy2-cy1);
+        seg3Grp.transform.translate(cx3-cx2, cy3-cy2);
+      }
+
+      function drawArm(opts)
+      {
+        this.gc.render(armGrp);
+      }
+
+      function armPathFn(time, opts)
+      {
+        var seg1Rot = armTwnr.getVal(time, opts.s1),
+            seg2Rot = armTwnr.getVal(time, opts.s2),
+            seg3Rot = armTwnr.getVal(time, opts.s3);
+
+        seg1Grp.transform.rotate(seg1Rot);
+        seg1Grp.transform.translate(cx1, cy1);
+        seg2Grp.transform.rotate(seg2Rot);
+        seg2Grp.transform.translate(cx2-cx1, cy2-cy1);
+        seg3Grp.transform.rotate(seg3Rot);
+        seg3Grp.transform.translate(cx3-cx2, cy3-cy2);
+      }
+
+
+      armCtx = new Cango(cvsID);
+      armCtx.setWorldCoordsRHC(0, 0, 1000);
+
+      armCtx.animation(initArm, drawArm, armPathFn, animData);
+      armCtx.playAnimation();
     }
+
+//================================================================================
 
     function drawMulti(cvsID)
     {
       var g1 = new Cango(cvsID);
       g1.clearCanvas();   // clear all previous drawing and text
       g1.deleteAllLayers();
-      g1.setGridboxRHC(0, g1.heightPW/2, 50, g1.heightPW/2);
+      g1.gridboxPadding(0, g1.heightPW/2, 50, 0);
       g1.fillGridbox("#eeeed0");
-      g1.setGridboxRHC(9, g1.heightPW/2+5, 40, 25);
+      g1.gridboxPadding(10, g1.heightPW/2+5, 51, 2);
 
       barChart(g1);
 
       var g2 = new Cango(cvsID);
-      g2.setGridboxRHC(52, g2.heightPW/2, 48, g2.heightPW/2);
-      g2.fillGridbox("#eeddee");
+      g2.gridboxPadding(52, g2.heightPW/2, 2, 0);
+      g2.fillGridbox("wheat");
 
       drawShapes(g2);
 
       var g3 = new Cango(cvsID);
-      var splash = new Cobj("Cango", "TEXT", {
+      g3.setWorldCoordsRHC();
+      g3.drawText("Cango", {
+        x:150, y:150,
+        degs:30,
         fillColor:"lightblue",
-        fontSize:30,
+        fontSize:46,
         fontWeight: 700,
         lorg:9,
         border: true,
         strokeColor: "blue",
-        lineWidthWC:3,
-        shadowOffsetX:20,
-        shadowOffsetY:-20,
-        shadowBlur:30,
+        shadowOffsetX:3,
+        shadowOffsetY:-3,
+        shadowBlur:4,
         shadowColor:"#303030" });
-      g3.setGridboxRHC(25, 2, 32, 30);
+
+      g3.gridboxPadding(25, 2, 43, 40);
+      g3.setWorldCoordsRHC();
+      g3.fillGridbox("snow");     // fill viewport with pale yellow
 
       drawPaths(g3);
-      g3.render(splash, -70, 500, 1.6, 30);
 
       var g4 = new Cango(cvsID);
-      g4.setGridboxRHC(58, 2, 40, 30);
+      g4.gridboxPadding(58, 2, 2, 40);
       g4.fillGridbox("#303a30");
-      g4.setGridboxRHC(63, 5, 34, 23);
+      g4.gridboxPadding(63, 6, 4, 44);
 
       drawUpper(g4);
     }
@@ -210,7 +192,7 @@
     {
       var data = [200, 8, 300, 47, 400, 65, 500, 56, 600, 35, 700, 12];
 
-      g.setWorldCoords(0, 0, 900, 80);
+      g.setWorldCoordsRHC(0, 0, 900, 80);
       g.setPropertyDefault("strokeColor", "#202020");
       g.drawAxes(0, 900, 0, 80, {
         xTickInterval: 100,
@@ -219,7 +201,13 @@
         yLabelInterval: 10,
         yLabel: "Performance"
       });
-      g.drawText("Bar Chart", 900, 60, {"fillColor":"#202020", "fontSize":14, "lorg":3});
+      g.drawText("Bar Chart", {
+        x:900,
+        y:60,
+        fillColor:"#202020",
+        bgFillColor:"snow",
+        fontSize:14,
+        lorg:3});
 
       var bars = [];
       for (var i=0; i<data.length/2; i++)
@@ -227,36 +215,28 @@
         bars.push('M',data[2*i],0);              // 2*i = x,
         bars.push('L',data[2*i],data[2*i+1]);    // 2*i+1 = y
       }
-      var barsObj = new Cobj(bars, "PATH", {"strokeColor":"#aa88aa", "lineWidthWC":50});
-      g.render(barsObj);
+      g.drawPath(bars, {strokeColor:"#aa88aa", lineWidthWC:50});
 
-      var arrowData = shapeDefs.arrow(100,10, 200,70, 7, 4, g);
-      g.drawShape(arrowData, 0, 0, {"fillColor":'red'});
+      g.drawArrow(200,70, {x:100, y:10, shaftWidthWC:7, headSize:4, fillColor:'red'});
 
-      var arcData = shapeDefs.arrowArc(180, 30, 90, false, 12);
-      g.drawShape(arcData, 0, 0, {"fillColor":'green'});
+      g.drawArrowArc(180, 30, 90, {clockwise:false, shaftWidthWC:12, fillColor:'green'});
     }
 
     function drawPaths(g)
     {
-      var Triangle = "M 100 100 L 300 100 L 200 300 z",
-          CubicBezier = "M100,200 C100,100 250,100 250,200 S400,300 400,200",
-          QuadBezier2 = "M200,300 Q400,50 600,300 T1000,300",
-          Arc1 = "M300,200 h-150 a150,150 0 1,0 150,-150 z",
+      var Arc1 = "M300,200 h-150 a150,150 0 1,0 150,-150 z",
           Arc2 = "M275,175 v-150 a150,150 0 0,0 -150,150 z",
           Arc3 = "M600,350 l 50,-25a25,25 -30 0,1 50,-25 l 50,-25\
                   a25,50 -30 0,1 50,-25 l 50,-25a25,75 -30 0,1 50,-25 l 50,-25\
                   a25,100 -30 0,1 50,-25 l 50,-25";
 
-      g.fillGridbox("snow");     // fill viewport with pale yellow
-      g.setWorldCoords(0, 0, 1000); // square pixels
+      g.setWorldCoordsRHC(0, 0, 1000); // square pixels
 
-      g.drawShape(svgToCgoRHC(Triangle), 100, 950, {"fillColor":'red'});
-      g.drawPath(svgToCgoRHC(CubicBezier), 400, 1000, {"strokeColor":'red'});
-      g.drawPath(svgToCgoRHC(QuadBezier2), -100, 750, {"strokeColor":'red'});
-      g.drawShape(svgToCgoRHC(Arc1), 50, 400, {fillColor:'red', border:true, strokeColor:'blue'});
-      g.drawShape(svgToCgoRHC(Arc2), 50, 400, {fillColor:"yellow", border:true, strokeColor:'blue'});
-      g.drawPath(svgToCgoRHC(Arc3), -100, 400, {"strokeColor":'red'});
+      g.drawShape(svgToCgo2D(Arc1), {x:-50, y:600, fillColor:'red', border:true, strokeColor:'blue'});
+      g.drawShape(svgToCgo2D(Arc2), {x:-50, y:600, fillColor:"yellow", border:true, strokeColor:'blue'});
+      g.drawPath(svgToCgo2D(Arc3), {x:-500, y:950, strokeColor:'red'});
+
+      g.drawImg("Images/JaneAvril2.jpg", {x:400, y:200, imgWidth:370, lorg:7, degs:-20});
     }
 
     function drawShapes(g)
@@ -267,158 +247,501 @@
           cx2 = 130, cy2 = 10,
           cx3 = 150, cy3 = 60,
           x3 = 180, y3 = 30,
-          dot = new Cobj(shapeDefs.circle(4), "SHAPE", {fillColor:'red'});
+          dot = new Shape(shapeDefs.circle(4), {fillColor:'red'});
 
-      g.fillGridbox("wheat");
-      g.setWorldCoords(0, 0, 200, 70);
+      g.setWorldCoordsRHC(0, 0, 200, 70);
 
       // draw a quadratic bezier from x1,y2 to x2,y2
-      g.drawPath(['M', x1, y1, 'Q', cx1, cy1, x2, y2], 0, 0, {strokeColor:'blue'});
-      g.drawPath(['M', x1, y1, 'L', cx1, cy1, x2, y2], 0, 0, {strokeColor:'blue', dashed:[3]});
+      g.drawPath(['M', x1, y1, 'Q', cx1, cy1, x2, y2], {strokeColor:'blue'});
+      g.drawPath(['M', x1, y1, 'L', cx1, cy1, x2, y2], {strokeColor:'blue', dashed:[3]});
        // show the control point
-      g.render(dot, cx1, cy1);
+      dot.transform.translate(cx1, cy1);
+      g.render(dot/*, {x:cx1, y:cy1}*/);
       // now draw a cubic bezier (from current point x2,y2 to x3,y3)
-      g.drawPath(['M', x2, y2, 'C', cx2, cy2, cx3, cy3, x3, y3], 0, 0, {strokeColor:'green'});
-      g.drawPath(['M', x2, y2, 'L', cx2, cy2], 0, 0, {strokeColor:'green', dashed:[3]});
-      g.render(dot, cx2, cy2);
-      g.drawPath(['M', x3, y3, 'L', cx3, cy3], 0, 0, {strokeColor:'green', dashed:[3]});
-      g.render(dot, cx3, cy3);
+      g.drawPath(['M', x2, y2, 'C', cx2, cy2, cx3, cy3, x3, y3], {strokeColor:'green'});
+      g.drawPath(['M', x2, y2, 'L', cx2, cy2], {strokeColor:'green', dashed:[3]});
+      dot.transform.translate(cx2, cy2);
+      g.render(dot, {x:cx2, y:cy2});
+      g.drawPath(['M', x3, y3, 'L', cx3, cy3], {strokeColor:'green', dashed:[3]});
+      dot.transform.translate(cx3, cy3);
+      g.render(dot, {x:cx3, y:cy3});
 
-      var grad = new RadialGradient(-9, 9, 4, 0, 0, 32);
-      grad.addColorStop(0, 'red');
+      var grad = new RadialGradient(-12, 12, 4, -12, 12, 37);
+      grad.addColorStop(0, '#ff8888');
+      grad.addColorStop(0.3, 'red');
+      grad.addColorStop(0.8, '#aa3333');
       grad.addColorStop(1, '#442222');
 
-      g.drawShape(shapeDefs.circle(50), 35, 20, {"fillColor":grad, 'iso':true});
+      g.drawShape(shapeDefs.circle(50), {x:35, y:20, fillColor:grad});
 
-      var sq2 = new Cobj(shapeDefs.rectangle(40, 30, 7), "SHAPE", {
+      var sq2 = new Shape(shapeDefs.rectangle(40, 30, 7), {
         fillColor: "rgba(64, 64, 200, 0.5)",
         border: true,
         strokeColor: "yellow" });
-      g.render(sq2, 58, 12);
+      sq2.transform.translate(58, 12);
+      g.render(sq2/*, {x:58, y:12}*/);
 
-      var sq1 = new Cobj(shapeDefs.square(18), "PATH", {
+      var sq1 = new Path(shapeDefs.square(18), {
         strokeColor:"#00ff00",
-        lineWidthWC:2,
+        lineWidthWC:1.5,
         iso:true,
         shadowOffsetX:3,
         shadowOffsetY:-3,
         shadowBlur:4,
         shadowColor:"#505050" });
-      g.render(sq1, 15, 55);
+      sq1.transform.translate(15, 55);
+      g.render(sq1/*, {x:15, y:55}*/);
       // now scale this to see line width scale too
       sq1.scale(2);
-      g.render(sq1, 30, 55);
+      sq1.transform.translate(30, 55);
+      g.render(sq1/*, {x:30, y:55}*/);
 
-      var blueLine = new Cobj([30, 50, 150, 10], "PATH", {
+      var blueLine = new Path([30, 50, 150, 10], {
         strokeColor:'blue',
         lineWidthWC:12,
         lineCap:'round' });
       g.render(blueLine);
 
-      var tri = new Cobj(shapeDefs.triangle(50), "SHAPE", {"fillColor":'orange'});
-      var hole = new Cobj(shapeDefs.circle(20), "PATH");
+      var tri = new Shape(shapeDefs.triangle(50), {fillColor:'orange'});
+      var hole = new Path(shapeDefs.circle(20));
       hole.revWinding();
       tri.appendPath(hole);
-      g.render(tri, 120, 15);
+      tri.transform.translate(120, 15);
+      g.render(tri);
     }
 
     function drawUpper(g)
     {
       var data = [], i;
-      g.setWorldCoords(0, -10, 1200, 20);
+      g.setWorldCoordsRHC(0, -10, 1200, 20);
       g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL", fontSize: 9});
       for (i=0; i<=200; i++)
       {
         data.push(i*6, 5*Math.sin(i/6));
       }
-      g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+      g.drawPath(data, {strokeColor:'#c0e0ff'});
     }
 
 //==============================================================
 
-    function drawChamber(cvsID)
+    function plotSine(cvsID)
     {
-      var chamber = "M 289.16,447.14 \
-                   C 233.33,399.03 267.47,290.34 364.53,265.28 \
-                     408.88,269.91 448.14,282.58 483.22,303.79 \
-                     391.79,287.12 292.99,369.50 331.90,451.11 \
-                     318.79,447.43 302.35,446.61 289.16,447.14 z",
-          cgoChamber = svgToCgoSVG(chamber, -287, -536),
-          cmbr = new Cobj(cgoChamber, "SHAPE", {
-            fillColor:"lightyellow",
-            border: true,
-            strokeColor: "tan",
-            lineWidthWC:4 }),
-          gc = new Cango(cvsID);
+      var g = new Cango(cvsID),
+          i, data = [];
 
-      gc.setGridboxSVG();                   // whole canvas
-      gc.setWorldCoords(-50, -300, 300);    // square pixels
-      gc.render(cmbr);
+      g.gridboxPadding(10);
+      g.setWorldCoordsRHC(0, -50, 2*Math.PI, 100);
+      // draw axes
+      g.drawAxes(0, 6.5, -50, 50, {
+        xOrigin:0, yOrigin:0,
+        fontSize:10,
+        strokeColor:'gray'});
+
+      for (i=0; i<=2*Math.PI; i+=0.03) {
+        data.push(i, 50*Math.sin(i));
+      }
+      g.drawPath(data, {strokeColor:'red'});
     }
 
-    function drawSpiral(cvsID)
+//==============================================================
+
+    var ballGC;           // ball graphics context
+
+    function sphereShading(dia, r, g, b)
     {
-      var chamber = "M 289.16,447.14 \
-                     C 233.33,399.03 267.47,290.34 364.53,265.28 \
-                       408.88,269.91 448.14,282.58 483.22,303.79 \
-                       391.79,287.12 292.99,369.50 331.90,451.11 \
-                       318.79,447.43 302.35,446.61 289.16,447.14 z",
-          cgoChamber = svgToCgoSVG(chamber, -287, -536),
-          cObj = new Cobj(cgoChamber, "SHAPE", {
-            fillColor:"lightyellow",
-            strokeColor:"tan",
-            lineWidthWC:4,
-            border:true }),
-          i, scl,
+      var rVal = r || 0,
+          gVal = g || 0,
+          bVal = b || 0,
+          d = dia || 100,
+          hx = 0.3,   // 0.05 < hx < 0.45 (fraction of sphere diameter that shadow is offset from center)
+          bx = 0.5 - hx,
+          sx = 1 - 0.6 + hx,
+          shadowGrad = new RadialGradient(-0.7*sx*d, 0.7*sx*d, 0.9*d, -0.7*sx*d, 0.7*sx*d, 1.1*d), // rotate by 135deg,
+          brightGrad = new RadialGradient(-0.7*bx*d, 0.7*bx*d, d/15, -0.7*bx*d, 0.7*bx*d, 3*d); // rotate by 135deg
+          ballGrad =  new RadialGradient(0, 0, 0.4*d, 0, 0, 0.5*d);
+
+      shadowGrad.addColorStop(0, "rgba(0, 0, 0, 0.03)");
+      shadowGrad.addColorStop(0.6, "rgba(0, 0, 0, 0.3)");
+      shadowGrad.addColorStop(1, "rgba(0, 0, 0, 0.5)");
+
+      brightGrad.addColorStop(0, "rgba(255,255,255,0.77)");
+      brightGrad.addColorStop(0.1, "rgba(255,255,255,0.2)");
+      brightGrad.addColorStop(0.7, "rgba(255,255,255,0)");
+
+      ballGrad.addColorStop(0, "rgb("+rVal+","+gVal+","+bVal+")");
+      ballGrad.addColorStop(0.7, "rgb("+Math.round(0.9*rVal)+","+Math.round(0.9*gVal)+","+Math.round(0.9*bVal)+")");
+      ballGrad.addColorStop(1, "rgb("+Math.round(0.8*rVal)+","+Math.round(0.8*gVal)+","+Math.round(0.8*bVal)+")");
+
+      return {base:ballGrad, shadow:shadowGrad, hilite:brightGrad};
+    }
+
+    function beachBallDemo(cvsID)
+    {
+      var circle = "M 534.29,274.5 A 165.7,165.7 0 1 1 202.9,274.5 165.7,165.7 0 1 1 534.3,274.5 z",
+          stripes = "M 279.1,134.7 C 260,193.8 318.1,303.8 349.5,343.8 338.3,349.3 330.3,357.9 331.1,372.0 \
+          282.5,369.2 232.8,353.1 207.3,313.1 220.9,367.5 258.7,410.6 312,430.4 \
+          331.1,419.5 336.5,412.9 349.8,395.6 361.7,401.3 377.6,400.1 388.6,394.2 \
+          404.8,411.9 414.6,420.0 433.6,427 482.7,405.2 518.4,364.5 530.7,309.3 \
+          508.9,343.1 462.8,363.7 404.7,369.4 404.1,356.7 396.1,348.5 384.8,343.2 \
+          426.2,276 460.9,182 451.8,130.9 393.8,98.6 330.4,103 279.1,134.7 z",
+          xRef = 368.57,  // this is the reference point expressed in Inkscape coords
+          yRef = 274.5,
+          dia = 2*165.7,
+          ballData, ball,
+          panelsData, panels,
+          shade, shading, shadows,
+          beachball, shadedBall,
+          twnr,
+          ballConfig = {x:[1100, 150, 1100],
+                        y:[300, 200, 300],
+                        scl:[0.6, 1, 0.6],
+                        rot:[0, 360, 0],
+                        delay:0,
+                        duration:3500,
+                        loop:'loop' };
+
+      twnr = new Tweener(ballConfig.delay, ballConfig.duration, ballConfig.loop);
+
+      function initBall(opts)
+      {
+        beachball.transform.translate(1100, 300);
+        beachball.transform.scale(0.6);
+        shading.transform.translate(1100, 300);
+        shading.transform.scale(0.6);
+      }
+
+      function ballPathFn(time, opts)
+      {
+        var sclVal = twnr.getVal(time, opts.scl),
+            xVal = twnr.getVal(time, opts.x),
+            yVal = twnr.getVal(time, opts.y),
+            rotVal = twnr.getVal(time, opts.rot);
+
+        beachball.transform.scale(sclVal);
+        beachball.transform.rotate(rotVal);
+        beachball.transform.translate(xVal, yVal);
+        shading.transform.scale(sclVal);
+        // no rotation for the shadow
+        shading.transform.translate(xVal, yVal);
+      }
+
+      function drawBall()
+      {
+        this.gc.render(shadedBall);
+      }
+
+      ballGC = new Cango(cvsID);
+      ballGC.setWorldCoordsRHC(0, 0, 1200); // square pixels
+
+      ballData = svgToCgo2D(circle, -xRef, -yRef);
+      ball = new Shape(ballData, {fillColor:"ghostwhite"});
+
+      panelsData = svgToCgo2D(stripes, -xRef, -yRef);
+      panels = new Shape(panelsData, {fillColor:"red"});
+
+      shadows = sphereShading(dia),
+      shade = new Shape(shapeDefs.circle(dia), {fillColor:shadows.shadow});
+      ballHilite = new Shape(shapeDefs.circle(dia), {fillColor:shadows.hilite});
+
+      beachball = new Group(ball, panels);
+      shading = new Group(shade, ballHilite);
+      shadedBall = new Group(beachball, shading);   // draw shading after ball
+
+      ballGC.animation(initBall, drawBall, ballPathFn, ballConfig);
+    }
+
+//=================================================================================
+
+    var bounceGC;           // Cango graphics context
+
+    function bouncingBallDemo(cvsID)
+    {
+      var shadows,
+          ball, shade, ballHilite,
+          ballGrp,
+          dia = 45,
+          startX = 120,
+          startY = 250;
+
+      function initBall(opts)
+      {
+        // create any properties you want in nextState, currState will be a clone
+        // don't write to currState its just there for reference to what is on the screen
+        this.nextState.x = startX;
+        this.nextState.y = startY;
+        this.nextState.vx = 0;
+        this.nextState.vy = 0;
+
+        ballGrp.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      function drawBall(opts)
+      {
+        this.gc.render(ballGrp);
+      }
+
+      function bouncingPath(time, opts)    // time passed is the time since start of animation
+      {
+        // 'this' refers to the Animation object (this.gc, this.nextState etc)
+        // this.currState is avaliable for reference to what is on the screen (don't write to it)
+        // after the frame is drawn in nextState, nextState and currState are swapped
+        var reflect = -1,     // bounce off wall else disappear
+            coeff = 0.82,     // percentage bounce height (superball)
+            friction = 0.985, // rolling friction loss/msec
+            speed = 1.5,      // units are like worldCoords x axis units/mm
+            gravity = -0.0098 * speed, // gravity =9.8m/s/s =0.0098mm/ms/ms =0.0098*speed units/ms/ms
+            xVel = 0,
+            yVel = 0,
+            x, y,
+            vel, startAngle, timeInt, s, u;
+
+        if (time == 0)   // generate random launch angle for each reset
+        {
+          // restart at 0.4 m/sec initial velocity and at a random angle
+          // velocity in 2m/s = 2 mm/ms = 2mm/ms * units/mm = 2*speed
+          vel = 2*speed;    // x units/ms
+          startAngle = 30+120*Math.random();
+          this.nextState.x = startX;           // put ball back at the start point
+          this.nextState.y = startY;
+          this.nextState.vx = vel * Math.cos(startAngle * Math.PI / 180);
+          this.nextState.vy = vel * Math.sin(startAngle * Math.PI / 180);
+
+          ballGrp.transform.translate(this.nextState.x, this.nextState.y);
+          return;     // this is the state to get drawn at start
+        }
+        // calculate the new position and velocity
+        timeInt = time - this.currState.time;   // time since last draw
+        // v = u + at
+        yVel = this.currState.vy + gravity * timeInt;    // accelerating due to gravity
+        xVel = this.currState.vx;                    // constant
+        x = this.currState.x + xVel*timeInt;
+        y = this.currState.y + yVel*timeInt + 0.5*gravity * timeInt * timeInt;
+         // now check for hitting the walls
+        if (x > opts.rightWall - opts.radius)
+        {
+          x = opts.rightWall - opts.radius;
+          xVel *= reflect*coeff;    // lossy reflection next step
+        }
+        if (x < opts.leftWall + opts.radius)
+        {
+          x = opts.leftWall + opts.radius;
+          xVel *= reflect*coeff;    // lossy reflection next step
+        }
+        if (y > opts.topWall - opts.radius)
+        {
+          y = opts.topWall - opts.radius;
+          yVel *= reflect*coeff;    // lossy reflection next step
+        }
+        if (y < opts.bottomWall + opts.radius)  // this is always true after yVel become small
+        {
+          y = opts.bottomWall + opts.radius;
+          // calc velocity at the floor   (v^2 = u^2 + 2*g*s)
+          s = this.currState.y - (opts.bottomWall + opts.radius);     // pre bounce
+          u = this.currState.vy;
+          yVel = -Math.sqrt(u*u - 2*gravity*s);
+          yVel *= reflect*coeff;  // lossy reflection next step
+          // after bouncing phase this is rolling friction
+          xVel *= friction;
+        }
+        this.nextState.x = x;
+        this.nextState.y = y;
+        this.nextState.vx = xVel;
+        this.nextState.vy = yVel;
+
+        ballGrp.transform.translate(this.nextState.x, this.nextState.y); // ball hasn't got this yet
+      }
+
+      shadows = sphereShading(dia, 255, 0, 0);
+
+      ball = new Shape(shapeDefs.circle(dia), {fillColor:shadows.base} );
+      shade = new Shape(shapeDefs.circle(dia), {fillColor:shadows.shadow});
+      ballHilite = new Shape(shapeDefs.circle(dia), {fillColor:shadows.hilite});
+      ballGrp = new Group(ball, shade, ballHilite);
+
+      bounceGC = new Cango(cvsID);
+      bounceGC.setWorldCoordsRHC();      // use raw pixels
+
+      bounceGC.animation(initBall, drawBall, bouncingPath, {radius:dia/2,
+                                                            leftWall:0,
+                                                            rightWall:bounceGC.rawWidth,
+                                                            topWall:bounceGC.rawHeight,
+                                                            bottomWall:0});
+    }
+
+//================================================================================
+
+    function editCurve(cvsID)
+    {
+      var x1 = 40, y1 = 20,
+          cx1 = 90, cy1 = 120,
+          x2 = 120, y2 = 100,
+          cx2 = 130, cy2 = 20,
+          cx3 = 150, cy3 = 120,
+          x3 = 180, y3 = 60,
+          c1, c2, c3,
           g = new Cango(cvsID);
 
-      g.setGridboxSVG();
-      g.setWorldCoords(0, 0, 500);
-      g.drawShape(shapeDefs.circle(8), 250, 320, {fillColor:"tan"});
-      for (i=0, scl=1; i<50; i++)
+      function dragC1(mousePos)    // called in scope of dragNdrop obj
       {
-        g.render(cObj, 250, 320, scl/=1.08, i*24.5);
+        cx1 = mousePos.x;
+        cy1 = mousePos.y;
+        drawCurve();
       }
+
+      function dragC2(mousePos)
+      {
+        cx2 = mousePos.x;
+        cy2 = mousePos.y;
+        drawCurve();
+      }
+
+      function dragC3(mousePos)
+      {
+        cx3 = mousePos.x;
+        cy3 = mousePos.y;
+        drawCurve();
+      }
+
+      function drawCurve()
+      {
+        var qbez, cbez,
+            grp,
+            L1, L2, L3;
+        // curve change shape so it must be re-constructed each time
+        // draw a quadratic bezier from x1,y2 to x2,y2
+        qbez = new Path(['M', x1, y1, 'Q', cx1, cy1, x2, y2], {
+          strokeColor:'blue'});
+        cbez = new Path(['M', x2, y2, 'C', cx2, cy2, cx3, cy3, x3, y3], {
+          strokeColor:'green'});
+        // show lines to control point
+        L1 = new Path(['M', x1, y1, 'L', cx1, cy1, x2, y2], {
+          strokeColor:"rgba(0, 0, 0, 0.2)",
+          dashed:[4]});   // semi-transparent gray
+        L2 = new Path(['M', x2, y2, 'L', cx2, cy2], {
+          strokeColor:"rgba(0, 0, 0, 0.2)",
+          dashed:[4]});
+        L3 = new Path(['M', x3, y3, 'L', cx3, cy3], {
+          strokeColor:"rgba(0, 0, 0, 0.2)",
+          dashed:[4]});
+        // draw draggable control points
+        c1.transform.translate(cx1, cy1);
+        c2.transform.translate(cx2, cy2);
+        c3.transform.translate(cx3, cy3);
+        grp = new Group(qbez, cbez, L1, L2, L3, c1, c2, c3);
+        g.render(grp, true);
+      }
+
+      g.clearCanvas("lightyellow");
+      g.deleteAllLayers();
+      g.setWorldCoordsRHC(0, 0, 200);
+
+      // draggable control points
+      c1 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+      c1.enableDrag(null, dragC1, null);
+
+      c2 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+      c2.enableDrag(null, dragC2, null);
+
+      c3 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+      c3.enableDrag(null, dragC3, null);
+
+      drawCurve();
     }
 
-//==============================================================
-
-    var rotGC;
-    var jane;
-    function drawJane1(cvsID)
+//==================================================================================
+    function groupDrag(cvsID)
     {
-      rotGC = new Cango(cvsID);
-      var xmin = 0, xmax = 24000;
-      var ymin = -300, ymax = 600;
-      rotGC.setGridboxRHC(15, 5, 75, 80);
-      rotGC.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      var groupAll = new Group(),
+          allX = 0, allY = 0,
+          triX = 0, triY = 0,
+          box = new Shape(shapeDefs.rectangle(40, 90), {fillColor: "green",border:true}),
+          sqr = new Shape(shapeDefs.square(70), {fillColor: "green",border:true}),
+          tri = new Shape(shapeDefs.triangle(70), {fillColor:"orange",border:true}),
+          g = new Cango(cvsID);
 
-      rotGC.drawAxes(xmin, xmax, ymin, ymax, {xOrigin: 0, yOrigin: 0});
+      var drawIt = function()
+      {
+        groupAll.transform.translate(allX, allY);
+        tri.transform.translate(triX, triY);
 
-      jane = rotGC.drawImg("Images/JaneAvril2.jpg", 10000, 0, {imgWidth:7000, lorg:8});
+        g.render(groupAll, true);  // true = clear canvas
+      };
+
+      var dragRoot = function(mousePos)
+      {
+        // grabOfs is the distance the mouse is from the drawing origin of the target
+        allX = mousePos.x - this.grabOfs.x;
+        allY = mousePos.y - this.grabOfs.y;
+
+        drawIt();
+      };
+
+      var dragObj = function(mousePos)
+      {
+        triX = mousePos.x - this.grabOfs.x;
+        triY = mousePos.y - this.grabOfs.y;
+
+        drawIt();
+      };
+
+      g.clearCanvas();
+      g.setWorldCoordsRHC(-100, -100, 400);
+      // arrange objects
+      sqr.translate(70, 70);
+      tri.translate(0, -50);       // drag-n-drop doesn't know about hard transforms !!!! FIX THIS
+      groupAll.addObj(box, sqr, tri);
+
+      tri.enableDrag(null, dragObj, null);
+      groupAll.enableDrag(null, dragRoot, null);
+
+      drawIt();
     }
-
-//==============================================================
-
   </script>
 
   <script type="text/javascript">
+    var consoleBtns1 =
+    {
+      f1:function(){armCtx.playAnimation()},
+      f2:function(){armCtx.pauseAnimation()},
+      f3:function(){armCtx.stepAnimation()},
+      f4:function(){armCtx.stopAnimation()}
+    };
+
+    var consoleBtns2 =
+    {
+      f1:function(){ballGC.playAnimation()},
+      f2:function(){ballGC.pauseAnimation()},
+      f3:function(){ballGC.stepAnimation()},
+      f4:function(){ballGC.stopAnimation()}
+    };
+
+    var consoleBtns3 =
+    {
+      f1:function(){bounceGC.stopAnimation();
+                    bounceGC.playAnimation(0, 6000)},
+      f2:function(){bounceGC.pauseAnimation()},
+      f3:function(){bounceGC.stepAnimation()},
+      f4:function(){bounceGC.stopAnimation()}
+    };
+
+
     addLoadEvent( function(){
       buildMenu(indexData);
 
-      drawHullo('hullo');
+      excavatorDemo('cgArm2');
       drawMulti('cg2');
-      drawChamber('shellChamber');
-      drawSpiral('shellSpiral');
-      drawJane1('cgJane');
+      plotSine('plotCvs');
 
-      enableStickyNav();
+      beachBallDemo('ball');
+      bouncingBallDemo('bounce');
+
+      editCurve('cgDrag');
+      groupDrag('grpDrag');
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -442,22 +765,51 @@
     <div id="page">
       <div id="content">
         <div class="h1Bkg"></div>
-        <h1>Canvas Graphics Library</h1>
+        <h1>Cango Canvas Graphics Library</h1>
         <div class="text_01">
 
-<h2>Cango, a user friendly canvas graphics context</h2>
-<p>Cango (Canvas Graphics Object) is a JavaScript graphics context for object oriented drawing on the HTML5 canvas element. The <a href="CangoUserGuide.html">Cango User Guide</a> has a description of all the Cango methods. The current version of Cango is 8v03, and the source code is available at <a href="Cango-8v03.js" download>Cango-8v03.js</a>.</p>
+<h2>User friendly canvas graphics</h2>
+<p>Cango (Canvas Graphics Object) is a JavaScript graphics context for object oriented drawing on the HTML5 canvas element. In addition to basic drawing capability it uses the canvas matrix transforms to make animation easy. The <a href="CangoUserGuide.html">Cango User Guide</a> provides detailed reference using Cango. The current version of Cango is 12v05, and the source code is available at <a href="Cango-12v05.js" download>Cango-12v05.js</a> and the minified version at<a href="Cango-12v05-min.js" download> Cango-12v05-min.js</a>.</p>
 
-<p>Cango provides the graphics engine for the <a href="FilterDesign.html">Filter&nbsp;Design</a>, <a href="ArmstrongPattern.html">Armstrong&nbsp;Pattern&nbsp;Guns</a>, <a href="ThreadDrawing.html">Screw&nbsp;Thread&nbsp;Drawing</a>, <a href="SpectrumAnalyser.html">Spectrum&nbsp;Analyser</a> and <a href="ZoomFFT.html">Zoom&nbsp;FFT</a> pages.</p>
+<p>Cango provides the graphics engine for the <a href="FilterDesign.html">Filter&nbsp;Design</a>, <a href="ArmstrongPattern.html">Armstrong&nbsp;Pattern&nbsp;Guns</a>, <a href="ThreadDrawing.html">Screw&nbsp;Thread&nbsp;Drawing</a>, <a href="SpectrumAnalyser.html">Spectrum&nbsp;Analyser</a> and <a href="ZoomFFT.html">Zoom&nbsp;FFT</a> pages. Its animation capabilities are demonstrated in the <a href="GearDrawing.html">Gear Drawing</a>, <a href="Flintlock.html">Flintlock</a> and <a href="Wheellock.html">Wheellock</a> pages.</p>
 
-<p>A note of caution, the Cango library is still under development, its methods are evolving, if a method would be more efficient with different parameters, they are changed. So users should take care in assuming backward compatibility when a new version is released. Version 8 makes changes to the API so code written for earlier versions will require some modification to run with the Version 8 without modification.</p>
+<p>The Cango library continues to be refined and enhanced, so users should not assume backward compatibility when a new version is released. Version 12 is a major re-write of Version 11 maintaining the API but using browser support for <b>svgMatrix</b> to replace the JavaScript matrix transform code used in earlier versions.</p>
 
 <h3>Cango basic drawing capability</h3>
 
-  <canvas id="cg2" class="cvsEg" width="640" height="450"></canvas>
+  <canvas id="cg2" class="cvsEg" width="560" height="400"></canvas>
 
 <div class="captionHolder" style="width: 600px">
-  <p><b>Figure 1.</b> Examples of Bar Chart, Point and Line graph and various shapes.</p>
+  <p><b>Figure 1.</b> Examples of drawing using the Cango graphics library.</p>
+</div>  <!-- captionHolder -->
+
+<h3>Animation example demonstrating inherited movement</h3>
+<p>Cango animation features movement inheritance which enables transforms applied to a Group to be inherited by its children and which can then add their own movement transforms the net movement then inherited by their children and so on. This is demonstrated in Figure 1 which shows a drawing of an excavator, its arm has several jointed segments. Each segment inherits the movement applied to the previous segments and then adds its own movement.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+    <div class="scrnBevel" >
+      <canvas id="cgArm2" width="530" height="340" style="background-color: lightyellow;"></canvas>
+    </div>  <!-- scrnBevel -->
+
+    <table class="btnHolder" cellspacing="0" cellpadding="0">
+      <tr align="center">
+        <td width="25%"><button type="button" onclick="consoleBtns1.f1()" class="button-link">RUN</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f2()" class="button-link">PAUSE</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f3()" class="button-link">STEP</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns1.f4()" class="button-link">STOP</button></td>
+      </tr>
+    </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+<div class="captionHolder" style="width: 640px">
+  <p><b>Figure 1.</b> Example of animation demonstrating child Group2Ds inheriting the movement of parent Group2Ds.</p>
 </div>  <!-- captionHolder -->
 
 <h3>Features of Cango</h3>
@@ -472,181 +824,590 @@
 <b>Canvas Layers</b> - The functionality of a <a href="CanvasLayers.html">CanvasStack</a> is built into Cango. Transparent canvas overlays can be created to assist in drawing cursors and data overlays and animation without re-drawing any static objects on the background canvas or other layers.
 </li>
 <li>
-<b>Object Oriented</b> - All items drawn with Cango are instances of a <b>Cobj</b> JavaScript object. The Cobj object can encapsulate paths, shapes, images or text. All Cobj objects are rendered to the canvas with the single <i>cgo</i>.render method. Once created a Cobj can be rendered and re-rendered onto the canvas with arbitrary translation, scaling and rotation.
+<b>Objects</b> - Cango supports draw objects of type <b>Path</b>, <b>Shape</b>, <b>Img</b>, <b>Text</b> and <b>ClipMask</b>. Shape, Path and ClipMask outlines can be simple predefined shapes such as circles, triangles and squares etc. or any complex shapes specified in the SVG path syntax. Images can be specified either by a pre-loaded HTML Image object or the URL of an image file.
 </li>
 <li>
-<b>Compact SVG notation</b> - Cango uses the compact SVG path syntax to define all path and shape outlines. The Cango version of the syntax is called <b>Cgo2D</b> format, which only differs from the SVG path specification by always specifying the path in a JavaScript Array and allowing either RHC or SVG sign convention for coordinates. SVG path data can be copied from an SVG editor as a string and converted to Cgo2D format by the <b>svgToCgoRHC</b> or <b>svgToCgoSVG</b> utilities. Cgo2D data may be exported as an SVG string using the <b>Cgo2DtoSVG</b> utility.
+<b>Compact SVG path notation</b> - Cango uses the compact SVG path syntax to define all Path, Shape and ClipMask outlines. The commands and their coordinates can be specified in a string or in an array.
 </li>
 <li>
-<b>Predefined shapes</b> - Cango provides a <b>shapeDefs</b> object which has methods <b>circle</b>, <b>ellipse</b>, <b>square</b>, <b>triangle</b>, <b>cross</b>, <b>ex</b>, <b>rectangle</b>, <b>arrow</b> and <b>arrowArc</b>. These functions take object dimensions as arguments and return a Cgo2D data array specifying the object's outline.
+<b>Predefined shapes</b> - Cango provides a <b>shapeDefs</b> object which has methods <b>circle</b>, <b>ellipse</b>, <b>square</b>, <b>rectangle</b>, <b>triangle</b>, <b>cross</b> and <b>ex</b>. These functions take object dimensions as arguments and return a Cgo2D data array specifying the object's outline.
 </li>
 <li>
-<b>Paths and Shapes</b> - PATH and SHAPE type Cobj are defined by their outline path. Paths are always stroked with either solid or dashed lines, shapes are always filled with color. Gradient color fills are supported. Cango provides control of shapes' winding direction, so shapes can encompass other shapes with opposite winding to achieve cut-out effects. When drawn in world coordinates that have different X and Y scaling PATH and SHAPE Cobj can have their aspect ratio maintained by setting the object's 'iso' property.
+<b>Groups and inherited transforms</b> - Once constructed objects can be grouped as children of Group objects which enables transforms to be applied to the group as a whole. Children inherit the transforms applied to parent Groups. Groups can have more Groups as children, creating a family tree of objects.
 </li>
 <li>
-<b>Text</b> - Text may be positioned in world coordinates with 9 default alignment options, arbitrarily rotated and with variable font size, and font weight.
+<p><b>Animation</b> - Animations can be created by designating three functions, an initialization function to set the initial state of the objects in the scene. A draw function that actually renders the scene to the canvas and a path function which applies the various transforms such as translate, rotate etc. to the objects for each frame.</p>
+<p>All animations, regardless of which layer they are on are controlled by play, pause, stop and step methods on a single master timeline ensuring animations are synchronized.</p>
 </li>
 <li>
-<b>Images</b> - Images can be loaded and rendered with arbitrary positioning, scaling and rotation with 9 default internal drawing origins for easy alignment.
+<b>Drag and Drop</b> - Both Groups and individual objects can be enabled for drag-n-drop. All the event handling support code is built-in, applications just specify the callback functions.
 </li>
 <li>
-<b>Drag and Drop</b> - If the <a href="CangoDragAndDropManual.html">CangoDragAndDrop</a> extension module is loaded all objects can be enabled for drag-n-drop, all the event handling support code is built-in, just specify the callback functions.
+<p><b>Shadows and Borders</b> - Drop shadow effects applied and Shape, Text and Img objects, they can also have colored borders.</p>
 </li>
 <li>
-<b>Zoom and Pan</b> - The <a href="CangoDragAndDropManual.html">CangoDragAndDrop</a> extension module also supplies a Zoom and Pan utility function <b>initZoomPan</b> which creates an overlay canvas holding zoom and pan controls which can be configured to zoom and pan any of the canvases in the stack.
-</li>
-<li>
-<b>Animation</b> - If the <a href="CangoAnimationManual.html">CangoAnimation</a> extension module is loaded then any object's position, size, rotation angle or its various style properties can be animated. All animations are synchronized even if drawn on different layers with user control of play, pause, step and stop.
-</li>
-<li>
-<b>Axes</b> - If the <a href="CangoAxesManual.html">CangoAxes</a> extension module is loaded then methods for drawing various styles of axes are added, with auto or manual tick spacing. This module also adds arrow shapes both straight and circular arc style. It also adds some utilities to draw HTML text overlaying the canvas and a JavaScript version of the 'sprintf' utility.
+<b>Zoom and Pan</b> - Cango provides a Zoom and Pan utility which creates an overlay canvas holding the zoom and pan controls these configured to zoom or pan any of the objects in the canvas stack.
 </li>
 </ul>
 
-<h3>Using Cango</h3>
-<p>Cango requires an HTML canvas element within the body of the web page. The only attribute required by Cango is a unique <b>id</b>. To use the Cango, download the minified version: <a href="Cango-8v03-min.js" download>Cango-8v03-min.js</a>. Store the file directory accessible to JavaScript code running in the web page, then add the following line to the web page header:</p>
+<h3>Cango Axes extension module</h3>
+<ul style="margin-top:1em">
+<li>
+If the <a href="CangoAxesManual.html">CangoAxes</a> extension module is loaded then Cango is augmented with methods for drawing various styles of axes with auto or manual tick spacing. <b>drawArrow</b> and <b>drawArrowArc</b> methods are also included. This module also adds the <b>drawHTMLtext</b> method which creates DOM text objects that can be positioned in Cango world coordinates. Allowing text processing utilities such as MathJax to be integrated with canvas drawing. The <b>drawVectorText</b> method provides an alternate to the standard canvas text where characters are converted to Path objects. CangoAxes also holds some utility functions for number formatting and a JavaScript version of the <b>sprintf</b> utility.
+</li>
+</ul>
+
+
+<h2>Getting Started</h2>
+
+<p>To use the Cango, download the minified version <a href="Cango-12v05-min.js" download>Cango-12v05-min.js</a>. Save the file in a directory accessible to JavaScript code running in the web page, then add the following line to the web page header:</p>
 <div class="srcFmt">
 <pre>
-&lt;script type="text/javascript" src="[directory path]/Cango-8v03-min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="<i>[directory path]</i>/Cango-12v05-min.js"&gt;&lt;/script&gt;
+</pre>
+</div>
+<p>Within the body of the web page insert a canvas element. The only attribute required by Cango is a unique <b>id</b> string.</p>
+<div class="srcFmt">
+<pre>
+&lt;canvas id="<i>canvasID</i>" width="500" height="300"&gt;&lt;/canvas&gt;
 </pre>
 </div>
 
-<h4>The Cango drawing context</h4>
-<p>Each graphics context is an instance of the Cango object, with its own set of properties such as world coordinate system, stroke color, fontSize and so on. Multiple Cango instances may exist simultaneously on the same canvas. Drawing calls to a different context may be interspersed without affecting any other contexts' settings. A graphics context is created as follows:</p>
-<div class="srcFmt">
+<p>Cango drawing starts by creating a new Cango context, the only parameter of the constructor is the ID of the canvas.</p>
 <pre>
-var g = new Cango(<i>canvasID</i>);
+var cgo = new Cango(cvsID);
 </pre>
-</div>
-<p>The returned object <b>g</b>, has the Cango drawing methods such as <b>setWorldCoords</b>, <b>drawPath</b>, <b>render</b> and so on.</p>
-<p>JavaScript graphics drawing code using the Cango will look something like this:</p>
+
+<p>Cango defines a gridbox to provide a reference point for the world coordinate origin and width and height as a reference for the X and Y scale factors. By default the gridbox covers the full canvas. The world coordinate system is set up by calling either the <b>setWorldCoordsRHC()</b> method to set up a Right Hand Cartesian system, or the <b>setWorldCoordsSVG()</b> method to set up an SVG style system. Each method specifies the X,Y world coordinate value of the gridbox origin (lower left for RHC and upper left for SVG systems) and also the width of the gridbox in world coordinates. Optionally the height of the gridbox can also be specified to set up different X and Y scaling. If the height parameter is omitted then Y axis scaling is the same as the X axis scaling.</p>
+
+<p>Cango provides control of the gridbox dimensions by defining a padding width from each edge of the canvas. Padding the gridbox is particularly useful when plotting graphs on the canvas element since the padding around the gridbox gives room for scales and annotation of the graph axes.</p>
+
+<p>Cango can draw paths, shapes, images and text. The simplest way to do this is using any of the Cango methods:</p>
+<pre>
+<i>cgo</i>.drawPath(pathDef, options);
+<i>cgo</i>.drawShape(outlineDef, options);
+<i>cgo</i>.drawImg(imgDef, options);
+<i>cgo</i>.drawText(strg, options);
+</pre>
+
+<p>Each of these methods creates an instance of the corresponding Path, Shape, Img or Text object and renders it to the canvas. The 'options' object properties are used to set the world coordinates where the object will be drawn, its color, line width, borders, drop shadows etc.</p>
+
+<p><b>Path</b> and <b>Shape</b> objects can have their outline path defined by either a string, holding SVG path definition commands or a array holding Cgo2D path definition commands. The path definition commands syntax is same as the SVG 'path' data syntax. Cgo2D uses the same syntax but its coordinates are interpreted as Right Hand Cartesian rather than the left handed SVG convention. Path objects are rendered as outlines and Shape objects are always filled with color. Many standard shapes have been predefined, they are accessed by the global 'shapeDefs' object which has methods 'circle', 'ellipse', 'square' etc.</p>
+
+<p><b>Img</b> objects take an image file URL or an HTML Image object as their definition parameter. If a URL is passed then the image is loaded into an HTML Image object. The 'options' properties can specify size, rotation, scaling, borders etc to be applied when the loading is complete and it is rendered to the canvas.</p>
+
+<p><b>Text</b> objects are specified by a string. The options properties then define the font-family, font size and weight etc. Text is always drawn with its aspect ratio preserved, regardless of whether the coordinate system has different X and Y world coordinate scaling.</p>
+
+<h3>Graph plotting</h3>
+<p>A line graph can be very simply plotted using the Path object since the he Cgo2D syntax allows the path to be specified as an array of x,y number pairs. The world coordinates are first set to suit the range of x values and y values expected in the data. As an example let's plot a sine wave of amplitude 50 over the range 0 to 2&pi;.</p>
 
 <div style="margin: 1em; float:right;">
-  <canvas id="hullo" width="220" height="200" style="background-color:lightyellow"></canvas>
+  <canvas id="plotCvs" width="300" height="260" style="background-color:lightyellow"></canvas>
   <div class="captionHolder" style="width: 220px">
-    <p class="caption"><b>Figure 1.</b> Cobj "TEXT" example.</p>
+    <p class="caption"><b>Figure 1.</b> Graph plot using 'drawPath'.</p>
   </div>
 </div>
 
 <div class="srcFmt">
 <pre>
-function drawHullo(cvsID)     // canvas ID passed as a string
+function plotSine(cvsID)
 {
-  var g = new Cango(cvsID);   // create a graphics context
-  g.setGridboxRHC();          // use RHCartesian on full canvas
-  g.setWorldCoords(-1, -25, 2, 50); // grid origin = (-1,-25)
-                                    // gridbox width 2, height 50
-  g.drawText("Hullo World", 0, 0, {
-    fontSize:24,              // fontSize 24 px
-    fontWeight:700,
-    lorg:5 });                // 5 = center,center alignment
-}
-</pre>
-</div>
+  var g = new Cango(cvsID),
+      i, data = [];
 
-<h3>Cango examples</h3>
-<h4>Re-rendering objects</h4>
-<p>Drawing a Nautilus shell is a good example of Cango object oriented drawing. Firstly a photo of a sectioned shell was imported in the 'Inkscape' SVG editor and one chamber was traced in just four cubic Bézier curves. The XML data of the chamber outline path was copied into the following string.</p>
-<div class="srcFmt">
-<pre style="margin-left: 2px; margin-right: 2px">
-"M 289.16,447.14 C 233.33,399.03 267.47,290.34 364.53,265.28 408.88,269.91 448.14,282.58 483.22,303.79
-  391.79,287.12 292.99,369.50 331.90,451.11 318.79,447.43 302.35,446.61 289.16,447.14 z"
-</pre>
-</div>
+  g.gridboxPadding(10);
+  g.setWorldCoordsRHC(0, -50, 2*Math.PI, 100);
+  // draw axes
+  g.drawAxes(0, 6.5, -50, 50, {
+    xOrigin:0, yOrigin:0,
+    fontSize:10,
+    strokeColor:'gray'});
 
-<p>To draw the chamber in Cango, the string is converted to Cgo2D format using the <b>svgToCgoSVG</b> utility. This utility can also shift the origin of the path. Drawing a spiral is easier if the origin is at the center of the spiral (after a bit of fiddling the offsets to achieve this were found to be -287, -536). The Cgo2D data array returned is then used to create  a Cobj object of type "SHAPE" ready to be drawn onto the canvas.</p>
-<p>To draw this object, a Cango instance on the canvas is created then a coordinate grid is defined. For this example an SVG grid has been chosen. Then the Cango 'render' method is called passing the Cobj. The resulting drawing of the chamber is shown in Fig. 2, alongside the source code to generate the drawing.</p>
-
-<div style="margin: 1em; float:right;">
-  <canvas id="shellChamber" width="220" height="200" style="background-color:lightblue"></canvas>
-  <div class="captionHolder" style="width: 220px">
-    <p class="caption"><b>Figure 3a.</b> Nautilus shell chamber.</p>
-  </div>
-</div>
-<div class="srcFmt">
-<pre>function drawChamber(cvsID)
-{
-  var chamber = "M 289.16,447.14 \
-                 C 233.33,399.03 267.47,290.34 364.53,265.28 \
-                  408.88,269.91 448.14,282.58 483.22,303.79 \
-                  391.79,287.12 292.99,369.50 331.90,451.11 \
-                  318.79,447.43 302.35,446.61 289.16,447.14 z",
-      cgoChamber = svgToCgoSVG(chamber, -287, -536),
-      cmbr = new Cobj(cgoChamber, "SHAPE", {
-        fillColor:"lightyellow",
-        border: true,
-        strokeColor: "tan",
-        lineWidthWC:4 }),
-      gc = new Cango(cvsID);
-
-  gc.setGridboxSVG();                   // whole canvas
-  gc.setWorldCoords(-50, -300, 300);    // square pixels
-  gc.render(cmbr);
-}
-</pre>
-</div>
-
-<p>The power of the Cango object re-use is shown by drawing the whole Nautilus spiral shell. The Nautilus shell comprises a set of chambers, each chamber is built 1.08 times the size of the previous chamber as the Nautilus grows. The spiral moves about 24.5&deg; as each chamber added. To draw a 50 chamber Nautilus spiral (backwards) the code for one chamber can be scaled by 1/1.08 and rotated by 24.5&deg; as follows:</p>
-<div class="srcFmt">
-<pre>function drawSpiral(cvsID)
-{
-  var chamber = "M 289.16,447.14 \
-                 C 233.33,399.03 267.47,290.34 364.53,265.28 \
-                   408.88,269.91 448.14,282.58 483.22,303.79 \
-                   391.79,287.12 292.99,369.50 331.90,451.11 \
-                   318.79,447.43 302.35,446.61 289.16,447.14 z",
-      cgoChamber = svgToCgoSVG(chamber, -287, -536),
-      cObj = new Cobj(cgoChamber, "SHAPE", {
-        fillColor:"lightyellow",
-        strokeColor:"tan",
-        lineWidthWC:4,
-        border:true }),
-      i, scl,
-      g = new Cango(cvsID);
-
-  g.setGridboxSVG();
-  g.setWorldCoords(0, 0, 500);
-  g.drawShape(shapeDefs.circle(8), 250, 320, {fillColor:"tan"});
-  for (i=0, scl=1; i&lt;50; i++)
-  {
-    g.render(cObj, 250, 320, scl/=1.08, i*24.5);
+  for (i=0; i<=2*Math.PI; i+=0.03) {
+    data.push(i, 50*Math.sin(i));
   }
+  g.drawPath(data, {strokeColor:'red'});
 }
 </pre>
 </div>
 
-<p>Fig 3 shows the resulting spiral.</p>
+<h3>Object reuse</h3>
+<p>Once a canvas drawing gets more complex and simple shapes need modification or if we are going reuse objects, perhaps to animate them, the single use draw methods are not well suited. Cango allows Path, Shape, Img or Text objects to be are created and then have permanent or temporary transforms applied or their properties changed and then be rendered to the canvas with the Cango <b>render</b> method. Objects are created independent of any Cango instance that may be used to render them.</p>
 
-<canvas id="shellSpiral" class="cvsEg" width="400" height="400" style="background-color:lightblue"></canvas>
-<div class="captionHolder" style="width: 400px">
-  <p class="caption"><b>Figure 3.</b> A Nautilus shell composed from 50 scaled, rotated copies of one chamber shown in Fig 3a.</p>
-</div>  <!-- captionHolder -->
+<p>Any object can be created by calling its constructor.</p>
+<pre>
+var pathobj = new Path(pathDef, options);
+var shapeobj = new Shape(outlineDef, options);
+var imgobj = new Path(imgDef, options);
+var txtobj = new Text(strg, options);
+var mask = new ClipMask(outlineDef);
+</pre>
 
-<h4>Image handling</h4>
-<p>Cango can load, draw and manipulate images just as well as paths and shapes. The Cobj constructor with type "IMG", accepts a pre-loaded Image object or an image URL string as its data argument. If a URL is passed then the image in loaded into an Image object which is stored along with the user requested size of the image (in world coordinates) and any other properties that have been passed in the 'options' object. The Cobj is then available for future rendering with arbitrary positioning, scaling and rotation. The <b>drawImg</b> method is a wrapper for creating the Cobj and then calling 'render' to draw the object to the canvas.</p>
-<p>The image drawing origin is set by the <b>lorg</b> (locate origin) parameter which takes a numeric value 1 through 9; lorg=1 uses the top-left of the image as the reference point, 2 top-center, 3 top-right, 4 left-center and so on, through to 9 being the bottom-right.</p>
-<p>As a demonstration, an image has been loaded into Fig&nbsp;4 at point x=10000, y=0 and use lorg&nbsp;8, i.e. the (center-bottom) of the image will be at 10000,0. The image will be scaled to have width 7000 (X axis units). The Cobj returned is stored in the variable 'jane'. The code line to do this is:</p>
+<h4>Construction (hard) transforms</h4>
+<p>Once an object is instantiated it can be further modified by scaling, rotating or moving the object relative to its drawing origin. All objects have the following methods to perform these manipulations.</p>
+
+<pre>
+<i>obj</i>.translate(xOfs, yOfs);
+<i>obj</i>.scale(xScl, yScl);
+<i>obj</i>.rotate(degs);
+<i>obj</i>.skew(degH, degV);
+</pre>
+
+<p>Transforms applied by these methods are 'hard' changes, permanently changing the definition of the object. Hard transforms applied to Groups are immediately applied to Group children recursively.</p>
+
+<h4>Dynamic (soft) transforms</h4>
+<p>All objects (and Groups) have a <b>transform</b> property which is a JavaScript object holding a transform matrix and a set of methods that apply transforms to the matrix which represent translation, rotation etc. The transform matrix is built up by successive calls to these <i>obj</i>.transform methods. The resulting matrix is applied when the objects are rendered. These transforms do not affect the object definition, the transform matrix is reset to the identity matrix after the object or Group is rendered. The transforms applied to a Group are inherited by its children. These soft transform methods are:</p>
+
+<pre>
+<i>obj</i>.transform.translate(xOfs, yOfs);
+<i>obj</i>.transform.scale(xScl, yScl);
+<i>obj</i>.transform.rotate(degs);
+<i>obj</i>.transform.skew(degH, degV);
+<i>obj</i>.transform.revolve(deg);
+</pre>
+
+<h3>Rendering to the canvas</h3>
+<p>Once an object is created it can be drawn onto the canvas by the 'render' method of a Cango instance.</p>
+
+<pre>
+<i>cgo</i>.render(obj, clear);
+</pre>
+
+<p>The render method takes a single object or Group as its first parameter, the 'clear' parameter is evaluated as a Boolean, if true the canvas is cleared prior to rendering the object or group. If undefined or false the object is rendered onto the canvas leaving any existing drawing intact. So 'clear' is usually omitted when drawing a static mix of objects but for animations the render method usually clears the canvas before rendering each frame, so 'clear' is set true.</p>
+
+<h3>Animation architecture</h3>
+
+<p>Animations are created by calling the Cango 'animation' method passing reference to three functions, 'initFn', to initialize the animation, 'drawFn' to actually draw the scene and 'pathFn' to apply the transforms to the animated objects for each frame. An 'options' object holding user defined properties may also be passed. The 'options' object is passed as a parameter to the three functions when they are called. The animation method creates an AnimObj which holds as properties references to these functions, the Cango context and the user defined options. This object is added to the array of animations to be run on the canvas or canvas stack if additional layers have been created. The 'initFn', 'drawFn' and 'pathFn' are called in the scope of this AnimObj.</p>
+
+ <p>The animation's 'initFn' is called as soon as the animation is created to setup initial conditions and apply initial transforms to the animated objects. This is followed by the drawFn to paint the objects in their starting positions. When 'playAnimation' is called the 'requestAnimationFrame' utility is used to step along the timeline calling the pathFn to calculate new state properties and apply them to the objects followed by the drawFn to render the objects to the canvas for each frame.</p>
+
+<h4>Timeline</h4>
+<p>All animations on a canvas are controlled by a master timeline. The Cango Timeline is created by the first Cango instantiated on the canvas. All subsequent Cango instances made on the background canvas or on any layer created over the background use the same timeline. The animation timeline methods are:<br/>
+<i>cgo</i>.<b>playAnimation</b>, <i>cgo</i>.<b>pauseAnimation</b>, <i>cgo</i>.<b>stepAnimation</b>, <i>cgo</i>.<b>stopAnimation</b>.</p>
+<p>These methods may be called on any Cango context from the background canvas or any layer, they all refer to the same methods.</p>
+
+<h4>Tweener utility</h4>
+<p>To simplify the generation of the state values (animated object's position, rotation etc.) at each frame along the timeline, Cango provides a Tweener object to interpolate between key frame values. A Tweener object holds the start time for the movement, the total duration and a 'loop' parameter which determines how many times the motion should be repeated. The <b>Tweener</b> object has just one method: <b>getVal</b> which interpolates between key frame values for any property. Key frame times are expressed as a percentage of the Timeline's duration. The Tweener's getVal method can be called multiple time for a single frame if there are several state properties to be interpolated, each with its own array of key frame values.</p>
+
+<h4>Animation 'currState' and 'nextState' properties</h4>
+<p>For those pathFns that need to refer to the previous frame's state values to calculate values for the next frame, The AnimObj provides the <b>currState</b> and <b>nextState</b> objects as properties so they are in the scope for the initFn, drawFn and pathFn. All the newly calculated values that the pathFn creates for each frame can be saved in <b>this.nextState</b> object. After the 'drawFn' renders each frame to the canvas the 'currState' and 'nextState' objects are swapped so that the 'as rendered' properties are available to the pathFn next time it is called in 'this.currState'. The currState object should be treated as read-only, the pathFn reads it, make calculations and writes the new values to be used into 'nextState' then applies the transforms to the objects to be rendered.</p>
+
+<h3>Animation Examples</h3>
+
+<h4>Animation example using Tweener interpolation</h4>
+<p>Shown below is a beach ball is drawn from three objects, a white circle, a red shape drawn in Inkscape using Bezier curve, and a semi-transparent circular overlay providing the 3D shading effect. The ball's timeline is set to loop continuously. The animation can be run, stopped, paused or stepped.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+    <div class="scrnBevel" >
+      <canvas id="ball" width="600" height="250" style="background-color: lightyellow;"></canvas>
+    </div>  <!-- scrnBevel -->
+
+    <table class="btnHolder" cellspacing="0" cellpadding="0">
+      <tr align="center">
+        <td width="25%"><button type="button" onclick="consoleBtns2.f1()" class="button-link">RUN</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns2.f2()" class="button-link">PAUSE</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns2.f3()" class="button-link">STEP</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns2.f4()" class="button-link">STOP</button></td>
+      </tr>
+    </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+
+<p><br>Here is the code snippet that sets up the rolling beachball animation shown above.</p>
 <div class="srcFmt">
 <pre>
-  jane = rotGC.drawImg("Images/JaneAvril2.jpg", 10000, 0, {imgWidth:7000, lorg:8});
+var ballGC;           // Cango graphics context
+
+function beachBallDemo(cvsID)
+{
+  var circle = "M 534.29,274.5 A 165.7,165.7 0 1 1 202.9,274.5 165.7,165.7 0 1 1 534.3,274.5 z",
+      stripes = "M 279.1,134.7 C 260,193.8 318.1,303.8 349.5,343.8 \
+      338.3,349.3 330.3,357.9 331.1,372.0 \
+      282.5,369.2 232.8,353.1 207.3,313.1 220.9,367.5 258.7,410.6 312,430.4 \
+      331.1,419.5 336.5,412.9 349.8,395.6 361.7,401.3 377.6,400.1 388.6,394.2 \
+      404.8,411.9 414.6,420.0 433.6,427 482.7,405.2 518.4,364.5 530.7,309.3 \
+      508.9,343.1 462.8,363.7 404.7,369.4 404.1,356.7 396.1,348.5 384.8,343.2 \
+      426.2,276 460.9,182 451.8,130.9 393.8,98.6 330.4,103 279.1,134.7 z",
+      xRef = 368.57,  // this is the reference point expressed in Inkscape coords
+      yRef = 274.5,
+      dia = 2*165.7,
+      ballData, ball,
+      panelsData, panels,
+      shade, shading, shadows,
+      beachball, shadedBall,
+      twnr,
+      ballConfig = {x:[1100, 150, 1100],
+                    y:[300, 200, 300],
+                    scl:[0.6, 1, 0.6],
+                    rot:[0, 360, 0],
+                    delay:0,
+                    duration:3500,
+                    loop:'loop' };
+
+  twnr = new Tweener(ballConfig.delay, ballConfig.duration, ballConfig.loop);
+
+  function initBall(opts)
+  {
+    beachball.transform.translate(1100, 300);
+    beachball.transform.scale(0.6);
+    shading.transform.translate(1100, 300);
+    shading.transform.scale(0.6);
+  }
+
+  function ballPathFn(time, opts)
+  {
+    var sclVal = twnr.getVal(time, opts.scl),
+        xVal = twnr.getVal(time, opts.x),
+        yVal = twnr.getVal(time, opts.y),
+        rotVal = twnr.getVal(time, opts.rot);
+
+    beachball.transform.scale(sclVal);
+    beachball.transform.rotate(rotVal);
+    beachball.transform.translate(xVal, yVal);
+    shading.transform.scale(sclVal);
+    // no rotation for the shadow
+    shading.transform.translate(xVal, yVal);
+  }
+
+  function drawBall()
+  {
+    this.gc.render(shadedBall);
+  }
+
+  ballGC = new Cango(cvsID);
+  ballGC.setWorldCoordsRHC(0, 0, 1200); // square pixels
+
+  ballData = svgToCgo2D(circle, -xRef, -yRef);
+  ball = new Shape(ballData, {fillColor:"ghostwhite"});
+
+  panelsData = svgToCgo2D(stripes, -xRef, -yRef);
+  panels = new Shape(panelsData, {fillColor:"red"});
+
+  shadows = sphereShading(dia),
+  shade = new Shape(shapeDefs.circle(dia), {fillColor:shadows.shadow});
+  ballHilite = new Shape(shapeDefs.circle(dia), {fillColor:shadows.hilite});
+
+  beachball = new Group(ball, panels);
+  shading = new Group(shade, ballHilite);
+  shadedBall = new Group(beachball, shading);   // draw shading after ball
+
+  ballGC.animation(initBall, drawBall, ballPathFn, ballConfig);
+}
 </pre>
 </div>
 
-<canvas id="cgJane" class="cvsEg" width="450" height="400"></canvas>
+<h4>Animation example using currState/nextState</h4>
+<p>In the animation of a bouncing ball shown below, the ball's position and velocity at each frame depends on its position and velocity at the last frame and the time since the last frame was drawn. Newton's laws of motion will dictate that the ball should continue to move according to its velocity vector, added to this is the acceleration due to gravity and nay collisions with the boundary walls. Saving the state vector in 'nextState' object means that it will be available as 'currState' when the pathFn is called for the next frame. The time a frame is drawn is always maintained in currState.time and the time at which the pathFn is called is passed as a parameter to the pathFn.</p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+    <div class="scrnBevel" >
+      <canvas id="bounce" width="600" height="400" style="background-color: lightyellow;"></canvas>
+    </div>  <!-- scrnBevel -->
+
+    <table class="btnHolder" cellspacing="0" cellpadding="0">
+      <tr align="center">
+        <td width="25%"><button type="button" onclick="consoleBtns3.f1()" class="button-link">RESTART</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns3.f2()" class="button-link">PAUSE</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns3.f3()" class="button-link">STEP</button></td>
+        <td width="25%"><button type="button" onclick="consoleBtns3.f4()" class="button-link">STOP</button></td>
+      </tr>
+    </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+</div> <!-- consoleHolder -->
+
+<p><br>Here is the source code for the animation shown above.</p>
+<div class="srcFmt">
+<pre>
+var bounceGC;           // Cango graphics context
+
+function bouncingBallDemo(cvsID)
+{
+  var shadows,
+      ball, shade, ballHilite,
+      ballGrp,
+      dia = 45,
+      startX = 120,
+      startY = 250;
+
+  function initBall(opts)
+  {
+    // create any properties you want in nextState, currState will be a clone
+    // don't write to currState its just there for reference to what is on the screen
+    this.nextState.x = startX;
+    this.nextState.y = startY;
+    this.nextState.vx = 0;
+    this.nextState.vy = 0;
+
+    ballGrp.transform.translate(this.nextState.x, this.nextState.y);
+  }
+
+  function drawBall(opts)
+  {
+    this.gc.render(ballGrp);
+  }
+
+  function bouncingPath(time, opts)    // time passed is the time since start of animation
+  {
+    // 'this' refers to the Animation object (this.gc, this.nextState etc)
+    // this.currState is available for reference to what is on the screen (don't write to it)
+    // after the frame is drawn in nextState, nextState and currState are swapped
+    var reflect = -1,     // bounce off wall else disappear
+        coeff = 0.82,     // percentage bounce height
+        friction = 0.985, // rolling friction loss/msec
+        speed = 1.5,      // units are like worldCoords x axis units/mm
+        gravity = -0.0098 * speed, // gravity =9.8m/s/s =0.0098mm/ms/ms =0.0098*speed units/ms/ms
+        xVel = 0,
+        yVel = 0,
+        x, y,
+        vel, startAngle, timeInt, s, u;
+
+    if (time == 0)   // generate random launch angle for each reset
+    {
+      // restart at 0.4 m/sec initial velocity and at a random angle
+      // velocity in 2m/s = 2 mm/ms = 2mm/ms * units/mm = 2*speed
+      vel = 2*speed;    // x units/ms
+      startAngle = 30+120*Math.random();
+      this.nextState.x = startX;           // put ball back at the start point
+      this.nextState.y = startY;
+      this.nextState.vx = vel * Math.cos(startAngle * Math.PI / 180);
+      this.nextState.vy = vel * Math.sin(startAngle * Math.PI / 180);
+
+      ballGrp.transform.translate(this.nextState.x, this.nextState.y);
+      return;     // this is the state to get drawn at start
+    }
+    // calculate the new position and velocity
+    timeInt = time - this.currState.time;   // time since last draw
+    // v = u + at
+    yVel = this.currState.vy + gravity * timeInt;    // accelerating due to gravity
+    xVel = this.currState.vx;                    // constant
+    x = this.currState.x + xVel*timeInt;
+    y = this.currState.y + yVel*timeInt + 0.5*gravity * timeInt * timeInt;
+      // now check for hitting the walls
+    if (x > opts.rightWall - opts.radius)
+    {
+      x = opts.rightWall - opts.radius;
+      xVel *= reflect*coeff;    // lossy reflection next step
+    }
+    if (x < opts.leftWall + opts.radius)
+    {
+      x = opts.leftWall + opts.radius;
+      xVel *= reflect*coeff;    // lossy reflection next step
+    }
+    if (y > opts.topWall - opts.radius)
+    {
+      y = opts.topWall - opts.radius;
+      yVel *= reflect*coeff;    // lossy reflection next step
+    }
+    if (y < opts.bottomWall + opts.radius)  // this is always true after yVel become small
+    {
+      y = opts.bottomWall + opts.radius;
+      // calc velocity at the floor   (v^2 = u^2 + 2*g*s)
+      s = this.currState.y - (opts.bottomWall + opts.radius);     // pre bounce
+      u = this.currState.vy;
+      yVel = -Math.sqrt(u*u - 2*gravity*s);
+      yVel *= reflect*coeff;  // lossy reflection next step
+      // after bouncing phase this is rolling friction
+      xVel *= friction;
+    }
+    this.nextState.x = x;
+    this.nextState.y = y;
+    this.nextState.vx = xVel;
+    this.nextState.vy = yVel;
+
+    ballGrp.transform.translate(this.nextState.x, this.nextState.y); // ball hasn't got this yet
+  }
+
+  shadows = sphereShading(dia, 255, 0, 0);
+
+  ball = new Shape(shapeDefs.circle(dia), {fillColor:shadows.base} );
+  shade = new Shape(shapeDefs.circle(dia), {fillColor:shadows.shadow});
+  ballHilite = new Shape(shapeDefs.circle(dia), {fillColor:shadows.hilite});
+  ballGrp = new Group(ball, shade, ballHilite);
+
+  bounceGC = new Cango(cvsID);
+  bounceGC.setWorldCoordsRHC();      // use raw pixels
+
+  bounceGC.animation(initBall, drawBall, bouncingPath, {radius:dia/2,
+                                                        leftWall:0,
+                                                        rightWall:bounceGC.rawWidth,
+                                                        topWall:bounceGC.rawHeight,
+                                                        bottomWall:0});
+}
+</pre>
+</div>
+
+<h3>Drag and Drop</h3>
+<p>Drag-n-drop capability can be enabled and disabled on any object or Group by <i>obj</i>.<b>enableDrag</b> and <i>obj</i>.<b>disableDrag</b> methods. The 'enableDrag' method takes as a parameters the callback functions that are to be run when mousedown, mousemove and mouseup events occur. The callbacks are passed the current cursor coordinates when called. They are executed in the scope of a <i>Drag2D</i> object which, for convenience, has various properties such as <b>grabCsrPos</b>, <b>dwgOrg</b>, <b>dwgOrgOfs</b>, <b>grabOfs</b> and so on, to assist in simple coding of event handlers. Enabling drag-n-drop on a Group recursively enables the drag-n-drop on all the group's children.</p>
+<p>Here is a simple example, which shows two Bezier curves with draggable control points.</p>
+
+<canvas id="cgDrag" class="cvsEg" width="450" height="300"></canvas>
 
 <div class="captionHolder" style="width: 450px">
-  <p class="caption"><b>Figure 4.</b> Image rotation and independent world coordinate rotation example.</p>
+  <p class="caption"><b>Figure 4.</b> Example of drag-n-drop, drag a red circle to edit the curve.</p>
 </div>  <!-- captionHolder -->
 
-<p>To re-render 'jane' translated to a new x,y position (20000,0), scaled by a factor of 1.3 and rotated by 50&deg;, the following command can be used:</p>
+<p>The code for the curve editor in Fig. 4 is shown below.</p>
 <div class="srcFmt">
 <pre>
-&lt;a href="" onclick="rotGC.render(jane, 20000, 0, 1.3, 50); return false">here&lt;/a>
+function editCurve(cvsID)
+{
+  var x1 = 40, y1 = 20,
+      cx1 = 90, cy1 = 120,
+      x2 = 120, y2 = 100,
+      cx2 = 130, cy2 = 20,
+      cx3 = 150, cy3 = 120,
+      x3 = 180, y3 = 60,
+      c1, c2, c3,
+      g = new Cango(cvsID);
+
+  function dragC1(mousePos)    // called in scope of dragNdrop obj
+  {
+    cx1 = mousePos.x;
+    cy1 = mousePos.y;
+    drawCurve();
+  }
+
+  function dragC2(mousePos)
+  {
+    cx2 = mousePos.x;
+    cy2 = mousePos.y;
+    drawCurve();
+  }
+
+  function dragC3(mousePos)
+  {
+    cx3 = mousePos.x;
+    cy3 = mousePos.y;
+    drawCurve();
+  }
+
+  function drawCurve()
+  {
+    var qbez, cbez,
+        grp,
+        L1, L2, L3;
+    // curve change shape so it must be re-constructed each time
+    // draw a quadratic bezier from x1,y2 to x2,y2
+    qbez = new Path(['M', x1, y1, 'Q', cx1, cy1, x2, y2], {
+      strokeColor:'blue'});
+    cbez = new Path(['M', x2, y2, 'C', cx2, cy2, cx3, cy3, x3, y3], {
+      strokeColor:'green'});
+    // show lines to control point
+    L1 = new Path(['M', x1, y1, 'L', cx1, cy1, x2, y2], {
+      strokeColor:"rgba(0, 0, 0, 0.2)",
+      dashed:[4]});   // semi-transparent gray
+    L2 = new Path(['M', x2, y2, 'L', cx2, cy2], {
+      strokeColor:"rgba(0, 0, 0, 0.2)",
+      dashed:[4]});
+    L3 = new Path(['M', x3, y3, 'L', cx3, cy3], {
+      strokeColor:"rgba(0, 0, 0, 0.2)",
+      dashed:[4]});
+    // draw draggable control points
+    c1.transform.translate(cx1, cy1);
+    c2.transform.translate(cx2, cy2);
+    c3.transform.translate(cx3, cy3);
+    grp = new Group(qbez, cbez, L1, L2, L3, c1, c2, c3);
+    g.render(grp, true);
+  }
+
+  g.clearCanvas("lightyellow");
+  g.deleteAllLayers();
+  g.setWorldCoordsRHC(0, 0, 200);
+
+  // draggable control points
+  c1 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+  c1.enableDrag(null, dragC1, null);
+
+  c2 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+  c2.enableDrag(null, dragC2, null);
+
+  c3 = new Shape(shapeDefs.circle(6), {fillColor:'red'});
+  c3.enableDrag(null, dragC3, null);
+
+  drawCurve();
+}
 </pre>
 </div>
-<p>Click <a href="" onclick="rotGC.render(jane, 20000, 0, 1.3, 50); return false">here</a> to see the effect.</p>
 
+<h4>Drag and Drop using Group2Ds</h4>
+<p>If a Group has drag-n-drop enabled all children will be tested for grab and drag events and all descendent objects from this Group will be dragged as a single unit. If a child Group (or object) has drag-n-drop enabled on it then the child's drag-n-drop handler will take precedence over the parent group handle.</p>
 
+<p>Figure 5 shows a simple example of drag-n-drop precedence. Three objects are all children of a Group which has drag-n-drop enabled to move the whole group around. The green objects don't have drag-n-drop enabled on them individually but the orange triangle does. Click and drag a green object will therefore move the whole group, but click and drag on the triangle will move it independently.</p>
+
+<canvas id="grpDrag" class="cvsEg" width="450" height="300"></canvas>
+
+<div class="captionHolder" style="width: 450px">
+  <p class="caption"><b>Figure 5.</b> Example of drag-n-drop Group precedence.</p>
+</div>  <!-- captionHolder -->
+
+<p>The code for Group drag example in Fig. 5 is shown below.</p>
+<div class="srcFmt">
+<pre>
+function groupDrag(cvsID)
+{
+  var groupAll = new Group(),
+      allX = 0, allY = 0,
+      triX = 0, triY = 0,
+      box = new Shape(shapeDefs.rectangle(40, 90), {fillColor: "green",border:true}),
+      sqr = new Shape(shapeDefs.square(70), {fillColor: "green",border:true}),
+      tri = new Shape(shapeDefs.triangle(70), {fillColor:"orange",border:true}),
+      g = new Cango(cvsID);
+
+  var drawIt = function()
+  {
+    groupAll.transform.translate(allX, allY);
+    tri.transform.translate(triX, triY);
+
+    g.render(groupAll, true);  // true = clear canvas
+  };
+
+  var dragRoot = function(mousePos)
+  {
+    // grabOfs is the distance the mouse is from the drawing origin of the target
+    allX = mousePos.x - this.grabOfs.x;
+    allY = mousePos.y - this.grabOfs.y;
+
+    drawIt();
+  };
+
+  var dragObj = function(mousePos)
+  {
+    triX = mousePos.x - this.grabOfs.x;
+    triY = mousePos.y - this.grabOfs.y;
+
+    drawIt();
+  };
+
+  g.clearCanvas();
+  g.setWorldCoordsRHC(-100, -100, 400);
+  // arrange objects
+  sqr.translate(70, 70);
+  tri.translate(0, -50);       // drag-n-drop doesn't know about hard transforms !!!! FIX THIS
+  groupAll.addObj(box, sqr, tri);
+
+  tri.enableDrag(null, dragObj, null);
+  groupAll.enableDrag(null, dragRoot, null);
+
+  drawIt();
+}
+</pre>
+</div>
+
+<h3>Further details</h3>
+<p>The <a href="CangoUserGuide.html">Cango User Guide</a> the provides detailed reference for all the Cango methods and utilities. Examining the source code of the <a href="FilterDesign.html">Filter&nbsp;Design</a>, <a href="ArmstrongPattern.html">Armstrong&nbsp;Pattern</a>, <a href="ThreadDrawing.html">Screw&nbsp;Thread&nbsp;Drawing</a>, <a href="SpectrumAnalyser.html">Spectrum&nbsp;Analyser</a>, <a href="ZoomFFT.html">Zoom&nbsp;FFT</a>, <a href="GearDrawing.html">Gear&nbsp;Drawing</a>, <a href="Flintlock.html">Flintlock</a> and <a href="Wheellock.html">Wheellock</a> pages will give numerous examples of Cango in use.</p>
 
         </div>  <!-- text_01 -->
       </div>   <!--  content -->
@@ -655,4 +1416,6 @@ function drawHullo(cvsID)     // canvas ID passed as a string
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/CanvasGraphics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:05 GMT -->
 </html>

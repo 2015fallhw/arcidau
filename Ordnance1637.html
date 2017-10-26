@@ -1,16 +1,18 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/Ordnance1637.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:30 GMT -->
 <head>
   <title>Royal Ordnance 1637</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="ordnance, cannon, Charles I, Royal Armoury Inventory, 17th century weapons" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "ordnance-04.css";
-    @import "horizontalMenu-09.css";
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="horizontalMenu-09.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="ordnance-05.css" media="all" type="text/css" />
 
+  <style type="text/css" media="screen">
     .horizMenuRgt    /* style for a div inside the target element */
     {
       position: absolute;
@@ -60,9 +62,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -78,111 +77,10 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
   <script type="text/javascript">
     var pages = {
@@ -241,14 +139,12 @@
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -803,7 +699,7 @@ for Cannon of 7 Inches //<sup>___</sup></td>
         <tr>
           <td></td>
           <td><br /></td>
-          <td style="padding-left: 10px; height:42px"><br />for d[emi] Culverinys //<sup>_____</sup></td>
+          <td style="padding-left: 10px; height:42px"><br />for d[emi] Culverinys //<sup>___</sup></td>
 
           <td style="text-align: center"><br />&nbsp;48985</td>
           <td style="text-align: center"><br />&nbsp;153663</td>
@@ -1170,7 +1066,7 @@ for Cannon of 7 Inches //<sup>___</sup></td>
         <tr>
           <td></td>
           <td></td>
-          <td style="padding-left: 10px; height:55px">Fare carts complete <sup>_</sup></td>
+          <td style="padding-left: 10px; height:55px">Fare carts complete <sup>__</sup></td>
           <td style="text-align: center">29</td>
           <td style="text-align: center">50</td>
           <td style="text-align: center">21</td>
@@ -1193,7 +1089,7 @@ shode wheeles //<sup>___</sup></td>
         <tr>
           <td></td>
           <td><br /></td>
-          <td style="padding-left: 10px; height:55px">Extras for field cann[on] //<sup>_____</sup></td>
+          <td style="padding-left: 10px; height:55px">Extras for field cann[on] //<sup>_</sup></td>
           <td style="text-align: center">53</td>
           <td style="text-align: center">248</td>
           <td style="text-align: center">195</td>
@@ -1203,7 +1099,7 @@ shode wheeles //<sup>___</sup></td>
         <tr>
           <td></td>
           <td><br /></td>
-          <td style="padding-left: 10px; height:60px">Fare carriages complete //<sup>____</sup></td>
+          <td style="padding-left: 10px; height:60px">Fare carriages complete <sup>_</sup></td>
 
           <td style="text-align: center">8</td>
           <td style="text-align: center">20</td>
@@ -1224,7 +1120,7 @@ shode wheeles //<sup>___</sup></td>
         <tr>
           <td></td>
           <td><br /></td>
-          <td style="padding: 0 10px 0 10px; height: 16px">Tumbrells //<sup>________</sup></td>
+          <td style="padding: 0 10px 0 10px; height: 16px">Tumbrells //<sup>____________</sup></td>
           <td style="padding: 0;text-align: center">n[i]l</td>
           <td style="padding: 0;text-align: center">20</td>
           <td style="padding: 0;text-align: center">20</td>
@@ -1274,7 +1170,7 @@ shode wheeles //<sup>___</sup></td>
         <tr>
           <td></td>
           <td><br /></td>
-          <td style="padding-left: 10px; height:50px">Vruggs for ordn[a]nce //<sup>_____</sup></td>
+          <td style="padding-left: 10px; height:50px">Vruggs for ordn[a]nce //<sup>___</sup></td>
           <td style="text-align: center">2</td>
           <td style="text-align: center">12</td>
           <td style="text-align: center">10</td>
@@ -1548,4 +1444,6 @@ shode wheeles //<sup>___</sup></td>
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/Ordnance1637.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:50 GMT -->
 </html>

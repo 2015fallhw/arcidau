@@ -1,0 +1,564 @@
+<!DOCTYPE HTML>
+<html>
+
+<!-- Mirrored from www.arc.id.au/Wheellock.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:18 GMT -->
+<head>
+  <title>Animated Wheellock Mechanism</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="wheellock animation, wheellock description, canvas animation wheellock, wheellock pistol animation, wheellock mechanism" />
+
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+
+<style type="text/css" media="screen">
+    #wheellockImg {
+      float: right;
+      display: inline;  /* IE6 hack to fix double margin bug */
+      width: 42em;
+      margin: 1em 2em 1em 1em;
+    }
+
+    #wheellockImg img {
+      width: 100%;
+      padding: 0.5em;
+      border: 1px solid #404040;
+    }
+
+    #cvsUpper, #cvsLower {
+      position: relative;
+   /*   width: 600px;
+      height: 300px;*/
+      text-align: center;  /* this will center console if it has display:inline-block */
+      background-color: #aabdd3;
+    }
+
+  </style>
+
+  <script type="text/javascript">
+    if (typeof addLoadEvent === "undefined")
+    {
+      var addLoadEvent = function(func)
+      {
+      	var oldonload = window.onload;
+      	if (typeof window.onload != 'function')
+        {
+          window.onload = func;
+        }
+      	else
+        {
+        	window.onload = function(){oldonload();	func();}
+        }
+      }
+    }
+  </script>
+
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="wheellockParts-3v00.js"></script>
+
+  <script type="text/javascript">
+    function enableBtn(btnId)
+    {
+      var btn = document.getElementById(btnId);
+      btn.disabled = false;
+    }
+
+    function disableBtn(btnId)
+    {
+      var btn = document.getElementById(btnId);
+      btn.disabled = true;
+    }
+
+    function bender(obj, deg)
+    {
+      var A = deg*Math.PI/180,
+          bentGrp;
+
+      function bendObj2D(cobj)
+      {
+        var newCmdsAry,
+            o = cobj.dup(),  // make a copy, to return - original is unbent;
+            dCmds,  
+            max;
+
+        dCmds = cgo2DToDrawCmds(cobj.cmdsAry);  // works for Path2D or DrawCmds
+        // calc the distance to the furthest node, it will rotate the full 'deg'
+        max = dCmds.reduce(function(acc, currCmd){
+          currCmd.parmsWC.forEach(function(coord){
+            var d = Math.sqrt(coord[0]*coord[0] + coord[1]*coord[1]);
+            if (d > acc)
+            {
+              acc = d;
+            }
+          });
+          return acc;
+        }, 0);
+        // calc the fraction of object length to each node and rotate it by that fraction of 'deg'
+        dCmds.forEach(function(cmd){
+          cmd.parmsWC = cmd.parmsWC.map(function(p){
+            var r = Math.sqrt(p[0]*p[0] + p[1]*p[1]), // distance of p from dwg org
+                fracA = A*r/(max),                    // fraction of angle is fraction of node distance from dwg org
+                sinA = Math.sin(-fracA),
+                cosA = Math.cos(-fracA);
+            return [p[0]*cosA + p[1]*sinA, -p[0]*sinA + p[1]*cosA];  // rotate each node by some fraction of total angle
+          });
+        });
+         
+        if (false /* fullPath2Dsupport */)
+        {
+          newCmdsAry = drawCmdsToCgo2D(dCmds);
+          o.pthCmds.p2dWC = new Path2D(newCmdsAry.join(" "));
+        }
+        else
+        {
+          o.drawCmds.length = 0;
+          dCmds.forEach(function(dc){
+            o.drawCmds.push(dc);
+          });
+        } 
+
+        return o;
+      }
+
+      if (obj.type === "GRP")
+      {
+        bentGrp = new Group();
+        obj.children.forEach(function(ch){
+          bentGrp.addObj(bendObj2D(ch));
+        });
+        return bentGrp;
+      }
+      else
+      {
+        return bendObj2D(obj);
+      }
+    }
+
+    function WheellockDemo(cvsU, cvsL)
+    {
+      "use strict"
+      var innerGCL0, innerGCL1, innerGCL2, innerGCL3,
+          outerGCL0, outerGCL1,
+          // Lock components (Cango groups)
+          cockObj,
+          triggerSect,
+          searMainSect, searSmlSect,
+          bentSearSpringUpper, bentSearSpringLower,
+          searSpringUpper, searSpringLower, innerGrp0,
+
+          panInner,
+          plateObj,
+
+          mainSear, smallSear,
+          chainObj,
+          mainSpringObj,
+          bentMainSpring,
+          panCvr, panCvrArm, innerGrp2,
+
+          // draw outside in lower canvas
+          plateOutside,
+          panCvrOutside,
+          cockOutside,
+          cockSpringObj,
+          wheelOutside, outerGrp0,
+
+  				wheel,
+          bridle,
+          screwsInner, screwsOuter,
+          triggerSectLinesCocked, triggerSectLinesFired;
+
+			var twnr = new Tweener(0, 8000);
+      /* Timing (msec)
+         0-40 trigger, 40-500 fire, 500-2500 load, 2500-4500 span, 4500-6000 close pan cover, 6000-8000 swing cock
+         Timing (%)
+          0.5%           6.25%         31.25%          56.25%             75%                       100%  */
+      var innerData = {
+    	  cockRot:      [2, 2,   -2,    -2,   120, 120,  2],
+        cockRotTimes: [ 0, 0.5, 1.25, 6.25, 31.25,  75, 100],
+        mainSpringBend: [-12.5, -12.5,  -9,    0,     0,    -6, -12.5],
+        mainSpringTimes:[    0,   0.5, 3.1, 6.25, 31.25, 43.46, 56.25],
+        chainCamRot:    [230, 230, 60,  -35,   -35,    60,   230],
+        chainCamTimes:  [  0, 0.5, 4.1, 6.25, 31.25, 43.75, 56.25],
+        chainSeg1Rot: [-150, -150, -150, -150,  -115, -34,    -34,   -90,  -127, -150,  -150],
+        chainSeg2Rot: [ -95, -95,   -65,   -8,     5,   0,      0,     5,    -5,  -45,   -95],
+        chainSeg3Rot: [ -20, -20,     0,    0,     0,   0,      0,     0,     0,    0,   -20],
+        chainTimes:   [   0, 0.5,  1.56,  3.1,  4.69, 6.25,  31.25, 37.5, 43.46,   50, 56.25],
+        panCvrMove:   [0,   0, -30, -30,  -30,     0],
+        panCvrArmRot: [0,   0,  20,  20,   20,     0],
+        panCvrTimes:  [0, 0.5,   1, 3.1, 62.5, 68.75],
+        searMoveX:    [0,  11,   11,     0],
+        searMoveY:    [0,  -1.2,    -1.2,     0],
+        searTimes:    [0, 0.5, 55.75, 56.25],
+        searMainRot:       [0,  4.5,   4.5,     0],
+        searSmlRot:        [0,   20,    20,     0],
+        searSpringUprBend: [0, -5.5,  -5.5,     0],
+        searSpringLwrBend: [0,    6,     6,     0],
+        searTimes:         [0,  0.5, 55.75, 56.25]
+      };
+
+      var outerData = {
+    	  cockRot:      [-2, -2,   2,    2,  -120, -120,  -2],
+        cockRotTimes: innerData.cockRotTimes,
+        cockSpringRot:   [-1, -1, -1.5, -1.5,  1.2, 0.2,     0,   0, 0.6,  1,  -1],
+        cockSpringTimes: [ 0, 0.5, 1.25, 6.25,   15,  23, 31.25,  75,  85, 95, 100],
+        panCvrMove:   [0, 0, 30,   30,   30,      0],
+        panCvrTimes:  innerData.panCvrTimes,
+        wheelOuterRot: [-230, -230, -60, 35, 35,  -60, -230],
+        wheelRotTimes: innerData.chainCamTimes
+      };
+
+      // construct all component objects for inside view
+      cockObj = makeCock();
+      panInner = makePan();
+      plateObj = makePlate();
+      mainSear = makeMainSear();
+      smallSear = makeSmallSear();
+      mainSpringObj = makeMainSpring();
+      chainObj = makeChain();
+      panCvr = makePanCvr();
+      panCvrArm = makePanCvrArm();
+      bridle = makeBridle();
+      screwsInner = makeInnerScrews();
+      triggerSect = makeTriggerSect();
+      triggerSectLinesCocked = makeSectLinesCocked();
+      triggerSectLinesFired = makeSectLinesFired();
+      searMainSect = makeSearMainSect();
+      searSmlSect = makeSearSmlSect();
+      searSpringUpper = makeSearSpringUpper();
+      searSpringLower = makeSearSpringLower();
+
+      function initInnerGrp0(opts)
+      {
+        cockObj.transform.rotate(2);
+        cockObj.transform.translate(cockCxOfs, cockCyOfs);
+        triggerSect.addObj(triggerSectLinesCocked);
+        searMainSect.transform.translate(searMainCxOfs, searMainCyOfs);
+        searSmlSect.transform.translate(searSmlCxOfs, searSmlCyOfs);
+        searSpringUpper.transform.translate(searSpringCxOfs, searSpringCyOfs);
+        searSpringLower.transform.translate(searSpringCxOfs, searSpringCyOfs);
+      }
+
+      function drawInnerGrp0(opts)
+      {
+        this.gc.render(innerGrp0);
+      }
+
+      function pathInnerGrp0(time, opts)
+      {
+        var cockRotVal = twnr.getVal(time, opts.cockRot, opts.cockRotTimes);
+        var searMainRotVal = twnr.getVal(time, opts.searMainRot, opts.searTimes);
+        var searSmlRotVal = twnr.getVal(time, opts.searSmlRot, opts.searTimes);
+        var searSpringUprBendVal = twnr.getVal(time, opts.searSpringUprBend, opts.searTimes);
+        var searSpringLwrBendVal = twnr.getVal(time, opts.searSpringLwrBend, opts.searTimes);
+
+        cockObj.transform.translate(cockCxOfs, cockCyOfs);
+        cockObj.transform.rotate(cockRotVal);
+        // if 0<time<200 or 4500<time<8000 then show cocked wheel else show fired wheel
+        if ((time < 200) || (time > 4500))
+        {
+          // check that we are showing the cocked image
+          if (triggerSect.children.indexOf(triggerSectLinesCocked) === -1)
+          {
+            triggerSect.deleteObj(triggerSectLinesFired);
+            triggerSect.addObj(triggerSectLinesCocked);
+          }
+        }
+        else
+        {
+          // check that we are showing the fired image
+          if (triggerSect.children.indexOf(triggerSectLinesFired) === -1)
+          {
+            triggerSect.deleteObj(triggerSectLinesCocked);
+            triggerSect.addObj(triggerSectLinesFired);
+          }
+        }
+        searMainSect.transform.rotate(searMainRotVal);
+        searMainSect.transform.translate(searMainCxOfs, searMainCyOfs);
+        searSmlSect.transform.rotate(searSmlRotVal);
+        searSmlSect.transform.translate(searSmlCxOfs, searSmlCyOfs);
+        innerGrp0.children[5] = bender(searSpringUpper, searSpringUprBendVal);
+        innerGrp0.children[5].transform.translate(searSpringCxOfs, searSpringCyOfs);
+        innerGrp0.children[6] = bender(searSpringLower, searSpringLwrBendVal);
+        innerGrp0.children[6].transform.translate(searSpringCxOfs, searSpringCyOfs);
+      }
+
+      function initInnerGrp2(opts)
+      {
+        seg1.transform.rotate(-150);                       // make default position cocked
+        seg1.transform.translate(link1CxOfs, link1CyOfs);  // link 1 is offset from cam center
+        seg2.transform.rotate(-95);                        // make default position cocked
+        seg2.transform.translate(linkCtrOfsX, 0);
+        seg3.transform.rotate(-20);                        // make default position cocked
+        seg3.transform.translate(linkCtrOfsX, 0);
+        chainObj.transform.rotate(230);
+        chainObj.transform.translate(wheelCxOfs, wheelCyOfs);
+        innerGrp2.children[3] = bender(mainSpringObj, -12.5);
+        innerGrp2.children[3].transform.translate(mainSpringCxOfs, mainSpringCyOfs);  // move to correct place
+        panCvrArm.transform.rotate(0);
+        panCvrArm.transform.translate(panCvrArmCxOfs, panCvrArmCyOfs);
+      }
+
+      function drawInnerGrp2(opts)
+      {
+        this.gc.render(innerGrp2);
+      }
+
+      function pathInnerGrp2(time, opts)
+      {
+        var searMoveXVal = twnr.getVal(time, opts.searMoveX, opts.searTimes),
+            searMoveYVal = twnr.getVal(time, opts.searMoveY, opts.searTimes);
+        var chainCamVal = twnr.getVal(time, opts.chainCamRot, opts.chainCamTimes),
+            chainSeg1Val = twnr.getVal(time, opts.chainSeg1Rot, opts.chainTimes),
+            chainSeg2Val = twnr.getVal(time, opts.chainSeg2Rot, opts.chainTimes),
+            chainSeg3Val = twnr.getVal(time, opts.chainSeg3Rot, opts.chainTimes);
+        var mainSpringBendVal = twnr.getVal(time, opts.mainSpringBend, opts.mainSpringTimes);
+        var panCvrArmVal = twnr.getVal(time, opts.panCvrArmRot, opts.panCvrTimes);
+        var panCvrVal = twnr.getVal(time, opts.panCvrMove, opts.panCvrTimes);
+
+        smallSear.transform.translate(searMoveXVal, searMoveYVal);
+        chainObj.transform.rotate(chainCamVal);
+        chainObj.transform.translate(wheelCxOfs, wheelCyOfs);
+        seg1.transform.rotate(chainSeg1Val);
+        seg1.transform.translate(link1CxOfs, link1CyOfs);   // link 1 is offset from cam center
+        seg2.transform.rotate(chainSeg2Val);
+        seg2.transform.translate(linkCtrOfsX, 0);
+        seg3.transform.rotate(chainSeg3Val);
+        seg3.transform.translate(linkCtrOfsX, 0);
+        innerGrp2.children[3] = bender(mainSpringObj, mainSpringBendVal);
+        innerGrp2.children[3].transform.translate(mainSpringCxOfs, mainSpringCyOfs);
+        panCvrArm.transform.rotate(panCvrArmVal);
+        panCvrArm.transform.translate(panCvrArmCxOfs, panCvrArmCyOfs);
+        panCvr.transform.translate(panCvrOrgXOfs+panCvrVal, panCvrOrgYOfs);
+      }
+
+      // Upper display
+      innerGCL0 = new Cango(cvsU);                     // layer for the cock and fizzen
+      innerGCL0.setWorldCoordsRHC(-350, -80, 700);         // square pixels origin in center of canvas
+      innerGCL1 = new Cango(innerGCL0.createLayer());  // layer for the plate
+      innerGCL1.dupCtx(innerGCL0);
+      innerGCL2 = new Cango(innerGCL0.createLayer());  // layer for main spring and sear
+      innerGCL2.dupCtx(innerGCL0);
+      innerGCL3 = new Cango(innerGCL0.createLayer());  // layer for bridle ansd screws overlay
+      innerGCL3.dupCtx(innerGCL0);
+
+      innerGrp0 = new Group(panInner, cockObj, triggerSect, searMainSect, searSmlSect, searSpringUpper, searSpringLower);
+      innerGrp2 = new Group(smallSear, mainSear, chainObj, mainSpringObj, panCvrArm, panCvr);
+
+      innerGCL0.animation(initInnerGrp0, drawInnerGrp0, pathInnerGrp0, innerData);
+      innerGCL1.render(plateObj);
+      innerGCL2.animation(initInnerGrp2, drawInnerGrp2, pathInnerGrp2, innerData);
+      innerGCL3.render(screwsInner);
+      innerGCL3.render(bridle);
+
+//===========================================================================
+// Lower display
+//===========================================================================
+      // construct all the component objects for the outside view
+      plateOutside = makePlateOutside();
+      cockOutside = makeCockOutside();
+      panCvrOutside = makePanCvrOutside();
+      cockSpringObj = makeCockSpring();
+      wheelOutside = makeWheel();
+      screwsOuter = makeOuterScrews();
+
+      function initOuterGrp0(opts)
+      {
+  			cockOutside.transform.rotate(-2);
+        cockOutside.transform.translate(-cockCxOfs, cockCyOfs);
+  			cockSpringObj.transform.rotate(-1);
+        cockSpringObj.transform.translate(cockSpringCxOfs, cockSpringCyOfs);
+        wheelOutside.transform.rotate(-230);
+        wheelOutside.transform.translate(-wheelCxOfs, wheelCyOfs);
+      }
+
+      function drawOuterGrp0(opts)
+      {
+        this.gc.render(outerGrp0);
+      }
+
+      function pathOuterGrp0(time, opts)
+      {
+        var panCvrVal = twnr.getVal(time, opts.panCvrMove, opts.panCvrTimes);
+        var cockRotVal = twnr.getVal(time, opts.cockRot, opts.cockRotTimes);
+        var armRotVal = twnr.getVal(time, opts.cockSpringRot, opts.cockSpringTimes);
+        var wheelRotVal = twnr.getVal(time, opts.wheelOuterRot, opts.wheelRotTimes);
+
+        panCvrOutside.transform.translate(panCvrOrgXOfs+panCvrVal, panCvrOrgYOfs);
+        cockOutside.transform.translate(-cockCxOfs, cockCyOfs);
+        cockOutside.transform.rotate(cockRotVal);
+        cockSpringObj.transform.translate(cockSpringCxOfs, cockSpringCyOfs);
+        cockSpringObj.transform.rotate(armRotVal);
+        wheelOutside.transform.rotate(wheelRotVal);
+        wheelOutside.transform.translate(-wheelCxOfs, wheelCyOfs);
+      }
+
+      outerGCL0 = new Cango(cvsL);
+      outerGCL0.setWorldCoordsRHC(-350, -100, 700);
+      outerGCL1 = new Cango(outerGCL0.createLayer());  // layer for screws etc
+      outerGCL1.dupCtx(outerGCL0);
+
+      outerGrp0 = new Group(plateOutside, panCvrOutside, cockOutside, cockSpringObj, wheelOutside);
+
+      outerGCL0.animation(initOuterGrp0, drawOuterGrp0, pathOuterGrp0, outerData);
+      outerGCL1.render(screwsOuter);
+
+// ===============================================================================
+//      Timeline controls
+//================================================================================
+
+      this.fire_JS = function()
+  		{
+        innerGCL0.playAnimation(0, 500);   // play for 500 then pause
+        outerGCL0.playAnimation(0, 500);
+
+        disableBtn('cock');
+        disableBtn('fire');
+        setTimeout("enableBtn('load')", 500);
+      };
+
+      this.load_JS = function()
+      {
+        innerGCL0.playAnimation(500, 2500);    // resume from pause play until 2500
+        outerGCL0.playAnimation(500, 2500);
+
+        disableBtn('load');
+        disableBtn('fire');
+        setTimeout("enableBtn('cock')", 2000);
+
+      };
+
+      this.cock_JS = function()
+      {
+        innerGCL0.playAnimation(2500, 8000);      // resume from pause play until 8000
+        outerGCL0.playAnimation(2500, 8000);
+
+        disableBtn('load');
+        disableBtn('cock');
+        setTimeout("enableBtn('fire')", 5500);
+      };
+
+      this.pause_JS = function()
+      {
+        innerGCL0.pauseAnimation();
+        outerGCL0.pauseAnimation();
+      };
+
+      this.step_JS = function()
+      {
+        innerGCL0.stepAnimation();
+        outerGCL0.stepAnimation();
+      };
+
+      disableBtn('load');
+      disableBtn('cock');
+      enableBtn('fire');
+    }
+
+    var consoleBtns =
+    {
+      f1:function(){demo.load_JS()},
+      f2:function(){demo.cock_JS()},
+      f3:function(){demo.fire_JS()}
+    };
+  </script>
+
+  <script type="text/javascript">
+    addLoadEvent( function(){
+      buildMenu(indexData);
+
+      demo = new WheellockDemo('cvsUpper', 'cvsLower');
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="headerBkg"></div>
+  <div class="outer">
+    <div class="header">
+      <p class="banner" style="z-index:1">MISCELLANY</p>
+       <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
+      <div id="logoHolder" style="">
+        <p class="banner inverse">MISCELLANY</p>
+      </div>
+      <div id="logo">
+        <a class="logoText" href="index.html"><b>arc</b><br/><span style="font-size:14px">.id.au</span></a>
+      </div>
+    </div>
+
+    <div id="sideNavBkg"></div>
+    <div id="sideNav" class="sticky">
+      <!--
+            filled by 'buildMenu()'
+      -->
+    </div>      <!-- sideNav -->
+
+    <div id="page">
+      <div id="content">
+        <div class="h1Bkg"></div>
+        <h1>Animated Wheellock Mechanism</h1>
+        <div class="text_01">
+
+          <h2>17th Century wheellock</h2>
+          <p>This page shows a schematic drawing of a wheellock mechanism dating from the early 1600s. The various moving components have been animated to demonstrate how the wheellock mechanism works.</p>
+          <div id="wheellockImg">
+            <img src="Images/Suhl-Wheellock-2.jpg" alt="Wheellock Pistol" />
+          </div>
+
+<p>The photo on the right shoes the pistol to which the lock is fitted. The gun was manufactured in Suhl Germany in the early 17th century. It has a 14" barrel and the pistol is 22&frac12;" overall. It is a good example of a German military wheellock pistol of that period.</p>
+
+<h2 style="clear:right">Animated wheellock mechanism</h2>
+<p>The schematic drawing below shows the outside view of the wheellock mechanism in the lower section, the inside view in the upper section, The insert at the top shows an animated cross-section of the trigger mechanism whose action is in the plane perpendicular to the lock plate.</p>
+
+<p>The outside view of the lock shows the bracket fixing the cock and cock spring drawn semi-transparent so that the operation of the spring loaded cam at the base of the cock arm is clear. In the inside view the bridle supporting the wheel axle is also shown semi-transparent to expose the chain and cam operation.</p>
+          <p></p>
+
+<div class="consoleHolder">
+  <div class="console">
+    <div class="bezel">
+
+      <div class="scrnBevel">
+        <canvas id="cvsUpper" width="600" height="340"></canvas>
+        <canvas id="cvsLower" width="600" height="315"></canvas>
+      </div>  <!-- scrnBevel -->
+
+      <table class="btnHolder" cellspacing="0" cellpadding="0">
+        <tr align="center">
+          <td width="33%"><button type="button" onclick="consoleBtns.f1()" class="button-link" id="load">LOAD</button></td>
+          <td width="33%"><button type="button" onclick="consoleBtns.f2()" class="button-link" id="cock">SPAN</button></td>
+          <td width="33%"><button type="button" onclick="consoleBtns.f3()" class="button-link" id="fire">FIRE</button></td>
+        </tr>
+      </table>
+
+    </div>  <!-- bezel -->
+    <div style="clear: both;"></div>
+  </div> <!-- console -->
+</div>   <!-- consoleHolder -->
+
+
+          <h2>Wheellock firing sequence</h2>
+          <p>Once the gun is loaded with its powder charge and the ball is packed down on the charge with wadding, the sequence of events to fire the wheellock is as follows:</p>
+<h4>Span</h4>
+          <p>The cock (referred to as the 'dog' in earlier times) is rotated away from the wheel and is held in place by the cock spring pressing on its cam shaped heel. The pan cover is then slid back to expose the pan which has the sector of the wheel cutting through its base. The operator then engages his spanner onto the square section of the wheel axle, and 'spans' or rotates the wheel, winding up the chain which in turn tensions the mainspring. After winding about three quarters of a turn the blind hole in the wheel lines up with the nose of the sear which has been pressing against the wheel by force of one leaf of the sear spring. The sear pivots into this indentation locking the wheel. As it pivots the sear latch is pushed under the sear arm by the other leaf of the sear spring locking the sear in place which thus locks the wheel. The operator then removes the spanner from the wheel axle, this allows the main spring to apply considerable torque on the wheel.</p>
+
+<h4>Prime</h4>
+          <p>The pan is then primed with powder, and the pan cover slid shut. The cock is rotated back over the pan cover so that the iron pyrites in its jaws rests on the pan cover again under pressure from the cock spring on the outside of the plate.</p>
+
+<h4>Fire</h4>
+          <p>The pistol trigger is a spring loaded arm lying in front of the sear latch. On pulling the trigger, the sear latch is pushed away from the sear arm so it no longer holding it in the indentation in the wheel. The pressure of the sloping sides of the indentation against on the rounded nose of the sear arm pushes the sear nose back, leaving the wheel free to rapidly turn under the tension of the mainspring.</p>
+
+          <p>As soon as the wheel is released by the sear, the mainspring pulling on the chain wrapped around the cam on its axle rapidly rotates the cam and wheel. As the cam rotates its long lobe pushes against the pan cover arm. The movement of the pan cover arm pushes the pan cover back away from the pan. As the pan cover slides away the pyrites pressing down on it now falls onto the now rotating wheel, producing sparks. Since the section of the wheel where then pyrites touches is surrounded by the pan full of gunpowder, the powder ignites and the hot gas and radiant heat is transferred to the main charge in the breech of the barrel via the vent hole in the side of the pan. The main charge ignites and the gun discharges.</p>
+
+        </div>  <!-- text_01 -->
+      </div>   <!--  content -->
+    </div>  <!-- page  -->
+
+  </div>   <!-- outer -->
+
+</body>
+
+<!-- Mirrored from www.arc.id.au/Wheellock.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:18 GMT -->
+</html>

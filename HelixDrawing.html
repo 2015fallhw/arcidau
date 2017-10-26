@@ -1,20 +1,34 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/HelixDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:28 GMT -->
 <head>
   <title>Helix Drawing</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="Helix drawing, helix approximation, Bezier curve approximation to a helix, 3D helix drawing, 3D canvas drawing, javascript 3D graphics, 3D spiral, helical thread drawing" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+  
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -30,113 +44,15 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango3D-7v10.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+
+  <script type="text/javascript" src="Cango3D-8v00-min.js"></script>
   <script type="text/javascript" src="helixUtils-02.js"></script>
   <script type="text/javascript" src="sprintf.js"></script>
 
@@ -215,27 +131,27 @@
       'use strict'
       var g = new Cango3D(cvsID),
           hlxData = createHelix(100, 90, 4.75),
-          hlx = g.compilePath3D(hlxData, "brown", 3),
+          hlx = new Path3D(hlxData, {strokeColor:"brown", lineWidth:3}),
           axes = genAxes(200),
-          hlxNaxes = g.createGroup3D(hlx, axes);
+          hlxNaxes = new Group3D(hlx, axes);
 
       function genAxes(span)
       {
         var axis = [],
             lbl = [];
 
-        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'gray');     // X axis
-        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'gray');     // Y axis
-        axis[2] = g.compilePath3D(['M',0,0,0, 'L',2.2*span,0,0], 'gray'); // Z = copy X
+        axis[0] = new Path3D(['M',0,0,0, 'L',span,0,0], {strokeColor:'gray'});     // X axis
+        axis[1] = new Path3D(['M',0,0,0, 'L',0,span,0], {strokeColor:'gray'});     // Y axis
+        axis[2] = new Path3D(['M',0,0,0, 'L',2.2*span,0,0], {strokeColor:'gray'}); // Z = copy X
         axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
 
-        lbl[0] = g.compileText3D("X", "gray", 10, 500, 9);
+        lbl[0] = new Text3D("X", {strokeColor:"gray", fontSize:10, fontWeight:500, lorg:9});
         lbl[0].translate(span, 10, 0);
-        lbl[1] = g.compileText3D("Y", "gray", 10, 500, 9);
+        lbl[1] = new Text3D("Y", {strokeColor:"gray", fontSize:10, fontWeight:500, lorg:9});
         lbl[1].translate(span, 10, 0);       // draw on X axis
         lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
         lbl[1].rotate(0, 1, 0, 90);       // rotate to Y
-        lbl[2] = g.compileText3D("Z", "gray", 10, 500, 9);
+        lbl[2] = new Text3D("Z", {strokeColor:"gray", fontSize:10, fontWeight:500, lorg:9});
 
         lbl[2].rotate(0, 1, 0, 180);
         lbl[2].rotate(0, 0, 1, 90);
@@ -244,7 +160,7 @@
         lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
         lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
 
-        return  g.createGroup3D(axis, lbl);
+        return  new Group3D(axis, lbl);
       }
 
       hlxNaxes.rotate(100,20,30,-70);
@@ -299,25 +215,25 @@
         var axis = [],
             lbl = [];
 
-        axis[0] = g.compilePath3D(['M',-span/3,0,0, 'L',span,0,0], 'gray');      // X axis
-        axis[1] = g.compilePath3D(['M',0,-0.75*span,0, 'L',0,0.75*span,0], 'gray');    // Y axis
+        axis[0] = new Path3D(['M',-span/3,0,0, 'L',span,0,0], {strokeColor:'gray'});      // X axis
+        axis[1] = new Path3D(['M',0,-0.75*span,0, 'L',0,0.75*span,0], {strokeColor:'gray'});    // Y axis
 
-        lbl[0] = g.compileText3D("X", "gray", 10, 500, 9);
+        lbl[0] = new Text3D("X", {strokeColor:"gray", fontSize:10, fontWeight:500, lorg:9});
         lbl[0].translate(span, 10, 0);
-        lbl[1] = g.compileText3D("Y", "gray", 10, 500, 1);
+        lbl[1] = new Text3D("Y", {strokeColor:"gray", fontSize:10, fontWeight:500, lorg:1});
         lbl[1].translate(10, 0.75*span, 0);       // draw on X axis
 
-        return  g.createGroup3D(axis, lbl);
+        return  new Group3D(axis, lbl);
       }
 
       // draw the arc
       arcData = createArc(100, incAng),
-      arc = g.compilePath3D(arcData, "black", 1.5),
+      arc = new Path3D(arcData, {strokeColor:"black", lineWidth:1.5}),
       axes = genAxes(150),
-      arcNaxes = g.createGroup3D(arc, axes);
+      arcNaxes = new Group3D(arc, axes);
 
       // draw a red dot at each bezier control point
-      dot = g.compileShape3D(shapes3D.circle(6), 'red', 'red');
+      dot = new Shape3D(shapeDefs3D.circle(6), {fillColor:'red', backColor:'red'});
       cp[0] = dot.dup();
       cp[0].translate(b0.x, b0.y, b0.z);
       cp[1] = dot.dup();
@@ -329,28 +245,28 @@
       arcNaxes.addObj(cp);
 
       // label the nodes
-      lb[0] = g.compileText3D(" b0", "black", 9, 400, 1);
+      lb[0] = new Text3D(" b0", {strokeColor:"black", fontSize:9, fontWeight:400, lorg:1});
       lb[0].translate(b0.x, b0.y, b0.z);
-      lb[1] = g.compileText3D(" b1", "black", 9, 400, 4);
+      lb[1] = new Text3D(" b1", {strokeColor:"black", fontSize:9, fontWeight:400, lorg:4});
       lb[1].translate(b1.x, b1.y, b1.z);
-      lb[2] = g.compileText3D(" b2", "black", 9, 400, 4);
+      lb[2] = new Text3D(" b2", {strokeColor:"black", fontSize:9, fontWeight:400, lorg:4});
       lb[2].translate(b2.x, b2.y, b2.z);
-      lb[3] = g.compileText3D(" b3", "black", 9, 400, 7);
+      lb[3] = new Text3D(" b3", {strokeColor:"black", fontSize:9, fontWeight:400, lorg:7});
       lb[3].translate(b3.x, b3.y, b3.z);
       arcNaxes.addObj(lb);
 
       // draw tracks to the control pts
-      trk = g.compilePath3D(["M", b0.x, b0.y, b0.z, "L", b1.x, b1.y, b1.z, b2.x, b2.y, b2.z, b3.x, b3.y, b3.z], "blue");
+      trk = new Path3D(["M", b0.x, b0.y, b0.z, "L", b1.x, b1.y, b1.z, b2.x, b2.y, b2.z, b3.x, b3.y, b3.z], {strokeColor:"blue"});
       arcNaxes.addObj(trk);
 
       // draw angle
-      angle = g.compilePath3D(["M", 0, 0, 0, "L", b3.x, b3.y, b3.z], "magenta");
+      angle = new Path3D(["M", 0, 0, 0, "L", b3.x, b3.y, b3.z], {strokeColor:"magenta"});
       arcNaxes.addObj(angle);
       angData = svgToCgo3D(["M", 35, 0, "A", 35, 35, 0, 0, 1, 35*Math.cos(halfAng), 35*Math.sin(halfAng)]);
-      ang1 = g.compilePath3D(angData, "magenta");
+      ang1 = new Path3D(angData, {strokeColor:"magenta"});
       arcNaxes.addObj(ang1);
 
-      aLbl = g.compileText3D("\u03B1", "black", 10, 400, 5); // &alpha;
+      aLbl = new Text3D("\u03B1", {strokeColor:"black", fontSize:10, fontWeight:400, lorg:5}); // &alpha;
       aLbl.translate(20, 12, 0);
       arcNaxes.addObj(aLbl);
 
@@ -378,17 +294,17 @@
         var axis = [],
             lbl = [];
 
-        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'gray');      // X axis
-        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'gray');    // Y axis
-        axis[2] = g.compilePath3D(['M',0,0,0, 'L',1.3*span,0,0], 'gray');   // Z = copy X
+        axis[0] = new Path3D(['M',0,0,0, 'L',span,0,0], {strokeColor:'gray'});      // X axis
+        axis[1] = new Path3D(['M',0,0,0, 'L',0,span,0], {strokeColor:'gray'});    // Y axis
+        axis[2] = new Path3D(['M',0,0,0, 'L',1.3*span,0,0], {strokeColor:'gray'});   // Z = copy X
         axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
 
-        lbl[0] = g.compileText3D("X", "gray", 10, 300, 9);
+        lbl[0] = new Text3D("X", {strokeColor:"gray", fontSize:10, fontWeight:300, lorg:9});
         lbl[0].translate(span, 10, 0);
-        lbl[1] = g.compileText3D("Y", "gray", 10, 300, 9);
+        lbl[1] = new Text3D("Y", {strokeColor:"gray", fontSize:10, fontWeight:300, lorg:9});
         lbl[1].translate(span, 10, 0);       // draw on X axis
         lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
-        lbl[2] = g.compileText3D("Z", "gray", 10, 300, 9);
+        lbl[2] = new Text3D("Z", {strokeColor:"gray", fontSize:10, fontWeight:300, lorg:9});
 
         lbl[2].rotate(0, 1, 0, 180);
         lbl[2].rotate(0, 0, 1, 90);
@@ -397,15 +313,15 @@
         lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
         lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
 
-        return  g.createGroup3D(axis, lbl);
+        return  new Group3D(axis, lbl);
       }
 
       arc1Data = createHelicalArc(r, p, phi),
-      arc1 = g.compilePath3D(arc1Data, "black", 1),
+      arc1 = new Path3D(arc1Data, {strokeColor:"black"}),
       arc2 = arc1.dup();
       arc2.rotate(0, 0, 1, phi);
       arc2.translate(0, 0, p*phi/360);  // each 120deg segment rises 200
-      circ = g.compilePath3D(shapes3D.circle(400), 'gray', 1);
+      circ = new Path3D(shapeDefs3D.circle(400), {strokeColor:'gray'});
       axes = genAxes(400),
 
       b0 = {x:arc1.drawCmds[0].ep.x, y:arc1.drawCmds[0].ep.y, z:arc1.drawCmds[0].ep.z};
@@ -418,12 +334,12 @@
       b3d = {x:arc2.drawCmds[1].ep.x, y:arc2.drawCmds[1].ep.y, z:arc2.drawCmds[1].ep.z};
       m = {x:b2.x, y:b2.x*Math.tan(phiRad/2), z:b3.z};
 
-      ln1 = g.compilePath3D(['M',b0.x,b0.y,b0.z, 'L',b1.x,b1.y,b1.z, b2.x,b2.y,b2.z, b3.x,b3.y,b3.z, b0d.x,b0d.y,b0d.z, b1d.x,b1d.y,b1d.z, b2d.x,b2d.y,b2d.z, b3d.x,b3d.y,b3d.z], "blue", 1),
-      ln2 = g.compilePath3D(['M',b2.x,b2.y,b2.z, 'L',m.x,m.y,m.z, b1d.x,b1d.y,b1d.z], "gray", 1),
-      ln3 = g.compilePath3D(['M',b2.x,0,0, 'L',m.x,m.y,0, m.x,m.y,m.z, 'M', b2.x,b2.y,0, 'L',b2.x,b2.y,b2.z], "pink", 1),
+      ln1 = new Path3D(['M',b0.x,b0.y,b0.z, 'L',b1.x,b1.y,b1.z, b2.x,b2.y,b2.z, b3.x,b3.y,b3.z, b0d.x,b0d.y,b0d.z, b1d.x,b1d.y,b1d.z, b2d.x,b2d.y,b2d.z, b3d.x,b3d.y,b3d.z], {strokeColor:"blue"}),
+      ln2 = new Path3D(['M',b2.x,b2.y,b2.z, 'L',m.x,m.y,m.z, b1d.x,b1d.y,b1d.z], {strokeColor:"gray"}),
+      ln3 = new Path3D(['M',b2.x,0,0, 'L',m.x,m.y,0, m.x,m.y,m.z, 'M', b2.x,b2.y,0, 'L',b2.x,b2.y,b2.z], {strokeColor:"pink"}),
 
       // draw a red dot at each bezier control point
-      dot = g.compileShape3D(shapes3D.circle(10), 'red', 'red');
+      dot = new Shape3D(shapeDefs3D.circle(10), {fillColor:'red', backColor:'red'});
       dot.rotate(1,0,0, 90);
       cp[0] = dot.dup();
       cp[0].translate(b0.x, b0.y, b0.z);
@@ -441,32 +357,32 @@
       cp[6].translate(m.x, m.y, m.z);
 
       // label the nodes
-      lb[0] = g.compileText3D(" b0", "black", 9, 300, 1);
+      lb[0] = new Text3D(" b0", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:1});
       lb[0].rotate(1,0,0,90);
       lb[0].translate(b0.x, b0.y, b0.z);
-      lb[1] = g.compileText3D(" b1", "black", 9, 300, 4);
+      lb[1] = new Text3D(" b1", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:4});
       lb[1].rotate(1,0,0,90);
       lb[1].translate(b1.x, b1.y, b1.z);
-      lb[2] = g.compileText3D(" b2", "black", 9, 300, 4);
+      lb[2] = new Text3D(" b2", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:4});
       lb[2].rotate(1,0,0,90);
       lb[2].translate(b2.x, b2.y, b2.z);
-      lb[3] = g.compileText3D(" b3=b0'", "black", 9, 300, 7);
+      lb[3] = new Text3D(" b3=b0'", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:7});
       lb[3].rotate(1,0,0,90);
       lb[3].translate(b3.x, b3.y, b3.z);
-      lb[4] = g.compileText3D(" b1'", "black", 9, 300, 7);
+      lb[4] = new Text3D(" b1'", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:7});
       lb[4].rotate(1,0,0,90);
       lb[4].translate(b1d.x, b1d.y, b1d.z);
-      lb[5] = g.compileText3D("b2' ", "black", 9, 300, 3);
+      lb[5] = new Text3D("b2' ", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:3});
       lb[5].rotate(1,0,0,90);
       lb[5].translate(b2d.x, b2d.y, b2d.z);
-      lb[6] = g.compileText3D(" m", "black", 10, 300, 7);
+      lb[6] = new Text3D(" m", {strokeColor:"black", fontSize:9, fontWeight:300, lorg:7});
       lb[6].rotate(1,0,0,90);
       lb[6].translate(m.x, m.y, m.z);
-      lb[7] = g.compileText3D(" \u03B1p", "black", 10, 300, 7);
+      lb[7] = new Text3D(" \u03B1p", {strokeColor:"black", fontSize:10, fontWeight:300, lorg:7});
       lb[7].rotate(1,0,0,90);
       lb[7].translate(m.x, m.y, m.z/2);
 
-      hlxNaxes = g.createGroup3D(arc1, arc2, circ, cp, ln1, ln2, ln3, lb, axes);
+      hlxNaxes = new Group3D(arc1, arc2, circ, cp, ln1, ln2, ln3, lb, axes);
       hlxNaxes.rotate(200,20,30,-80);
       hlxNaxes.rotate(0,1,0,-10);
 
@@ -493,23 +409,23 @@
         var axis = [],
             lbl = [];
 
-        axis[0] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'red');      // X axis
-        axis[1] = g.compilePath3D(['M',0,0,0, 'L',0,span,0], 'green');     // Y axis
-        axis[2] = g.compilePath3D(['M',0,0,0, 'L',span,0,0], 'blue');      // copy X
+        axis[0] = new Path3D(['M',0,0,0, 'L',span,0,0], {strokeColor:'red'});      // X axis
+        axis[1] = new Path3D(['M',0,0,0, 'L',0,span,0], {strokeColor:'green'});     // Y axis
+        axis[2] = new Path3D(['M',0,0,0, 'L',span,0,0], {strokeColor:'blue'});      // copy X
         axis[2].rotate(0, 1, 0, -90);          // rotate to +Z
 
-        lbl[0] = g.compileText3D("X", "red", 10, 500, 9);
+        lbl[0] = new Text3D("X", {strokeColor:"red", fontSize:10, fontWeight:500, lorg:9});
         lbl[0].translate(span, 10, 0);
-        lbl[1] = g.compileText3D("Y", "green", 10, 500, 9);
+        lbl[1] = new Text3D("Y", {strokeColor:"green", fontSize:10, fontWeight:500, lorg:9});
         lbl[1].translate(span, 10, 0);       // draw on X axis
         lbl[1].rotate(0, 0, 1, 90);       // rotate to Y
         lbl[1].rotate(0, 1, 0, 90);       // rotate to Y
-        lbl[2] = g.compileText3D("Z", "blue", 10, 500, 9);
+        lbl[2] = new Text3D("Z", {strokeColor:"blue", fontSize:10, fontWeight:500, lorg:9});
         lbl[2].translate(span, 10, 0);       // draw on X axis
         lbl[2].rotate(1, 0, 0, -90);      // rotate to Z,X plane
         lbl[2].rotate(0, 1, 0, -90);      // rotate to Z axis
 
-        return  g.createGroup3D(axis, lbl);
+        return  new Group3D(axis, lbl);
       }
 
       this.newXrot = function()
@@ -520,7 +436,7 @@
         dxRot = sPos.xRot - savPos.xRot;
         savPos.xRot = sPos.xRot;
         hlxNaxes.rotate(1, 0, 0, dxRot);
-        g.renderFrame(hlxNaxes);
+        g.render(hlxNaxes);
       }
 
       this.newYrot = function()
@@ -531,7 +447,7 @@
         dyRot = sPos.yRot - savPos.yRot;
         savPos.yRot = sPos.yRot;
         hlxNaxes.rotate(0, 1, 0, dyRot);
-        g.renderFrame(hlxNaxes);
+        g.render(hlxNaxes);
       }
 
       this.newZrot = function ()
@@ -542,7 +458,7 @@
         dzRot = sPos.zRot - savPos.zRot;
         savPos.zRot = sPos.zRot;
         hlxNaxes.rotate(0, 0, 1, dzRot);
-        g.renderFrame(hlxNaxes);
+        g.render(hlxNaxes);
       }
 
       g.clearCanvas();
@@ -551,9 +467,9 @@
       g.setLightSource(-100, 100, 300);
 
       hlxData = createHelix(100, 70, 3.5);
-      hlx = g.compilePath3D(hlxData, "brown", 3);
+      hlx = new Path3D(hlxData, {strokeColor:"brown", lineWidth:3});
       axes = genAxes(250);
-      hlxNaxes = g.createGroup3D(hlx, axes);
+      hlxNaxes = new Group3D(hlx, axes);
 
       s1 = document.getElementById("slider-1");
       s2 = document.getElementById("slider-2");
@@ -563,7 +479,7 @@
       this.newYrot();
       this.newZrot();
       // draw the group in the start position
-      g.renderFrame(hlxNaxes);
+      g.render(hlxNaxes);
     }
 
     function helixArcErrors(r)
@@ -661,33 +577,24 @@
 
   </script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      styles: {".MathJax": { color: "#404040" }},
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
   <script type="text/javascript">
     var hlx;
 
     addLoadEvent( function(){
       buildMenu(indexData);
+
+      renderMathInElement(document.body);
+
       simpleHelix('cvs1');
       arcFit('cvs2');
       matchPlanes('cvs3');
       hlx = new Helix3D('cvs4');
       helixArcErrors(100);
-      enableStickyNav();
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -719,7 +626,7 @@
 
 <p>The advantage of using the Bézier curve approximation is that 3D Bézier curves may be projected onto a 2D surface by just projecting their control points. The 2D Bézier curve projection will still match the 2D projection of the helix. The computational effort required to do draw a projected helix is reduced to projecting just a few control points. The advantage of restricting the approximation to cubic Bézier curves rather than higher order Bézier curves, is that the HTML canvas element has native support for drawing 2D cubic Bézier curves given the coordinates of their control points.</p>
 
-<p>The derivation of the approximation is described and the JavaScript code examples are presented. All the example 3D coordinate transformations and projection to the 2D canvas are handled by the <i><b>Cango3D</b></i> graphics library.</p>
+<p>The derivation of the approximation is described and the JavaScript code examples are presented. All the example 3D coordinate transformations and projection to the 2D canvas are handled by the <a href="Canvas3DGraphics.html">Cango3D</a> graphics library.</p>
 
 <h3>Helix definition</h3>
 
@@ -730,19 +637,19 @@
 <p>The pitch of a helix is the vertical separation of points on the helix as it moves through 2π, a full circle in the x,y plane.</p>
 
 <p>A cylindrical helix may be described by the following parametric equations:</p>
-\begin{aligned}
+$$ \begin{aligned}
 x	&= r\cos(t)\\
 y	&= r\sin(t)\\
 z	&= pt, \quad\quad for \; t\; in \; [0,2\pi),
-\end{aligned}
+\end{aligned} $$
 
 <p>where the <b>radius</b> of the helix is \(r\) and the <b>pitch</b> \(= 2\pi p\).</p>
 
-<p>As the parameter \(t\) increases, the point \(( x(t), y(t), z(t) )\) traces a right-handed helix about the z-axis (in a right-handed coordinate system). Except for rotations, translations, and changes of scale, all right-handed helices are equivalent. The equivalent left-handed helix can be constructed by negate any one of the x, y or z components.</p>
+<p>As the parameter \(t\) increases, the point \(( x(t), y(t), z(t) )\) traces a right-handed helix about the z-axis (in a right-handed coordinate system). Except for rotations, translations, and changes of scale, all right-handed helices are equivalent. The equivalent left-handed helix can be constructed by negating any one of the x, y or z components.</p>
 
 <h2>Method of fitting Bézier curves to a circular helix</h2>
 
-<p>The method used to fit Bézier curves to the helix is based on the fact that all parts of the helix are self similar, any section of the curve which sweeps out an angle of &phi; may be rotated by &phi; and translated by &phi;*p and will lie along the curve of the helix. Hence only one cubic Bézier curve that forms a good approximation to a sector of the helix, needs to be described for the whole helix to be approximated with equal accuracy.</p>
+<p>The method used to fit Bézier curves to the helix is based on the fact that all parts of the helix are self similar, any section of the curve which sweeps out an angle of \( \phi \) may be rotated by \( \phi \) and translated by \( \phi p \) and will lie along the curve of the helix. Hence only one cubic Bézier curve that forms a good approximation to a sector of the helix, needs to be described for the whole helix to be approximated with equal accuracy.</p>
 
 <p>Since the projection of the circular helix onto the XY plane is always a circle, the x,y coordinates of the Bézier approximation will be those that approximate a 2D circle. The z coordinate of the nodes can then be raised to match the linear increase in the helical curve's z coordinate.</p>
 
@@ -771,12 +678,12 @@ $$  \begin{aligned}
 
 <p>The Bézier nodes must now be raised in the Z dimension to track the helix. The \(z\) coordinate of the start point \(b0\) and end point \(b3\) are set by the value helix pitch, and by symmetry \(b1_z = -b2_z\), hence</p>
 
-$$\begin{aligned}
-b3_z &= \alpha p\\
-b2_z &= b\\
-b1_z &= -b\\
-b0_z &= -b3_z
-\end{aligned}$$
+$$ \begin{aligned}
+    b3_z &= \alpha p\\
+    b2_z &= b\\
+    b1_z &= -b\\
+    b0_z &= -b3_z
+\end{aligned} $$
 
 <h4>Fitting a cubic Bézier curve to a circular helical arc</h4>
 
@@ -843,9 +750,9 @@ createHelicalArc = function(r, pitch, incAngle)
 <p>Given that we have the formula to generate the coordinates of the Bézier curve approximating a helical arc, the method of creating a helix with an arbitrary number of turns is as follows.</p>
 
 <ol>
-<li> Chose an arc length \(phi\) such that an integer number of arcs create the desired length helix. The code to generate the Bézier curve is valid for arc length less than 180&deg;. The smaller the arc the more accurate the approximation but the more segments need to draw the helix. A good compromise is to use an arc length between 90&deg and 120&deg;.</li>
+<li> Chose an arc included angle \(\phi\) such that an integer number of arcs create the desired length helix. The code to generate the Bézier curve is valid for arc angles less than 180&deg;. The smaller the arc the more accurate the approximation but the more segments needed to draw the helix. A good compromise is to use an arc length between 90&deg and 120&deg;.</li>
 
-<li>Calculate the helical arc given the radius, pitch and chosen included angle.</li>
+<li>Calculate the helical arc given the radius, pitch and included angle \(\phi\).</li>
 
 <li>Start constructing the array of Bézier curve segments approximating the helix with the initial arc.</li>
 
@@ -858,7 +765,7 @@ Append this to the array of Bézier curve segments defining the helix.</li>
 
 <h3>JavaScript code to draw a multi-turn helix</h3>
 
-<p>Here is the code implementing the construction technique, the code use the Cango3D library to provide 3D curve manipulation methods. The object returned is suitable for rendering using the Cango3D <i>render</i> method. Note the helix color and line width are hard coded for simplicity (set as 'brown' and '3' pixels).</p>
+<p>Here is the code implementing the construction technique, the code use the Cango3D library to provide 3D curve manipulation methods. The object returned is suitable for rendering using the Cango3D <i>render</i> method.</p>
 
 <div class="srcFmt">
 <pre>
@@ -934,7 +841,7 @@ createHelix = function(r, pitch, turns)
 </div>
 
 <h3>Interactive 3D helix example</h3>
-<p>Here is a 3D drawing using the code presented above the helix may be rotated about any of the 3 axes using the 3 sliders.</p>
+<p>Here is a 3D drawing using the code presented above the helix may be rotated about any of the 3 axes using the 3 sliders.  Note: The helix color has been set as 'brown' and line width as 3 pixels).</p>
 
 <div class="consoleHolder">
   <div class="console">
@@ -1038,7 +945,7 @@ createHelix = function(r, pitch, turns)
 <h4>References:</h4>
 <ol style="font-size: 11px">
   <li>A. Ri&scaron;kus, "Approximation of a Cubic Bézier Curve by Circular Arcs and Vice Versa", <i>Information Technology and Control</i>, 2006</li>
-  <li>Wikipedia article, <a href="http://en.wikipedia.org/wiki/B%C3%A9zier_spline"><i>Bézier spline</i></a></li>
+  <li>Wikipedia article, <a href="https://en.wikipedia.org/wiki/Composite_Bézier_curve"><i>Bézier spline</i></a></li>
   <li>I. Juh&aacute;sz, "Approximating the helix with rational cubic Bézier curves" <i>Computer-Aided Design</i>, 1995.</li>
 </ol>
 
@@ -1049,4 +956,6 @@ createHelix = function(r, pitch, turns)
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/HelixDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:29 GMT -->
 </html>

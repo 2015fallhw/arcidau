@@ -1,16 +1,18 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/SonarRayTracing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:16 GMT -->
 <head>
   <title>Sonar Ray Tracing</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="sonar, ray tracing, underwater acoustics, underwater sound, sound propagation, convergence zone, shadow zone" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
-    @import "frontPanel-19.css";
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="frontPanel-19.css" media="all" type="text/css" />
 
+<style type="text/css" media="screen">
     .led {
       float: left;
       width: 7em;
@@ -61,9 +63,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -79,116 +78,15 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
   <script type="text/javascript" src="hpKnob-27.js"></script>
-  <script type="text/javascript" src="BathyGraphics-3v05.js"></script>
+  <script type="text/javascript" src="BathyGraphics-6v00.js"></script>
   <script type="text/javascript" src="bathyMonthlyAvg15x15-03.js"></script>
 
   <script type="text/javascript">
@@ -483,14 +381,11 @@
 
       // plot contexts
       tmpGC = new Cango("tmpCvs");
-      tmpGC.setGridboxSVG();
-      tmpGC.setGridboxSVG(21, tmpGC.heightPW-16, 72, tmpGC.heightPW-20);
+      tmpGC.gridboxPadding(21, 4, 7, 16);
       spdGC = new Cango("spdCvs");
-      spdGC.setGridboxSVG();
-      spdGC.setGridboxSVG(21, spdGC.heightPW-16, 72, spdGC.heightPW-20);
+      spdGC.gridboxPadding(21, 4, 7, 16);
       rayGC = new Cango("rayCvs");
-      rayGC.setGridboxSVG();
-      rayGC.setGridboxSVG(10, rayGC.heightPW-8, 87, rayGC.heightPW-11);
+      rayGC.gridboxPadding(10, 3, 3, 8);
 
       // readouts
       depRO1 = document.getElementById("depScale1");
@@ -611,20 +506,17 @@
 
   <script type="text/javascript">
     addLoadEvent( function(){
+      buildMenu(indexData);
 
       knob = new Knob("knob1", rgpHandler);
       init();
       pageCallbacks[2]();
-
-      buildMenu(indexData);
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -817,7 +709,7 @@
   <p>The water temperature profile varies with geographic location and season, it varies significantly over small changes in depth but is reasonably uniform over large distances horizontally. Although the bathy data is presented here on a 15&deg; &times; 15&deg; grid, each bathy represents the conditions only at the center of the grid square. The Haley Centre<sup>[2]</sup> that has been used is available on a 1&deg; grid and only the center 1&deg; data has been downloaded for this utility. The ARGO project aims to achieve about 3&deg; of latitude resolution. So these data can be expected to behave as if averaged over an area with a charateristic dimension of more than 3&deg; (more than 300&nbsp;km). The data has also been averaged in time, the shortest averaging time of one month has been chosen to preserve the seasonal variations. The data's vertical resolution is of the order of 1&nbsp;m.</p>
 
 <h3>ARGO ocean monitoring project</h3>
-<p>The bathy data comes from the <a href="http://www.argo.net/">ARGO</a><sup>[1]</sup> system of autonomous drifting buoys. There are more than 3000 of the buoys deployed around the oceans of the world, drifting 1&nbsp;km below the surface, every 10 days they wake up and sample the physical ocean parameters in the water column. Their data are collected and analysed on a monthly basis and the water property profiles on a 1&deg; grid spacing are made available at <a href="http://hadobs.metoffice.com/en4/download-en4-0-2.html">Hadley Center of the UK Met Office</a><sup>[2]</sup>. The water temperature profile at the center of each square of a worldwide 15&deg; grid has been extracted and used in the ray trace utility. Four sets of data from the months of January, April, July and October 2014 have been used in the current version to capture the seasonal variation in the sound propagation characteristics.</p>
+<p>The bathy data comes from the <a href="http://www.argo.net/">ARGO</a><sup>[1]</sup> system of autonomous drifting buoys. There are more than 3000 of the buoys deployed around the oceans of the world, drifting 1&nbsp;km below the surface, every 10 days they wake up and sample the physical ocean parameters in the water column. Their data are collected and analysed on a monthly basis and the water property profiles on a 1&deg; grid spacing are made available at <a href="http://hadobs.metoffice.com/en4/download-en4-1-1.html">Hadley Center of the UK Met Office</a><sup>[2]</sup>. The water temperature profile at the center of each square of a worldwide 15&deg; grid has been extracted and used in the ray trace utility. Four sets of data from the months of January, April, July and October 2014 have been used in the current version to capture the seasonal variation in the sound propagation characteristics.</p>
 
 <h2>Application example</h2>
   <h3>Locating a pinger on the bottom</h3>
@@ -847,4 +739,6 @@ Data Version number (EN4.0.2), downloaded 28Apr15.</p>
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/SonarRayTracing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:17 GMT -->
 </html>

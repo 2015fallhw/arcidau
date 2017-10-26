@@ -1,14 +1,31 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/ThreadDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:56 GMT -->
 <head>
   <title>Screw Thread Drawing</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="keywords" content="thread drawing, srew drawing, CAD drawing with canvas, Bézier approximation to sine, Bézier curve drawing" />
+  <meta name="keywords" content="thread drawing, screw drawing, CAD drawing with canvas, Bézier approximation to sine, Bézier curve drawing" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
 
     .console select, .console input {
       border-width: 2px;
@@ -17,9 +34,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -35,115 +49,16 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
-  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
   <script type="text/javascript" src="threadUtils-03.js"></script>
 
   <script type="text/javascript">
@@ -165,13 +80,11 @@
           b1, b2, b3, b4, b5, b6,
           dot,
           topLeftData, topRightData, topCrestData,
-          botLeftData, botRightData, botCrestData,
-          topLeft, topRight, topCrest,
-          botLeft, botRight, botCrest,
+          topLeft, topRight, topCrest, topGrp,
           threadV, arcData;
 
-      g.setGridboxRHC(15, 0, 80, 55);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin);
+      g.gridboxPadding(15, 0, 5, 5);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
       g.setPropertyDefault("strokeColor", "black");
       // calculate the nodes of thread profile
       // start profile at top of left flank, thread axis along X axis
@@ -196,92 +109,90 @@
       topLeftData = ["M", t0.x, t0.y, "L", t1.x, t1.y, t2.x, t2.y, "A", h/6, h/6, 0, 0, 1, t3.x, t3.y];
       topRightData = ["M", t3.x, t3.y, "A", h/6, h/6, 0, 0, 1, t4.x, t4.y, "L", t5.x, t5.y];
       topCrestData = ["M", t5.x, t5.y, "L", t6.x, t6.y];
-      // similar for the bottom profile
-      botLeftData = ["M", b1.x, b1.y, "L", b2.x, b2.y, "A", h/6, h/6, 0, 0, 1, b3.x, b3.y];
-      botRightData = ["M", b3.x, b3.y, "A", h/6, h/6, 0, 0, 1, b4.x, b4.y, "L", b5.x, b5.y];
-      botCrestData = ["M", b5.x, b5.y, "L", b6.x, b6.y];
 
       // create the path segments for the top
-      topLeft = new Cobj(topLeftData, "PATH");
-      topRight = new Cobj(topRightData, "PATH");
-      topCrest = new Cobj(topCrestData, "PATH");
-      // create the path segments for the bottom
-      botLeft = new Cobj(botLeftData, "PATH");
-      botRight = new Cobj(botRightData, "PATH");
-      botCrest = new Cobj(botCrestData, "PATH");
+      topLeft = new Path(topLeftData);
+      topRight = new Path(topRightData);
+      topCrest = new Path(topCrestData);
+      topGrp = new Group(topLeft, topRight, topCrest);
 
       // draw construction lines
       threadV = [0, dc/2+h/8, p/2,dc/2-7*h/8, p,dc/2+h/8, 3*p/2,dc/2-7*h/8];
-      g.drawPath(threadV, 0, 0, {strokeColor:"orange"});
-      g.drawPath([-0.2,dc/2+h/8,     1.7,dc/2+h/8], 0, 0, {strokeColor:"#cccccc"});
-      g.drawPath([-0.2,dc/2,         1.7,dc/2], 0, 0, {strokeColor:"#cccccc"});
-      g.drawPath([-0.2,dc/2-5*h/8,   1.7,dc/2-5*h/8], 0, 0, {strokeColor:"#cccccc"});
-      g.drawPath([-0.2,dc/2-17*h/24, 1.6,dc/2-17*h/24], 0, 0, {strokeColor:"#cccccc"});
-      g.drawPath([-0.2,dc/2-7*h/8,   1.7,dc/2-7*h/8], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath(threadV, {strokeColor:"orange"});
+      g.drawPath([-0.2,dc/2+h/8,     1.7,dc/2+h/8], {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2,         1.7,dc/2], {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-5*h/8,   1.7,dc/2-5*h/8], {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-17*h/24, 1.6,dc/2-17*h/24], {strokeColor:"#cccccc"});
+      g.drawPath([-0.2,dc/2-7*h/8,   1.7,dc/2-7*h/8], {strokeColor:"#cccccc"});
 
       // pitch verticals
-      g.drawPath([0,dc/2+h/2,   0,dc/2+h/16], 0, 0, {strokeColor:"#cccccc"});
-      g.drawPath([1,dc/2+h/2,   1,dc/2+h/16], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([0,dc/2+h/2,   0,dc/2+h/16], {strokeColor:"#cccccc"});
+      g.drawPath([1,dc/2+h/2,   1,dc/2+h/16], {strokeColor:"#cccccc"});
       // pitch dimension arrows
-      g.drawShape(shapeDefs.arrow(0.35,dc/2+h/3, 0,dc/2+h/3, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\( \\mbox{P (pitch)}\\)", 0.4,dc/2+h/3+0.04, "black", 10);
-      g.drawShape(shapeDefs.arrow(0.65,dc/2+h/3, 1,dc/2+h/3, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawArrow(0, dc/2+h/3, {x:0.35, y:dc/2+h/3, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\( P\\; \\text{(pitch)}\\)", {x:0.4, y:dc/2+h/3+0.04});
+      g.drawArrow(1, dc/2+h/3, {x:0.7, y:dc/2+h/3, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
       // diameter dimension
-      g.drawShape(shapeDefs.arrow(0,dc/2-7*h/16, 0,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(Dc\\)", 0-0.02,dc/2-7*h/16-0.02, "black", 10);
-      g.drawPath([0,dc/2-h,   0,dc/2-9*h/16], 0, 0, {strokeColor:"#aaaaaa"});
+      g.drawArrow(0, dc/2, {x:0, y:dc/2-7*h/16, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(Dc\\)", {x:0-0.02, y:dc/2-7*h/16-0.02});
+      g.drawPath([0,dc/2-h,   0,dc/2-9*h/16], {strokeColor:"#aaaaaa"});
 
       // crest verticals and dimensions
-      g.drawPath([1-p/16,dc/2-0.02,   1-p/16,dc/2-0.15], 0, 0, {strokeColor:"#cccccc"});
-      g.drawHTMLtext("\\(\\frac{1}{8}P\\)", 1-0.04,dc/2-0.04, "black", 10);
-      g.drawPath([1+p/16,dc/2-0.02,   1+p/16,dc/2-0.15], 0, 0, {strokeColor:"#cccccc"});
+      g.drawPath([1-p/16,dc/2-0.02,   1-p/16,dc/2-0.15], {strokeColor:"#cccccc"});
+      g.drawHTMLText("\\(\\frac{1}{8}P\\)", {x:1-0.04, y:dc/2-0.04});
+      g.drawPath([1+p/16,dc/2-0.02,   1+p/16,dc/2-0.15], {strokeColor:"#cccccc"});
       // H arrows
-      g.drawShape(shapeDefs.arrow(-0.13,dc/2-7*h/16, -0.13,dc/2-7*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("H", -0.15,dc/2-5*h/16, "black", 10);
-      g.drawShape(shapeDefs.arrow(-0.13,dc/2-h/4-0.03, -0.13,dc/2+h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
+      g.drawArrow(-0.13, dc/2-7*h/8, {x:-0.13, y:dc/2-7*h/16, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(H\\)", {x:-0.15, y:dc/2-5*h/16});
+      g.drawArrow(-0.13, dc/2+h/8, {x:-0.13, y:dc/2-h/4-0.03, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
       // all the right side H fractions
-      g.drawShape(shapeDefs.arrow(1.65,dc/2-h,   1.65,dc/2-7*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(\\frac{1}{4}H\\)", 1.65-0.03,dc/2-3*h/4+0.04, "black", 10);
+      g.drawArrow(1.65,dc/2-7*h/8, {x:1.65, y:dc/2-h, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(\\frac{1}{4}H\\)", {x:1.65-0.03, y:dc/2-3*h/4+0.04});
+      g.drawArrow(1.65, dc/2+h/8, {x:1.65, y:dc/2+h/4, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(\\frac{1}{8}H\\)", {x:1.65-0.03, y:dc/2+h/16+0.04});
+      g.drawArrow(1.65,dc/2, {x:1.65, y:dc/2-h/4, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(\\frac{5}{8}H\\)", {x:1.65-0.03, y:dc/2-3*h/8+0.1});
+      g.drawArrow(1.65,dc/2-5*h/8, {x:1.65, y:dc/2-3*h/8, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawArrow(1.55, dc/2-17*h/24, {x:1.55, y:dc/2-7*h/16, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(\\frac{17}{24}H\\)", {x:1.55-0.1, y:dc/2-7*h/16+0.1});
+      g.drawArrow(1.55, dc/2, {x:1.55, y:dc/2-5*h/16, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
 
-      g.drawShape(shapeDefs.arrow(1.65,dc/2+h/4, 1.65,dc/2+h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(\\frac{1}{8}H\\)", 1.65-0.03,dc/2+h/16+0.04, "black", 10);
-
-      g.drawShape(shapeDefs.arrow(1.65,dc/2-h/4, 1.65,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(\\frac{5}{8}H\\)", 1.65-0.03,dc/2-3*h/8+0.1, "black", 10);
-      g.drawShape(shapeDefs.arrow(1.65,dc/2-3*h/8, 1.65,dc/2-5*h/8, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"})
-
-      g.drawShape(shapeDefs.arrow(1.55,dc/2-7*h/16, 1.55,dc/2-17*h/24, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(\\frac{17}{24}H\\)", 1.55-0.1,dc/2-7*h/16+0.1, "black", 10);
-      g.drawShape(shapeDefs.arrow(1.55,dc/2-5*h/16, 1.55,dc/2, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-
-      g.drawHTMLtext(" \\( \\mbox{H}=\\sqrt{0.75} \\times \\mbox{P}= 0.866025 \\times \\mbox{P}\\)", 0.2,dc/2-h, "black", 10);
+      g.drawHTMLText(" \\( H=\\sqrt{0.75} \\times P= 0.866025 \\times P\\)", {x:0.2, y:dc/2-h});
       // 60deg arc
-      arcData = shapeDefs.arrowArc(0.577*h, 90, 120, false, 1/g.xscl, 6).concat(shapeDefs.arrowArc(0.577*h, 90, 60, true, 1/g.xscl, 6));
-      g.drawShape(arcData, p/2, dc/2-h*7/8, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(60&deg;\\)", p/2-0.02,dc/2-h/6-0.02, "black", 10);
+      g.drawArrowArc(0.577*h, 90, 120, {x:p/2, y:dc/2-h*7/8, clockwise:false, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawArrowArc(0.577*h, 90, 60, {x:p/2, y:dc/2-h*7/8, clockwise:true, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+
+      g.drawHTMLText("\\(60^{\\circ}\\)", {x:p/2-0.02, y:dc/2-h/6-0.02});
       // root radius
-      g.drawShape(shapeDefs.arrow(p/2,dc/2-13*h/24, p/2-0.5*h/6,dc/2-13*h/24-0.87*h/6, 1/g.xscl, 6), 0, 0, {fillColor:"#aaaaaa"});
-      g.drawHTMLtext("\\(r = \\frac{H}{6}\\)", p/2-0.02,dc/2-h/2+0.05, "black", 10);
+      g.drawArrow(p/2-0.5*h/6, dc/2-13*h/24-0.87*h/6, {x:p/2, y:dc/2-13*h/24, shaftWidth:1, headSize:7, fillColor:"#aaaaaa"});
+      g.drawHTMLText("\\(r = \\frac{H}{6}\\)", {x:p/2-0.02, y:dc/2-h/2+0.05});
 
       // draw a red dot at each bezier control point
-      dot = new Cobj(shapeDefs.circle(0.03), "SHAPE", {fillColor:'red', iso:true});
-      g.render(dot, t1.x, t1.y);
-      g.render(dot, t2.x, t2.y);
-      g.render(dot, t3.x, t3.y);
-      g.render(dot, t4.x, t4.y);
-      g.render(dot, t5.x, t5.y);
-      g.render(dot, t6.x, t6.y);
+      dot = new Shape(shapeDefs.circle(0.03), {fillColor:'red'});
+      dot.transform.translate(t1.x, t1.y);
+      g.render(dot);
+      dot.transform.translate(t2.x, t2.y);
+      g.render(dot);
+      dot.transform.translate(t3.x, t3.y);
+      g.render(dot);
+      dot.transform.translate(t4.x, t4.y);
+      g.render(dot);
+      dot.transform.translate(t5.x, t5.y);
+      g.render(dot);
+      dot.transform.translate(t6.x, t6.y);
+      g.render(dot);
 
       // label the nodes
-      g.drawHTMLtext("t<sub>1</sub>", t1.x, t1.y+0.1, "black", 10);
-      g.drawHTMLtext("t<sub>2</sub>", t2.x, t2.y+0.1, "black", 10);
-      g.drawHTMLtext("t<sub>3</sub>", t3.x, t3.y, "black", 10);
-      g.drawHTMLtext("t<sub>4</sub>", t4.x, t4.y, "black", 10);
-      g.drawHTMLtext("t<sub>5</sub>", t5.x-0.1, t5.y+0.1, "black", 10);
-      g.drawHTMLtext("t<sub>6</sub>", t6.x, t6.y+0.1, "black", 10);
+      g.drawHTMLText("<i>t<sub>1</sub></i>", {x:t1.x, y:t1.y+0.1, fontFamily:"Times"});
+      g.drawHTMLText("<i>t<sub>2</sub></i>", {x:t2.x, y:t2.y+0.1, fontFamily:"Times"});
+      g.drawHTMLText("<i>t<sub>3</sub></i>", {x:t3.x, y:t3.y, fontFamily:"Times", lorg:2});
+      g.drawHTMLText("<i>t<sub>4</sub></i>", {x:t4.x+0.05, y:t4.y+0.09, fontFamily:"Times"});
+      g.drawHTMLText("<i>t<sub>5</sub></i>", {x:t5.x-0.05, y:t5.y+0.1, fontFamily:"Times"});
+      g.drawHTMLText("<i>t<sub>6</sub></i>", {x:t6.x, y:t6.y+0.1, fontFamily:"Times"});
 
-      g.render([topLeft, topRight, topCrest]);
-      g.render(topLeft, pitch, 0);
+      g.render(topGrp);
+      topLeft.transform.translate(pitch, 0);
+      g.render(topLeft);
     }
 
     function drawThreadCosine(cvsId, pitch, diameter)
@@ -305,6 +216,7 @@
           startL, startR,
           flankL, flankLobj,
           flankR, flankRobj,
+          threadGrp,
           topL    = ["l",0.3125*P,-0.5413*P, "a",0.1443*P,0.1443*P,0,0,1,0.125*P,-0.0722*P],   //from (tl)
           topR    = ["a",0.1443*P,0.1443*P,0,0,1,0.125*P,0.0722*P, "l",0.3125*P,0.5413*P],     //from (tr)
           topC    = ["l",0.125*P,0],                                                           //from (tc)
@@ -317,31 +229,32 @@
           rootR   = ["c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr,"s",-sp,sr, -1.5708*sp,sr]; //from (pr)
 
       bkCrest = ["M",0.5625*P,-0.5*Dc, "c", (pi/2-1)*sp,0, (pi/2-m)*sp,(1-m)*sc, (pi/2)*sp,sc, "c", m*sp,m*sc, sp,sc, (pi/2)*sp,sc];
-      bkCrestObj = new Cobj(bkCrest, "PATH", {
+      bkCrestObj = new Path(bkCrest, {
         strokeColor:"red",
         dashed: [3,3] });
 
       startL = ["M",0.0625*P,0.5*Dc];
       outline = startL.concat(topL).concat(topR).concat(topC).concat(crestR).concat(bottomC).concat(bottomR).concat(bottomL);
-      outlineObj = new Cobj(outline, "PATH");
+      outlineObj = new Path(outline);
 
       flankL = startL.concat(crestR);
-      flankLobj = new Cobj(flankL, "PATH", {strokeColor:"red", lineWidth:2});
+      flankLobj = new Path(flankL, {strokeColor:"red", lineWidth:2});
 
       startRoot = ["M",0.5*P, sr];
       root = startRoot.concat(rootL);
-      rootObj = new Cobj(root, "PATH");
+      rootObj = new Path(root);
 
       startR = ["M",0.9375*P,0.5*Dc];
       flankR = startR.concat(crestR);
-      flankRobj = new Cobj(flankR, "PATH");
+      flankRobj = new Path(flankR);
 
-      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
-      g.setPropertyDefault("strokeColor", "gray");
-      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0});
+      threadGrp = new Group(outlineObj, flankLobj, rootObj, flankRobj, bkCrestObj);
 
-      g.render([outlineObj, flankLobj, rootObj, flankRobj, bkCrestObj]);
+      g.gridboxPadding(10, 3, 3, 3);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, strokeColor:"gray"});
+
+      g.render(threadGrp);
     }
 
     function bezCosine(cvsID)
@@ -353,7 +266,6 @@
           ymin = -1.5,
           ymax = 1.5,
           q1, q2, q3, q4,
-          dot,
           m = 0.51128733,       // constant for Bezier sinewave approximation
           piON2 = Math.PI/2,
           pi = Math.PI,
@@ -368,19 +280,19 @@
       // 4th quarter
       q4 = ["M",3*pi/2,0, "c", m,m, 1,1, pi/2,1];
       // draw the arc
-      g.setGridboxRHC(15, 5, 80, 60);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
-      g.setPropertyDefault("strokeColor", "black");
+      g.gridboxPadding(15, 5, 5, 5);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
       g.drawAxes(xmin, xmax, ymin, ymax, {
         xOrigin:0,
         yOrigin:0,
         xLabel:"x",
-        yLabel:"cos(x)" });
+        yLabel:"cos(x)",
+        strokeColor:"black" });
       // plot
-      g.drawPath(q1, 0,0, {strokeColor:'blue'});
-      g.drawPath(q2, 0,0, {strokeColor:'green'});
-      g.drawPath(q3, 0,0, {strokeColor:'red'});
-      g.drawPath(q4, 0,0, {strokeColor:'orange'});
+      g.drawPath(q1, {strokeColor:'blue'});
+      g.drawPath(q2, {strokeColor:'green'});
+      g.drawPath(q3, {strokeColor:'red'});
+      g.drawPath(q4, {strokeColor:'orange'});
 
       p0= {x:0, y: 1};
       p1= {x:pi/2-1, y:1};
@@ -390,38 +302,38 @@
       p5= {x:pi/2+1, y:-1};
       p6= {x:pi, y:-1};
       // draw a red dot at each bezier control point
-      dot = new Cobj(shapeDefs.circle(0.15), "SHAPE", {fillColor: "red", iso:true});
-      g.render(dot, p0.x, p0.y);
-      g.render(dot, p1.x, p1.y);
-      g.render(dot, p2.x, p2.y);
-      g.render(dot, p3.x, p3.y);
-      g.render(dot, p4.x, p4.y);
-      g.render(dot, p5.x, p5.y);
-      g.render(dot, p6.x, p6.y);
+      g.drawShape(shapeDefs.circle(0.15), {x:p0.x, y:p0.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p1.x, y:p1.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p2.x, y:p2.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p3.x, y:p3.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p4.x, y:p4.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p5.x, y:p5.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.15), {x:p6.x, y:p6.y, fillColor: "red"});
       // label the nodes
-      g.drawHTMLtext("P<sub>0</sub>", p0.x+0.1, p0.y+0.3, "black", 9);
-      g.drawHTMLtext("P<sub>1</sub>", p1.x+0.2, p1.y+0.2, "black", 9);
-      g.drawHTMLtext("P<sub>2</sub>", p2.x+0.2, p2.y+0.2, "black", 9);
-      g.drawHTMLtext("P<sub>3</sub>", p3.x+0.1, p3.y+0.3, "black", 9);
-      g.drawHTMLtext("P<sub>4</sub>", p4.x-0.2, p4.y, "black", 9);
-      g.drawHTMLtext("P<sub>5</sub>", p5.x, p5.y, "black", 9);
-      g.drawHTMLtext("P<sub>6</sub>", p6.x, p6.y, "black", 9);
+      g.drawHTMLText("P<sub>0</sub>", {x:p0.x+0.1, y:p0.y+0.3, fontSize:11});
+      g.drawHTMLText("P<sub>1</sub>", {x:p1.x+0.2, y:p1.y+0.2, fontSize:11});
+      g.drawHTMLText("P<sub>2</sub>", {x:p2.x+0.2, y:p2.y+0.2, fontSize:11});
+      g.drawHTMLText("P<sub>3</sub>", {x:p3.x+0.1, y:p3.y+0.3, fontSize:11});
+      g.drawHTMLText("P<sub>4</sub>", {x:p4.x-0.2, y:p4.y, fontSize:11});
+      g.drawHTMLText("P<sub>5</sub>", {x:p5.x, y:p5.y, fontSize:11});
+      g.drawHTMLText("P<sub>6</sub>", {x:p6.x, y:p6.y, fontSize:11});
     }
 
     function drawThreadOutline(cvsId, pitch, diameter)
     {
       'use strict'
       var g = new Cango(cvsId),
-          xmin = 0, xmax = 3.2,
-          ymin = -3.5, ymax = 3.5,
+          xmin = 0,
+          xmax = 3.2,
+          ymin = -3.5,
+          ymax = 3.5,
           threadData = genThreadOutline(pitch, diameter),
-          thread = new Cobj(threadData, "PATH", {strokeColor:"black"});
+          thread = new Path(threadData, {strokeColor:"black"});
 
       // plot
-      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
-      g.setPropertyDefault("strokeColor", "gray");
-      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns"});
+      g.gridboxPadding(10, 3, 3, 3);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns", strokeColor:"gray"});
 
       g.render(thread);
     }
@@ -430,60 +342,59 @@
     {
       'use strict'
       var g = new Cango(cvsId),
-          xmin = 0, xmax = 3.2,
-          ymin = -3.5, ymax = 3.5,
+          xmin = 0,
+          xmax = 3.2,
+          ymin = -3.5,
+          ymax = 3.5,
           P = pitch,
           H = 0.86603*pitch,
           Dc = diameter,                  // diameter across thread crests
           startE = ["M",13*P/16, Dc/2-H/4],
           endData = genEndOutline(pitch, diameter),
-          endObj = new Cobj(endData, "PATH", {strokeColor:"black"}),
+          endObj = new Path(endData, {strokeColor:"black"}),
           e1 = {x:13*P/16, y:Dc/2-H/4},
           e2 = {x:P+P/8+H/12, y:Dc/2-17*H/24},   // 45deg line to root diameter
           e3 = {x:P+P/8+H/12, y:-Dc/2+17*H/24},
-          e4 = {x:3*P/2-3*P/8, y:-Dc/2+5*H/8},   // 45deg back to meet bottom arc
-          dot;
+          e4 = {x:3*P/2-3*P/8, y:-Dc/2+5*H/8};   // 45deg back to meet bottom arc
 
-      g.setGridboxRHC(10, 3, 87, 130);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
-      g.setPropertyDefault("strokeColor", "gray");
-      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns"});
+      g.gridboxPadding(10, 3, 3, 3);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"turns", strokeColor:"gray"});
       g.render(endObj);
       // draw a red dot at each bezier control point
-      dot = new Cobj(shapeDefs.circle(0.08), "SHAPE", {fillColor: "red", iso:true});
-      g.render(dot, e1.x, e1.y);
-      g.render(dot, e2.x, e2.y);
-      g.render(dot, e3.x, e3.y);
-      g.render(dot, e4.x, e4.y);
+      g.drawShape(shapeDefs.circle(0.08), {x:e1.x, y:e1.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.08), {x:e2.x, y:e2.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.08), {x:e3.x, y:e3.y, fillColor: "red"});
+      g.drawShape(shapeDefs.circle(0.08), {x:e4.x, y:e4.y, fillColor: "red"});
       // label the nodes
-      g.drawHTMLtext("e<sub>1</sub>", e1.x, e1.y+0.4, "black", 10);
-      g.drawHTMLtext("e<sub>2</sub>", e2.x, e2.y+0.4, "black", 10);
-      g.drawHTMLtext("e<sub>3</sub>", e3.x+0.1, e3.y+0.1, "black", 10);
-      g.drawHTMLtext("e<sub>4</sub>", e4.x, e4.y, "black", 10);
+      g.drawHTMLText("e<sub>1</sub>", {x:e1.x, y:e1.y+0.4, fillColor:"black", fontSize:11});
+      g.drawHTMLText("e<sub>2</sub>", {x:e2.x, y:e2.y+0.4, fillColor:"black", fontSize:11});
+      g.drawHTMLText("e<sub>3</sub>", {x:e3.x+0.1, y:e3.y+0.1, fillColor:"black", fontSize:11});
+      g.drawHTMLText("e<sub>4</sub>", {x:e4.x, y:e4.y, fillColor:"black", fontSize:11});
     }
 
     function drawHexHeadOutline(cvsId, diameter, length)
     {
       'use strict'
       var g = new Cango(cvsId),
-          xmin = -0.7*length, xmax = 0.1*length,
-          ymin = -0.3*length,  ymax = 0.3*length,
+          xmin = -0.7*length,
+          xmax = 0.1*length,
+          ymin = -0.3*length,
+          ymax = 0.3*length,
           headData = genHexHeadOutline(diameter, length),
-          head = new Cobj(headData, "PATH", {strokeColor:"black"});
+          head = new Path(headData, {strokeColor:"black"});
 
-      g.setGridboxRHC(3, 7, 94, 55);
-      g.setWorldCoords(xmin, ymin, xmax-xmin);
-      g.setPropertyDefault("strokeColor", "gray");
-      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"mm"});
+      g.gridboxPadding(3, 7, 3, 7);
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
+      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, xLabel:"mm", strokeColor:"gray"});
       g.render(head);
     }
 
     function MetricBoltOutline(diameter, length)
     {
       'use strict'
-      var /*g = new Cango(cvsId),
-          g2 = new Cango(cvsId),  // for the scale to stay on corner
-          */
+      var g = new Cango("cvs7"),
+          g2 = new Cango("cvs7"),  // for the scale to stay on corner
           xmax = 3.5*diameter,
           xmin = -(length-diameter),
           ymin = -0.3*length,
@@ -491,11 +402,11 @@
           refPx,
           pitch = prefPitch[diameter],
           headData = genHexHeadOutline(diameter, length),
-          head = new Cobj(headData, "PATH", {strokeColor:"black"}),
+          head = new Path(headData, {strokeColor:"black"}),
           threadData = genThreadOutline(pitch, diameter),
-          thread = new Cobj(threadData, "PATH", {strokeColor:"black"}),
+          thread = new Path(threadData, {strokeColor:"black"}),
           endData = genEndOutline(pitch, diameter),
-          end = new Cobj(endData, "PATH", {strokeColor:"black"}),
+          end = new Path(endData, {strokeColor:"black"}),
           turns = Math.ceil((2*diameter+6)/pitch),   // Thread length is (2*Dc+6)mm
           headBase = -length + (turns+1)*pitch;      // x coord of base of head  (add 1 for end turn)
 
@@ -506,12 +417,15 @@
             // Note: calc scaleOrg to undo the effect of zoom and pan on position of the scale (size zooms but position is fixed)
 
         g.clearCanvas();
+
         g.render(head);
         for (i=0; i<turns; i++)
         {
-          g.render(thread, i*pitch, 0);
+          thread.transform.translate(i*pitch, 0);
+          g.render(thread);
         }
-        g.render(end, i*pitch, 0);
+        end.transform.translate(i*pitch, 0);
+        g.render(end);
 
         ruleSVG = ["M",0,0, "l",1*length,0];   // length scale (units are mm)  1* converts string to number
         for (i=1; i<10; i++)
@@ -523,20 +437,25 @@
           ruleSVG.push("M",i,0, "l",0,10/g2.xscl);   // 10mm tick marks, constant tick height (in pixels)
         }
 
-        g2.drawPath(ruleSVG, scaleOrg.x, scaleOrg.y, {strokeColor:"darkgray"});
+        g2.drawPath(ruleSVG, {x:scaleOrg.x, y:scaleOrg.y, strokeColor:"darkgray"});
         // add labels
         for (i=0; i<=length; i+=10)
         {
-          g2.drawText(i, scaleOrg.x+i,scaleOrg.y+10/g2.xscl, {fillColor:"darkgray", fontSize:12, lorg:8});
+          g2.drawText(i, {x:scaleOrg.x+i, y:scaleOrg.y+10/g2.xscl, fillColor:"darkgray", fontSize:12, lorg:8});
         }
       }
+
       // plot
-      g.setGridboxRHC(3, 10, 94, 55);  // data area, units are % of canvas width
-      g.setWorldCoords(xmin, ymin, xmax-xmin);
+      g.clearCanvas();
+      g.deleteAllLayers();
+      g.gridboxPadding(3, 10, 3, 10);  // data area, units are % of canvas width
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);
       g2.dupCtx(g);
       refPx = g.toPixelCoords(headBase, 0);   // find pixel coords of head base (length of bolt ref point)
 
       this.drawBolt();
+
+      initZoomPan(g.createLayer(), [g, g2], this.drawBolt);
     }
 
     function presetSelect(optionsTbl, masterVal, slaveVal)
@@ -649,25 +568,9 @@
 
   </script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
   <script type="text/javascript">
 
-    var g, g2, bolt;
+    var bolt;
 
     addLoadEvent(function(){
       buildMenu(indexData);
@@ -679,26 +582,21 @@
       drawEndOutline('cvs5', 1, 6);
       drawHexHeadOutline('cvs6', 6, 30);
       initSelectLists(1, 3);    // M6, 40mm
+      bolt = handleThread();    // draw the default bolt  (M6, 40mm)
 
-      g = new Cango("cvs7");
-      g2 = new Cango("cvs7");  // for the scale to stay on corner
-      bolt = handleThread();           // draw the default bolt  (M6, 40mm)
-      initZoomPan(g.createLayer(), [g, g2], bolt.drawBolt);
-
-      enableStickyNav();
+      renderMathInElement(document.body);
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
       <p class="banner" style="z-index:1">MISCELLANY</p>
        <p class="hdrBlurb">MISCELLANEOUS TECHNICAL ARTICLES BY <span style="letter-spacing: 1px;">Dr</span> A R COLLINS</p> 
-      <div id="logoHolder" style="">
+      <div id="logoHolder">
         <p class="banner inverse">MISCELLANY</p>
       </div>
       <div id="logo">
@@ -738,21 +636,21 @@
 
 <p>A metric thread form is fully defined by the diameter measured across the crests \(Dc\) and the thread pitch \(P\), the profile may be drawn as a series of straight line and circular arc segments. The nodes required to draw the profile are shown as red dots in the diagram. The Cartesian coordinates of the profile's nodes are given by: </p>
 
-$$ \begin {align}
+$$ \begin {aligned}
   t_1 &= (\tfrac{1}{16}P,\;   \frac{Dc}{2}) \\
   t_2 &= (\tfrac{3}{8}P, \;\; \frac{Dc}{2}-\tfrac{5}{8}H) \\
   t_3 &= (\tfrac{1}{2}P, \;\; \frac{Dc}{2}-\tfrac{17}{24}H) \\
   t_4 &= (P - \tfrac{3}{8}P, \;\; \frac{Dc}{2}-\tfrac{5}{8}H) \\
   t_5 &= (P - \tfrac{1}{16}P,\;\; \frac{Dc}{2}) \\
   t_6 &= (P + \tfrac{1}{16}P,\;\; \frac{Dc}{2})
-\end {align}
+\end {aligned}
 $$
 
 <p>The Cgo2D path data (equivalent to SVG but with Y coordinates inverted) for the three sections forming one thread's profile are shown below:</p>
 
 <div class="srcFmt">
 <pre>
-Top profile of a ISO metric thread in Cg02D format.
+Top profile of a ISO metric thread in Cgo2D format.
 The relative commands have been used so the initial "M" can be dropped when concatenating.
 
 Dc = thread diameter across crests
@@ -803,7 +701,7 @@ f3 = ["M",17*P/16,Dc/2, "l",-0.125*P,0]                                         
   <div class="figHolder" style="width:450px" >
     <canvas id="cvs2" width="250" height="350" style="margin:0 auto"></canvas>
     <div class="captionHolder">
-      <p><b>Figure 2.</b> The outline drawing of a single turn of an ISO Metric thread. The left crest edge is shown in red, forming a single cycle on a cosine waveform.</p>
+      <p><b>Figure 2.</b> The outline drawing of a single turn of an ISO Metric thread. The left crest edge is shown in red, forming a single cycle of a cosine waveform.</p>
     </div>  <!-- captionHolder -->
   </div>
 
@@ -815,7 +713,7 @@ f3 = ["M",17*P/16,Dc/2, "l",-0.125*P,0]                                         
 
 <p>The coordinates of the seven Bézier nodes are<sup>[1]</sup>:
 
-\begin{align*}
+$$ \begin{aligned}
   P_0 &= \{ x:0,\quad y: 1\} \\
   P_1 &= \{ x:\frac{\pi}{2}-1,\quad y:1\} \\
   P_2 &= \{ x:\frac{\pi}{2} - \frac{6-(\frac{3}{2}\pi-3)^2}{6},\quad y: \frac{6-(\frac{3}{2}\pi-3)^2}{6}\} \\
@@ -823,7 +721,7 @@ f3 = ["M",17*P/16,Dc/2, "l",-0.125*P,0]                                         
   P_4 &= \{ x:\pi/2+\frac{6-(\frac{3}{2}\pi-3)^2}{6},\quad y:-\frac{6-(\frac{3}{2}\pi-3)^2}{6}\} \\
   P_5 &= \{ x:\pi/2+1,\quad y:-1\} \\
   P_6 &= \{ x:\pi,\quad y:-1\}
-\end{align*}
+\end{aligned} $$
 </p>
 
 <p>The nodes, P<sub>0</sub> .. P<sub>6</sub> defining the cubic Bézier curve approximation to the first two quadrants of a cosine are shown as red dots in Fig. 3.</p>
@@ -855,8 +753,8 @@ cosine_r = ["M",pi/2,0, "c",-m,m, -1,1, -pi/2,1, "s", m-1,0, m-pi/2,1-m, -pi/2,1
 <h3>Scaling the cosine to thread dimensions</h3>
 <p>When drawing the 2D elevation of a screw thread, the thread crest cosine function must be scaled horizontally to match the thread pitch and vertically the thread crest or root diameter.</p>
 
-<p>If pitch=P then X coordinate scale factor, \(sp\), must map \(2\pi\) to \(P\), hence \(sp = P/2\pi\).
-For the crest helix, the Y coordinate scale factor, sc, must map the cosine amplitude, 1, to the crest radius, hence \(sc = \frac{Dc}{2}\). For the root helix, the Y coordinate scale factor, sr, must map 1 to the root radius, hence \(sr = \frac{Dc}{2} - \frac{17}{24}H\)
+<p>If pitch = \(P\) then X coordinate scale factor, \(sp\), must map \(2\pi\) to \(P\), hence \(sp = P/2\pi\).
+For the crest helix, the Y coordinate scale factor, \(sc\), must map the cosine amplitude, 1, to the crest radius, hence \(sc = Dc/2\). For the root helix, the Y coordinate scale factor, \(sr\), must map 1 to the root radius, hence \(sr = Dc/2 - \frac{17}{24}H\)
 </p>
 
 <p>The Cgo2D data for these scaled profiles are shown below:</p>
@@ -877,18 +775,18 @@ sr = Dc/2-17*H/24
    = 0.5*Dc-0.6134*P    Root cosine Y coordinate scale factor
 
 crest_f = ["M",0,sc,
-           "c",0.5708*sp,0,1.0595*sp,-0.4887*sc,1.5708*sp,-sc, "s",sp,-sc,1.5708*sp,-sc];     (cf)
+           "c",0.5708*sp,0,1.0595*sp,-0.4887*sc,1.5708*sp,-sc, "s",sp,-sc,1.5708*sp,-sc];
 
  root_f = ["M",0,sr,
-           "c",0.5708*sp,0,1.0595*sp,-0.4887*sr,1.5708*sp,-sr, "s",sp,-sr,1.5708*sp,-sr];     (rf)
+           "c",0.5708*sp,0,1.0595*sp,-0.4887*sr,1.5708*sp,-sr, "s",sp,-sr,1.5708*sp,-sr];
 
 Traversing in reverse direction
 
 crest_r = ["M",pi*sp,-sy,
-           "c",-0.5708*sp,0,-1.0595*sp,0.4887*sy, -1.5708*sp,sy, "s",-sp,sy, -1.5708*sp,sy];  (cr)
+           "c",-0.5708*sp,0,-1.0595*sp,0.4887*sy, -1.5708*sp,sy, "s",-sp,sy, -1.5708*sp,sy];
 
  root_r = ["M",pi*sp,-sr,
-           "c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr, "s",-sp,sr, -1.5708*sp,sr]; (rr)
+           "c",-0.5708*sp,0, -1.0595*sp,0.4887*sr, -1.5708*sp,sr, "s",-sp,sr, -1.5708*sp,sr];
 
 (The initial "M" command can be dropped if pen is in place when segments are concatenated)
 </pre>
@@ -969,12 +867,12 @@ function genThreadOutline(pitch, diameter)
     </div>  <!-- captionHolder -->
   </div>
 
-$$ \begin {align}
+$$ \begin {aligned}
   e_1 &= (\tfrac{13}{16}P, \; \frac{Dc}{2}-\tfrac{1}{4}H) \\
   e_2 &= (\tfrac{9}{8}P + \tfrac{1}{12}H, \;\; \frac{Dc}{2}-\tfrac{17}{24}H) \\
   e_3 &= (\tfrac{9}{8}P + \tfrac{1}{12}H, \;\; -\frac{Dc}{2}+\tfrac{17}{24}H) \\
   e_4 &= (\tfrac{9}{8}P, \;\; -\frac{Dc}{2}+\tfrac{5}{8}H) \\
-\end {align}
+\end {aligned}
 $$
 
 <p>The end helix runs from Y = \(\frac{Dc}{2}-\tfrac{1}{4}H\) to \(-\frac{Dc}{2}+\tfrac{5}{8}H\), so diameter = \(Dc-\frac{21}{24}H\) and the Y axis scale factor for the cosine, \(se = \frac{Dc}{2}-\frac{21}{48}H\). </p>
@@ -1158,9 +1056,11 @@ function genHexHeadOutline(diameter, length)
       </div>  <!-- bezel -->
     <div style="clear: both"></div>
   </div> <!-- console -->
+
+
 </div> <!-- consoleHolder -->
 
-<div class="captionHolder" style="margin:15px 60px">
+<div class="captionHolder" style="width: 630px">
 <p><b>Figure 7.</b>ISO Metric bolts drawn with the Cango graphics library. Use the drop down list to select the thread size and the length. Only preferred threads (M5 to M30) and preferred lengths (up to 120mm) for each thread are shown.</p>
 </div>
 
@@ -1175,4 +1075,6 @@ function genHexHeadOutline(diameter, length)
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/ThreadDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:56 GMT -->
 </html>

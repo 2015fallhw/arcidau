@@ -1,14 +1,17 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/CangoAxesManual.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:39:05 GMT -->
 <head>
   <title>Cango Axes Module User Guide</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="keywords" content="canvas graphics, plotting graphs with canvas, Cango, Cango extension, canvas graphics library" />
+  <meta name="keywords" content="canvas graphics, drawing axes, axis drawing, plotting graphs, Cango, Cango extension, Cango Axes, canvas graphics library" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+ 
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-
     .cvsEg {
       position: relative;   /* positioned to parent bottom menus */
       display: block;       /* must have for position canvas elements */
@@ -17,12 +20,23 @@
       background-color: lightyellow;
       border: 1px solid black;
     }
+
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -38,114 +52,16 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+  
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
 
   <script type="text/javascript">
     function drawAxesTest(cvsID)
@@ -154,8 +70,8 @@
           xmin = -20000, xmax = 25000,
           ymin = -300, ymax = 600;
 
-      gc.setGridboxRHC(5, 5, 90, 60);
-      gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      gc.gridboxPadding(5);
+      gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
       gc.drawAxes(xmin, xmax, ymin, ymax, {
         xOrigin: -10000,
         yOrigin: 0,
@@ -172,15 +88,15 @@
           i;
 
       g.fillGridbox("#303a30");
-      g.setGridboxRHC(12, 8, 85, 60);
-      g.setWorldCoords(0, -10, 1200, 20);
+      g.gridboxPadding(12, 8, 3, 8);
+      g.setWorldCoordsRHC(0, -10, 1200, 20);
 
       g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL"});
       for (i=0; i<=200; i++)
       {
         data.push(i*6, 5*Math.sin(i/6));
       }
-      g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+      g.drawPath(data, {strokeColor:'#c0e0ff'});
     }
 
     function drawHTML(cvsID)
@@ -188,54 +104,100 @@
       var gc = new Cango(cvsID),
           xmin = -50, xmax = 250,
           ymin = 0, ymax = 100,
-          t, s;
+          r, t, s;
 
-      gc.setGridboxRHC();
-      gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+      gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
 
-      t = "<b>HTML</b>&nbsp;text&nbsp;test</br>multi-line&nbsp;and</br>special&nbsp;chars&nbsp;too &lt; &amp; etc.";
-      gc.drawHTMLtext(t, -25, 80, "black", 14, 400);
+      r = "Test&nbsp;rotation degs:30&deg;";
+      gc.drawHTMLText(r, {x:170, y:70, fontsize:18, fontWeight:400, degs:30, fillcolor:"blue", lorg:5});
 
-      // test the MathJax access to the Cango text object
-      s = "MathJax works $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
-      gc.drawHTMLtext(s, -25, 40, "black", 12, 400);
+      t = "<b>HTML</b>&nbsp;text&nbsp;test multi-line&nbsp;and special&nbsp;chars&nbsp;too &lt; &amp; etc.";
+      gc.drawHTMLText(t, {x:-25, y:80, fontSize:16, fontWeight:"bold", fillColor:"brown"});
+
+      // test the MathJax access to the HTML overlay text
+      s = "MathJax and KaTeX work $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
+
+      gc.drawHTMLText(s, {x:-25, y:40, fillColor:"red", fontSize:20, fontWeight:800});
     }
 
-    function drawHullo(cvsID)
+    function vectorText(cvsID)
     {
-      var hullo,
-          fgCol = "orange",
-          bgCol = "red",
-          g = new Cango(cvsID);
+      var g = new Cango(cvsID);
 
-      g.setGridboxRHC();    // define viewport to be full canvas
-      g.setWorldCoords(0, 0, 10);  // lower left is 0,0 canvas 10 units wide, square pixels
-      g.clearCanvas();
+      g.setWorldCoordsRHC(-15, -15, 40);
 
-      hullo = new Cobj(" Hullo World ", "TEXT", {fillColor:fgCol, fontSize:30, lorg:5, fontWeight:"bold"});
-      // orange text on red
-      g.renderBoxText(hullo, 5, 4, 1, 20, fgCol, bgCol);
-      // inverse text
-      g.renderBoxText(hullo, 5, 2, 1, 20, bgCol, fgCol);
+      g.drawVectorText("abcd \u0026 ABCD", {x:0, y:10, fontSize: 30});
+      g.drawVectorText("Greek Letters: \u03B1\u03B2\u03B3\u03B4 \u0391\u0392\u0393\u0394",
+        {x:0, y:5, fontSize: 15});
+      g.drawVectorText("strokeColor:'blue', lorg=7",
+        {x:0, y:0, strokeColor:"blue", fontSize:20, fontWeight:200, lorg:7});
+      g.drawVectorText("bgFillColor: lime, lorg 3",
+        {x:0, y:0, fontSize:15, fontWeight:700, lorg:3, bgFillColor:'lime', degs: 30});
     }
 
-  </script>
+    function drawArrows(cvsID)
+    {
+      var gc = new Cango(cvsID),
+          xmin = -15, xmax = 25,
+          ymin = 0, ymax = 4;
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
+      gc.gridboxPadding(10, 8, 2, 8);
+      gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+      gc.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, strokeColor:'gray'});
+
+      // test straight arrow
+      gc.drawArrow(20, 3, {
+        x:5, y:1,
+        shaftWidthWC:2,
+        headSize:4,
+        fillColor:'red',
+        border:true,
+        strokeColor:'blue',
+        lineWidth:2});
+
+      gc.drawArrow(-10, 4, {
+        x:0, y:1,
+        shaftWidth: 8,
+        fillColor:'green'});
+    }
+
+    function arrowArcDemo(cvsID)
+    {
+      var xmin = -15, xmax = 25,
+          ymin = -4, ymax = 4;
+
+      cgo = new Cango(cvsID),
+      cgo.clearCanvas("beige");
+      cgo.gridboxPadding(15, 2, 15, 2);  // data area, units are % of canvas width
+
+      cgo.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+      cgo.drawAxes(xmin, xmax, ymin, ymax, {
+        xOrigin: 0, yOrigin: 0,
+        xLabel:"X", yLabel:"Y",
+        fontSize: 10 });
+
+      cgo.drawArrowArc(8, 40, 280, {
+        x:-10,
+        y:-2,
+        clockwise:true,
+        shaftWidth:4,
+        fillColor:'black'});
+      cgo.drawArrowArc(12, 280, 40, {
+        clockwise:false,
+        shaftWidth:8,
+        fillColor:'green',
+        shadowOffsetX:0.50,
+        shadowOffsetY:-0.1,
+        shadowBlur:0.5,
+        shadowColor:'gray'});
+      cgo.drawArrowArc(15, 20, 156, {
+        clockwise: false,
+        shaftWidthWC: 1.7,
+        fillColor: 'steelblue',
+        border:true,
+        strokeColor:'red'});
+    }
   </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
@@ -243,18 +205,18 @@
 
       drawAxesTest('cvs1');
       drawBoxAxesTest('cvs2');
-      drawHTML('cvs4');
-      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-      drawHullo('cvs5');
-
-      enableStickyNav();
+      drawHTML('cvs3');
+      vectorText('cvs4');
+      drawArrows('cvs5');
+      arrowArcDemo('cvs6');
+      
+      renderMathInElement(document.body);
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -282,48 +244,42 @@
         <div class="text_01">
 
 <h2>Cango axes drawing extension</h2>
-<p>The Cango Axes extension module <a href="CangoAxes-1v33.js" download>CangoAxes-1v33.js</a> provides additional methods to the Cango library and some utility functions assist the quick programming of 2D graphs on the canvas element. The drawing methods are:</p>
+<p>The Cango Axes extension module provides additional methods to the Cango library to simplify generating graph axes when plotting data with Cango.</p>
+<p>The extension requires <i>Cango</i> canvas graphics library Version 11 or later. Download the source code from <a href="CangoAxes-4v00.js" download>CangoAxes-4v00.js</a> and the minified version at  <a href="CangoAxes-4v00-min.js" download>CangoAxes-4v00-min.js</a></p>
+
+<p>Also included in the module are additional Cango methods for drawing arrows, vector text which can be treated as a Path, and HTML text which is within the DOM and so can be processed by the MathJax utility. These additional Cango methods are:</p>
 <p>
 <a href="#drawAxes">drawAxes</a><br/>
 <a href="#drawBoxAxes">drawBoxAxes</a><br/>
-<a href="#drawHTMLtext">drawHTMLtext</a><br/>
-<a href="#renderBoxText">renderBoxText</a>
+<a href="#drawHTMLText">drawHTMLText</a><br/>
+<a href="#drawVectorText">drawVectorText</a><br/>
+<a href="#drawArrow">drawArrow</a><br/>
+<a href="#drawArrowArc">drawArrowArc</a>
 </p>
 
-<p>The <b>drawHTMLtext</b> method allows HTML format text to be written over the canvas element integrated with the Cango graphics context. The utility creates a small transparent overlay DIV element for each text string and positions it using the Cango world coordinate system. Any HTML text can be used. Mathmamatical expressions in LaTeX syntax will be correctly parsed by MathJax if '\' characters are replaced with '\\' and the MathJax script is loaded.</p>
-
-<p>The <b>renderBoxText</b> is a specialised version of the render method which takes a TEXT type Cobj along with the normal position, scale and rotation parameters but adds foreground and background color parameters. The text bounding box is filled with the background color prior to the text being rendered in the foreground color. Foreground color over-rides the value of the Cobj 'fillColor' property normally used as the text color.</p>
-
-<p>Two global utility functions are provided to format numbers in engineering notation which is scientific notation but the powers of ten are restricted to multiples of 3 ie. nano, micro, milli, kilo, Mega, Giga etc.</p>
+<p>The CangoAxes module also provides two global utility functions to format numbers in engineering notation which is scientific notation but the powers of ten are restricted to the preferred; nano, micro, milli, kilo, Mega, Giga etc. values. A JavaScript implementation of very useful 'sprintf' function is also included.</p>
 
 <p>
 <a href="#toEngFixed">toEngFixed</a><br/>
 <a href="#toEngPrec">toEngPrec</a><br/>
-</p>
-
-<p>The module also contains a JavaScript implementation of very useful 'sprintf' function.</p>
-
-<p>
 <a href="#sprintf">sprintf</a>
 </p>
 
-<p>All these extensions require the <i>Cango</i> canvas graphics library Version 5 or later.</p>
-
 <hr class="ugHr"/>
-<h2>Cango methods added</h2>
+<h2>Cango methods</h2>
 
 <h3 id="drawAxes" style="color:blue">drawAxes</h3>
 <h4>Syntax:</h4>
-<p class='syntax'><i>cgo.</i><b>drawAxes</b>(xmin, xmax, ymin, ymax, options)</p>
+<p class='syntax'><i>cgo.</i><b>drawAxes</b>(xmin, xmax, ymin, ymax [, options])</p>
 <h4>Description:</h4>
 <p>Draws a set of Cartesian coordinate (X, Y) axes.</p>
 <h4>Parameters:</h4>
 <div style="padding-left:2em">
 <p><b>xmin</b>:Number - Minimum X axis value, the value of the left end of the X axis. Measured in the X axis world coordinates.</p>
 <p><b>xmax</b>:Number - Maximum X axis value, the value of the right end of the X axis. Measured in the X axis world coordinates.</p>
-<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis. Measured in the Y axis world coordinates.</p>
-<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis. Measured in the Y axis world coordinates.</p>
-<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Parameters below).</p>
+<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis for RHC coordinates, top end for SVG style systems. Measured in the Y axis world coordinates.</p>
+<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis for RHC coordinates, bottom end for SVG style systems. Measured in the Y axis world coordinates.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Properties below).</p>
 </div>
 <h4>Optional Properties:</h4>
 
@@ -350,10 +306,10 @@
 <td>yUnits</td><td>String</td><td>Text to be written in parentheses after the yLabel.</td>
 </tr>
 <tr>
-<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along X axis. If omitted or set to "auto", a suitable tick interval will be calculated and the X axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
+<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>Distance between ticks along X axis. If omitted or set to "auto", a suitable tick interval will be calculated and the X axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
 </tr>
 <tr>
-<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along Y axis. If omitted or set to "auto", a suitable tick interval will be calculated and the Y axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
+<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>Distance between ticks along Y axis. If omitted or set to "auto", a suitable tick interval will be calculated and the Y axis ticked and labeled automatically. If set to 0 then no ticks are drawn. If a value is assigned it will be rounded to nearest 1, 2, 5 sequence value.</td>
 </tr>
 <tr>
 <td>tickLength</td><td>Number<br/>(pixels)</td><td>Length of the (double sided) minor ticks (default is 5). Major ticks are twice as long and have labels.</td>
@@ -385,8 +341,8 @@ function drawAxesTest(cvsID)
       xmin = -20000, xmax = 25000,
       ymin = -300, ymax = 600;
 
-  gc.setGridboxRHC(5, 5, 90, 60);
-  gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+  gc.gridboxPadding(5);
+  gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
   gc.drawAxes(xmin, xmax, ymin, ymax, {
     xOrigin: -10000,
     yOrigin: 0,
@@ -407,16 +363,16 @@ function drawAxesTest(cvsID)
 <hr class="ugHr" />
 <h3 id="drawBoxAxes" style="color:blue">drawBoxAxes</h3>
 <h4>Syntax:</h4>
-<p class='syntax'><i>cgo.</i><b>drawBoxAxes</b>(xmin, xmax, ymin, ymax, options)</p>
+<p class='syntax'><i>cgo.</i><b>drawBoxAxes</b>(xmin, xmax, ymin, ymax [, options])</p>
 <h4>Description:</h4>
 <p>Draws a set of X, Y axes in the shape of a box.</p>
 <h4>Parameters:</h4>
 <div style="padding-left:2em">
 <p><b>xmin</b>:Number - Minimum X axis value, the value of the left end of the X axis. Measured in the X axis world coordinates.</p>
 <p><b>xmax</b>:Number - Maximum X axis value, the value of the right end of the X axis. Measured in the X axis world coordinates.</p>
-<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis. Measured in the Y axis world coordinates.</p>
-<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis. Measured in the Y axis world coordinates.</p>
-<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Parameters below).</p>
+<p><b>ymin</b>:Number - Minimum Y axis value, the value of the bottom end of the Y axis for RHC coordinates, top end for SVG style systems. Measured in the Y axis world coordinates.</p>
+<p><b>ymax</b>:Number - Maximum Y axis value, the value of the top end of the Y axis for RHC coordinates, bottom end for SVG style systems. Measured in the Y axis world coordinates.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Properties below).</p>
 </div>
 
 <h4>Optional Properties:</h4>
@@ -435,10 +391,10 @@ function drawAxesTest(cvsID)
 <td>yUnits</td><td>String</td><td>Text of the label to be drawn to the left of the center of the Y axis. The string is prepended with the yTickInterval value and string "/div" is drawn below the yUnits label.</td>
 </tr>
 <tr>
-<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along X axis. If omitted the tick interval will be automatic. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
+<td>xTickInterval</td><td>Number<br/>(world coordinates)</td><td>Distance between ticks along X axis. If omitted the tick interval will be automatic. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
 </tr>
 <tr>
-<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>(Optional) Distance between ticks along Y axis. If omitted the tick interval will default to 1/5th of the Y axis span. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
+<td>yTickInterval</td><td>Number<br/>(world coordinates)</td><td>Distance between ticks along Y axis. If omitted the tick interval will default to 1/5th of the Y axis span. If a value is supplied it will be rounded to nearest 1, 2, 5 sequence value.</td>
 </tr>
 <tr>
 <td>fontFamily</td><td>String</td><td>CSS font family definitions (default set by Cango default fontFamily).</td>
@@ -471,15 +427,15 @@ function drawBoxAxesTest(cvsID)
       i;
 
   g.fillGridbox("#303a30");
-  g.setGridboxRHC(12, 10, 85, 60);
-  g.setWorldCoords(0, -10, 1200, 20);
+  g.gridboxPadding(12, 8, 3, 8);
+  g.setWorldCoordsRHC(0, -10, 1200, 20);
 
   g.drawBoxAxes(0, 1200, -10, 10, {xUnits:"Hz", yUnits:"dB", title:"REAL"});
-  for (i=0; i&lt;=200; i++)
+  for (i=0; i<=200; i++)
   {
     data.push(i*6, 5*Math.sin(i/6));
   }
-  g.drawPath(data, 0, 0, {strokeColor:'#c0e0ff'});
+  g.drawPath(data, {strokeColor:'#c0e0ff'});
 }
 </pre>
 </div>
@@ -491,42 +447,150 @@ function drawBoxAxesTest(cvsID)
 </div>
 
 <hr class="ugHr" />
-<h3 id="drawHTMLtext" style="color:blue">drawHTMLtext</h3>
+<h3 id="drawHTMLText" style="color:blue">drawHTMLText</h3>
 <h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>drawHTMLtext</b>(str, x, y, color, fntSize, fntWeight);</p>
+<p class='syntax'><i>cgo</i>.<b>drawHTMLText</b>(str [, options]);</p>
 <h4>Description:</h4>
-<p>Creates a transparent DIV element containing the HTML text 'str'. The DIV is position on the page overlying the canvas with drawing origin the upper left corner at the position x,y in the Cango world coordinates. The parameter 'color' will be the color with which the text is rendered. The text is rendered in the current default font family and the font size and font weight can optionally be set to 'fntSize' measured in pixels and 'fntWeight' specified as a number between 100 and 900.</p>
-<p>NOTE: This draw function differs from other Cango draw functions by not returning an Obj2D for re-use.</p>
-<p>If the text is to be further processed after rendering, such as by MathJax utility then the '\' characters should be entered into 'str' as '\\' to be correctly interpreted.</p>
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>str</b>:String - The text string to be written.</p>
-  <p style='margin-left:2em'><b>x</b> <b>y</b>:Number - X and Y coordinates of the position at which the test drawing origin will be placed, measured in world coordinates.</p>
-<p style='margin-left:2em'><b>color</b>:String or canvasGradient - The color to be used to stroke the text when rendered to the canvas.</p>
-  <p style='margin-left:2em'><b>fntSize</b>:Number - Size of the font to be used when rendering the text, measured in pixels. If undefined or set to null, the default font size is used. The default font size is 12px but may be set by the 'setPropertyDefault' method.</p>
-  <p style='margin-left:2em'><b>fntWeight</b>:String or Number - The line weight used when rendering the text. This may be a string with the values 'normal' bold' etc or a number between 100 and 900 where 400 is 'normal' and 700 equivalent to 'bold'. If undefined or set to null, the default font size is used. The default font weight is 400 but may be set by the 'setPropertyDefault' method.</p>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>none</p>
+<p>The <b>drawHTMLText</b> method allows the HTML text 'str' to be written over the canvas element integrated with the Cango graphics context. The Cango method creates a small transparent overlay DIV element for each text string and positions it using the Cango world coordinate system. Any HTML text can be used. Mathematical expressions in LaTeX syntax will be correctly parsed by MathJax.</p>
+<p>The 'options' parameter is a JavaScript object which can hold several properties that configure how the text will be formatted as it is rendered onto the page over the canvas. Supported properties include 'x' and 'y' which set the world coordinates where the text drawing origin will be drawn. The options property 'lorg' (locate origin) can specify the spot within the text bounding box that will be drawn at the x,y coordinates. This may specify any of 9 possible locations 1=top-left, 2=top center, ... 9=lower-right corner.</p>
+<p>NOTE: Spaces in multi-word strings will generate newline breaks, Use non-breaking spaces (&amp;nbsp;) to keep words on the same line.</p>
+<p>NOTE: If the text is to be further processed after rendering, such as by MathJax utility then the '\' characters should be entered into 'str' as '\\' to be correctly interpreted.</p>
+<div style="padding-left:2em">
+  <h4>Parameters:</h4>
+  <p><b>str</b>:String - The text string to be written.</p>
+  <p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Properties below).</p>
+</div>
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 660px; margin: 2em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th style="width:15%">Name</th><th style="width:25%">Type</th><th>Range</th>
+</tr>
+<tr>
+<td>x</td><td>Number<br/>(world coordinates)</td><td>Point along X axis where Y axis will intersect (default x=0).</td>
+</tr>
+<tr>
+<td>y</td><td>Number<br/>(world coordinates)</td><td>Point along Y axis where X axis will intersect (default y=0).</td>
+</tr>
+<tr>
+<td>degs</td><td>Number</td><td>The number of degs a rotation applied to the text measured counter-clockwise. The center of rotation is the text drawing origin set by the 'lorg' value. The default, lorg=1, will set the top left corner of the bounding box as the drawing origin.</td>
+</tr>
+<tr>
+<td>lorg</td><td>Number</td><td> 1..9 (see <a href="CangoUserGuide.html#lorg">lorg</a>) (default lorg=1)</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number<br/>(pixels)</td><td>Height of text characters measured in pixels, default is the current Cango fontSize.</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number or String</td><td>'bold', 'normal' etc or a number 100..900, default is the current Cango fontWeight.</td>
+</tr>
+<tr>
+<td>fontFamily</td><td>String</td><td>Font family name, default is the current Cango fontFamily.</td>
+</tr>
+<tr>
+<td>fillColor</td><td>String</td><td>String specifying any valid CSS color to be used to render the text.</td>
+</tr>
+</table>
 
 <h4>Example:</h4>
 
-<div class="srcFmt">
+<div class="srcFmt" style="max-height:660px">
 <pre>
 function drawHTML(cvsID)
 {
   var gc = new Cango(cvsID),
       xmin = -50, xmax = 250,
       ymin = 0, ymax = 100,
-      t, s;
+      r, t, s;
 
-  gc.setGridboxRHC();
-  gc.setWorldCoords(xmin, ymin, xmax-xmin, ymax-ymin);
+  gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
 
-  t = "<b>HTML</b>&nbsp;text&nbsp;test</br>multi-line&nbsp;and</br>special&nbsp;chars&nbsp;too &lt; &amp; etc.";
-  gc.drawHTMLtext(t, -25, 80, "black", 14, 400);
+  r = "Test&nbsp;rotation degs:30&deg;";
+  gc.drawHTMLText(r, {x:170, y:70, fontsize:18, fontWeight:400, degs:30, fillcolor:"blue", lorg:5});
 
-  // test the MathJax access to the Cango text object
-  s = "MathJax works $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
-  gc.drawHTMLtext(s, -25, 40, "black", 12, 400);
+  t = "<b>HTML</b>&nbsp;text&nbsp;test multi-line&nbsp;and special&nbsp;chars&nbsp;too &lt; &amp; etc.";
+  gc.drawHTMLText(t, {x:-25, y:80, fontSize:16, fontWeight:"bold", fillColor:"brown"});
+
+  // test the MathJax access to the HTML overlay text
+  s = "MathJax and KaTeX work $$ v = \\sqrt{\\frac{p}{m + \\tfrac{1}{3}p} ln(\\frac{L}{c})}$$";
+
+  gc.drawHTMLText(s, {x:-25, y:40, fillColor:"red", fontSize:20, fontWeight:800});
+}
+</pre>
+</div>
+
+  <canvas id="cvs3" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 4.</b> Example of 'drawHTMLText' method.</p>
+</div>
+
+
+
+
+<hr class="ugHr" />
+<h3 id="drawVectorText" style="color:blue">drawVectorText</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawVectorText</b>(str[, options]);</p>
+<h4>Description:</h4>
+<p>Converts the text '<b>str</b>' to a Path object. The font used is the Hershey vector font. The character set comprises 96 printable ASCII characters and the full Greek alphabet.</p>
+<p>Special characters within the string may be specified by Unicode escapes. These are six characters long, \u followed by exactly four hexadecimal characters. If the hex character code is only one, two or three characters long, then the code must be padded with leading zeroes. The Greek letter '&pi;' which has character code 240 is written '\u03C0'. The hexadecimal part of this kind of character escape is not case sensitive ie. '\u03C0' and '\u03c0' are equivalent.</p>
+<p>The '<b>options</b>' parameter is a JavaScript object which can hold several properties that configure how the text will be formatted as it is rendered onto the page over the canvas. Supported properties include 'x' and 'y' which set the world coordinates where the text drawing origin will be drawn. The options property 'lorg' (locate origin) can specify the spot within the text bounding box that will be drawn at the x,y coordinates. This may specify any of 9 possible locations 1=top-left, 2=top center, ... 9=lower-right corner.</p>
+<p>NOTE: Since the string is drawn as a stroked Path, the color is set by the options property "strokeColor" rather than "fillColor" which sets the color of Text objects.</p>
+<div style="padding-left:2em">
+  <h4>Parameters:</h4>
+  <p><b>str</b>:String - The text string to be written.</p>
+  <p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Optional Properties below).</p>
+</div>
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 660px; margin: 2em auto;text-align:left" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th style="width:15%">Name</th><th style="width:25%">Type</th><th>Range</th>
+</tr>
+<tr>
+<td>x</td><td>Number<br/>(world coordinates)</td><td>Point along X axis where Y axis will intersect (default x=0).</td>
+</tr>
+<tr>
+<td>y</td><td>Number<br/>(world coordinates)</td><td>Point along Y axis where X axis will intersect (default y=0).</td>
+</tr>
+<tr>
+<td>degs</td><td>Number</td><td>The number of degs a rotation applied to the text measured counter-clockwise. The center of rotation is the text drawing origin set by the 'lorg' value. The default, lorg=1, will set the top left corner of the bounding box as the drawing origin.</td>
+</tr>
+<tr>
+<td>lorg</td><td>Number</td><td> 1..9 (see <a href="CangoUserGuide.html#lorg">lorg</a>) (default lorg=1)</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number<br/>(pixels)</td><td>Height of text characters measured in pixels, default is the current Cango fontSize.</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number or String</td><td>A number in the range 100..900, default is the current Cango fontWeight.</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>String</td><td>String specifying any valid CSS color to be used to render the text.</td>
+</tr>
+<tr>
+<td>bgFillColor</td><td>String</td><td>String specifying any valid CSS color to be used to fill the text bounding box.</td>
+</tr>
+</table>
+
+<h4>Example:</h4>
+
+<div class="srcFmt" style="max-height:660px">
+<pre>
+function vectorText(cvsID)
+{
+  var g = new Cango(cvsID);
+
+  g.setWorldCoordsRHC(-15, -15, 40);
+
+  g.drawVectorText("abcd \u0026 ABCD", {x:0, y:10, fontSize: 30});
+  g.drawVectorText("Greek Letters: \u03B1\u03B2\u03B3\u03B4 \u0391\u0392\u0393\u0394",
+    {x:0, y:5, fontSize: 15});
+  g.drawVectorText("strokeColor:'blue', lorg=7",
+    {x:0, y:0, strokeColor:"blue", fontSize:20, fontWeight:200, lorg:7});
+  g.drawVectorText("bgFillColor: lime, lorg 3",
+    {x:0, y:0, fontSize:15, fontWeight:700, lorg:3, bgFillColor:'lime', degs: 30});
 }
 </pre>
 </div>
@@ -534,48 +598,294 @@ function drawHTML(cvsID)
   <canvas id="cvs4" class="cvsEg" width="400" height="300"></canvas>
 
 <div class="captionHolder" style="width: 400px">
-  <p class="caption"><b>Figure 4.</b> Simple example of 'drawHTMLtext' method.</p>
+  <p class="caption"><b>Figure 5.</b> Example of 'drawVectorText' method.</p>
 </div>
 
+<h3>Vector Text character set</h3>
+
+<p>To generate the characters shown, insert the character (or its Unicode) into the string.</p>
+<table style="font-family: Consolas; width: 740px; margin: 1em 0;text-align:center" cellpadding="1" cellspacing="0" border="1">
+<tr><th colspan="16" style="height:30px; background-color:lightgray"><b>ASCII characters</b></th></tr>
+<tr>
+<td><span style="font-size: smaller">sp</span> <br> \u0020</td>
+<td>! <br> \u0021</td>
+<td>" <br> \u0022</td>
+<td># <br> \u0023</td>
+<td>$ <br> \u0024</td>
+<td>% <br> \u0025</td>
+<td>&amp; <br> \u0026</td>
+<td>' <br> \u0027</td>
+<td>( <br> \u0028</td>
+<td>) <br> \u0029</td>
+<td>* <br> \u002A</td>
+<td>+ <br> \u002B</td>
+<td>, <br> \u002C</td>
+<td>- <br> \u002D</td>
+<td>. <br> \u02E</td>
+<td>/ <br> \u002F</td>
+</tr>
+<tr>
+<td>0 <br> \u0030</td>
+<td>1 <br> \u0331</td>
+<td>2 <br> \u0332</td>
+<td>3 <br> \u0333</td>
+<td>4 <br> \u0334</td>
+<td>5 <br> \u0335</td>
+<td>6 <br> \u0336</td>
+<td>7 <br> \u0337</td>
+<td>8 <br> \u0338</td>
+<td>9 <br> \u0339</td>
+<td>: <br> \u033A</td>
+<td>; <br> \u033B</td>
+<td>&lt; <br> \u033C</td>
+<td>= <br> \u033D</td>
+<td>> <br> \u033E</td>
+<td>? <br> \u033F</td>
+</tr>
+<tr>
+<td>@ <br> \u0040</td>
+<td>A <br> \u0041</td>
+<td>B <br> \u0042</td>
+<td>C <br> \u0043</td>
+<td>D <br> \u0044</td>
+<td>E <br> \u0045</td>
+<td>F <br> \u0046</td>
+<td>G <br> \u0047</td>
+<td>H <br> \u0048</td>
+<td>I <br> \u0049</td>
+<td>J <br> \u004A</td>
+<td>K <br> \u004B</td>
+<td>L <br> \u004C</td>
+<td>M <br> \u004D</td>
+<td>N <br> \u004E</td>
+<td>O <br> \u004F</td>
+</tr>
+<tr>
+<td>P <br> \u0050</td>
+<td>Q <br> \u0051</td>
+<td>R <br> \u0052</td>
+<td>S <br> \u0053</td>
+<td>T <br> \u0054</td>
+<td>U <br> \u0055</td>
+<td>V <br> \u0056</td>
+<td>W <br> \u0057</td>
+<td>X <br> \u0058</td>
+<td>Y <br> \u0059</td>
+<td>Z <br> \u005A</td>
+<td>[ <br> \u005B</td>
+<td>\ <br> \u005C</td>
+<td>] <br> \u005D</td>
+<td>^ <br> \u005E</td>
+<td>_ <br> \u005F</td>
+</tr>
+<tr>
+<td>` <br> \u0060</td>
+<td>a <br> \u0061</td>
+<td>b <br> \u0062</td>
+<td>c <br> \u0063</td>
+<td>d <br> \u0064</td>
+<td>e <br> \u0065</td>
+<td>f <br> \u0066</td>
+<td>g <br> \u0067</td>
+<td>h <br> \u0068</td>
+<td>i <br> \u0069</td>
+<td>j <br> \u006A</td>
+<td>k <br> \u006B</td>
+<td>l <br> \u006C</td>
+<td>m <br> \u006D</td>
+<td>n <br> \u006E</td>
+<td>o <br> \u006F</td>
+</tr>
+<tr>
+<td>p <br> \u0070</td>
+<td>q <br> \u0071</td>
+<td>r <br> \u0072</td>
+<td>s <br> \u0073</td>
+<td>t <br> \u0074</td>
+<td>u <br> \u0075</td>
+<td>v <br> \u0076</td>
+<td>w <br> \u0077</td>
+<td>x <br> \u0078</td>
+<td>y <br> \u0079</td>
+<td>z <br> \u007A</td>
+<td>{ <br> \u007B</td>
+<td>| <br> \u007C</td>
+<td>} <br> \u007D</td>
+<td>~ <br> \u007E</td>
+<td> <br> </td>
+</tr>
+</table>
+
+
+<p>To generate the symbols shown, insert the Unicode shown below the symbol into the string.</p>
+<table style="font-family: Consolas; width: 740px; margin: 1em 0 2em 0;text-align:center" cellpadding="1" cellspacing="0" border="1">
+<tr><th colspan="16" style="height:30px; background-color:lightgray"><b>Special characters</b></th></tr>
+<tr>
+<td>&Alpha; <br> \u0391</td>
+<td>&Beta; <br> \u0392</td>
+<td>&Gamma; <br> \u0393</td>
+<td>&Delta; <br> \u0394</td>
+<td>&Epsilon; <br> \u0395</td>
+<td>&Zeta; <br> \u0396</td>
+<td>&Eta; <br> \u0397</td>
+<td>&Theta; <br> \u0398</td>
+<td>&Iota; <br> \u0399</td>
+<td>&Kappa; <br> \u039A</td>
+<td>&Lambda; <br> \u039B</td>
+<td>&Mu; <br> \u039C</td>
+<td>&Nu; <br> \u039D</td>
+<td>&Xi; <br> \u039E</td>
+<td>&Omicron; <br> \u039F</td>
+<td>&Pi; <br> \u03A0</td>
+</tr>
+<tr>
+<td>&Rho; <br> \u03A1</td>
+<td>&Sigma; <br> \u03A3</td>
+<td>&Tau; <br> \u03A4</td>
+<td>&upsih; <br> \u03A5</td>
+<td>&Phi; <br> \u03A6</td>
+<td>&Chi; <br> \u03A7</td>
+<td>&Psi; <br> \u03A8</td>
+<td>&Omega; <br> \u03A9</td>
+<td>&alpha; <br> \u03B1</td>
+<td>&beta; <br> \u03B2</td>
+<td>&gamma; <br> \u03B3</td>
+<td>&delta; <br> \u03B4</td>
+<td>&epsilon; <br> \u03B5</td>
+<td>&zeta; <br> \u03B6</td>
+<td>&eta; <br> \u03B7</td>
+<td>&theta; <br> \u03B8</td>
+</tr>
+<tr>
+<td>&iota; <br> \u03B9</td>
+<td>&kappa; <br> \u03BA</td>
+<td>&lambda; <br> \u03BB</td>
+<td>&mu; <br> \u03BC</td>
+<td>&nu; <br> \u03BD</td>
+<td>&xi; <br> \u03BE</td>
+<td>&omicron; <br> \u03BF</td>
+<td>&pi; <br> \u03C0</td>
+<td>&rho; <br> \u03C1</td>
+<td>&sigma; <br> \u03C3</td>
+<td>&tau; <br> \u03C4</td>
+<td>&upsilon; <br> \u03C5</td>
+<td>&phi; <br> \u03C6</td>
+<td>&chi; <br> \u03C7</td>
+<td>&psi; <br> \u03C8</td>
+<td>&omega; <br> \u03C9</td>
+</tr>
+<tr>
+<td>&deg; <br> \u00B0</td>
+<td>&middot; <br> \u00B7</td>
+<td>&times; <br> \u00D7</td>
+<td>&divide; <br> \u00F7</td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+<td> <br> </td>
+</tr>
+</table>
+
+
+
 <hr class="ugHr" />
-<h3 id="renderBoxText" style="color:blue">renderBoxText</h3>
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>renderBoxText</b>(txtObj, x, y, scl, degs, fgColor, bgColor);</p>
+<h3 id="drawArrow" style="color:blue">drawArrow</h3>
+<p class='syntax'>cgo.drawArrow(headX, headY [, options]);</p>
 <h4>Description:</h4>
-<p>Fills the 'txtObj' bounding box with color 'bgColor' the renders the Cobj of type TEXT into the box. The renderBoxText method applies translation, scaling and rotation transforms to the canvas drawing context, effectively moving the text object's drawing origin to 'x,y' and scaling the text from its reference size by a factor of 'scl'. The object can also be rotated by an angle of 'degs' degrees. The center of scaling and rotation is the drawing origin of the Cobj set by the Cobj.lorg property. Gradient fills are supported the gradient will be translated, rotated and scaled along with the object. If txtObj.border is set true, then the text is rendered with a border with color 'txtObj.strokeColor' and width 'txtObj.lineWidth'. Borders on the background box are not supported. If the txtObj dropShadow properties are non-zero then the text is rendered with a drop shadow but with no shadow on the background box.</p>
+<p>Draws a straight arrow shape. The arrow starting at world coordinates 0, 0 unless the options parameter has properties 'x' and/or 'y' in which case the arrow will be drawn from these x,y coordinates. The arrow head will end at the point with world coordinates (headX, headY). An arrow head is draw at the end point.  The arrow shaft width mat be set in either pixels or world coordinates and head size can be adjusted by specifying a head size scale factor relative to the shaft width.</p>
+<p>The arrow is a Shape object so it can be drawn with different colored border, a drop shadow or any of the other properties supported by Shape objects.</p>
+<p><b>NOTE</b>: The arrow shape is always drawn with the 'iso' property set <b>true</b> to preserve the arrow shape when independent X and Y world coordinate scaling is used.</p>
 <h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>obj</b>:Cobj - The TEXT type object to be rendered to the canvas. If txtObj Cobj is not type 'TEXT' then nothing is rendered.</p>
-  <p style='margin-left:2em'><b>x</b>,<b>y</b>:Numbers - X and Y coordinates of the position at which the drawing origin of the path will be located, measured in world coordinates.</p>
-  <p style='margin-left:2em'><b>scl</b>:Number - An optional scale factor by which the text and background box will be scaled. The same scale factor is applied to both x and y coordinates.</p>
-  <p style='margin-left:2em'><b>degs</b>:Number - Number of degrees by which the box text will be rotated, measured in degrees +ve counter clockwise.</p>
-  <p style='margin-left:2em'><b>fgColor</b>:String or canvasGradient- The foreground color with which the text will be rendered. The color may be solid color defined by a string in one of the CSS color formats or if a gradient color is to be used a reference to a canvasGradient object should be passed, see <a href="#colors">colors</a> section for detailed syntax.</p>
-  <p style='margin-left:2em'><b>bgColor</b>:String or canvasGradient- The background color with which the bounding box of the text will be filled prior to rendering the text over it. The color may be solid color defined by a string in one of the CSS color formats or if a gradient color is to be used a reference to a canvasGradient object should be passed, see <a href="#colors">colors</a> section for detailed syntax.</p>
+<div style="padding-left:2em">
+<p><b>headX, headY</b>:Numbers - X and Y coordinates of the tip of the arrow head. Measured in the world coordinates.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Options Properties below).</p>
+</div>
+
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="18%">Property Name</th><th width="22%">Type</th><th>Description</th>
+  </tr>
+  <tr>
+  <td>x</td><td>Number<br/> (World Coordinates)</td><td>X coordinates of the drawing origin, start of arrow shaft (default = 0).</td>
+  </tr>
+  <tr>
+  <td>y</td><td>Number<br/> (World Coordinates)</td><td>Y coordinates of the drawing origin, start of arrow shaft (default = 0).</td>
+  </tr>
+  <tr>
+  <td>shaftWidth</td><td>Number<br/>(pixels)</td><td>Width of the arrow shaft.</td>
+  </tr>
+  <tr>
+  <td>shaftWidthWC</td><td>Number<br/>(world coordinates)</td><td>Width of the arrow shaft, this value takes precedence over shaft width set in pixels by 'shaftWidth' property.</td>
+  </tr>
+  <tr>
+  <td>headSize</td><td>Number</td><td>Relative size of the head. Length of head is ~headSize*shaftWidth (default = 4).</td>
+  </tr>
+  <tr>
+  <td>fillColor</td><td align="left">CSS Color or gradient</td><td>see <a href="CangoUserGuide.html#colors">Colors</a></td>
+  </tr>
+</table>
+
+  <p>The other Shape object optional properties are also supported:</p>
+  <ul class="syntax" style="float:left; width:7em;">
+    <li>scl</li>
+    <li>degs</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>border</li>
+    <li>strokeColor</li>
+    <li>lineWidthWC</li>
+    <li>lineWidth</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>dashed</li>
+    <li>dashOffset</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>shadowOffsetX</li>
+    <li>shadowOffsetY</li>
+    <li>shadowBlur</li>
+    <li>shadowColor</li>
+  </ul>
+  <p style="clear:left;">(see Shape.<a href='CangoUserGuide.html#shapeSetProperty'>setProperty</a> method for more details).</p>
 
 <h4>Example:</h4>
 
 <div class="srcFmt">
 <pre>
-function drawHullo(cvsID)
+function drawArrows(cvsID)
 {
-  var hullo,
-      fgCol = "orange",
-      bgCol = "red",
-      g = new Cango(cvsID);
+  var gc = new Cango(cvsID),
+      xmin = -15, xmax = 25,
+      ymin = 0, ymax = 4;
 
-  g.setGridboxRHC();   // define viewport to be full canvas
-  g.setWorldCoords(0, 0, 10); // lower left is 0,0 canvas 10 units wide, square pixels
-  g.clearCanvas();
+  gc.gridboxPadding(10, 8, 2, 8);
+  gc.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+  gc.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:0, yOrigin:0, strokeColor:'gray'});
 
-  hullo = new Cobj(" Hullo World ", "TEXT", {
-    fillColor:fgCol,
-    fontSize:30,
-    lorg:5,
-    fontWeight:"bold" });
+  // test straight arrow
+  gc.drawArrow(20, 3, {
+    x:5, y:1,
+    shaftWidthWC:2,
+    headSize:4,
+    fillColor:'red',
+    border:true,
+    strokeColor:'blue',
+    lineWidth:2});
 
-  // orange text on red
-  g.renderBoxText(hullo, 5, 4, 1, 20, fgCol, bgCol);
-  // inverse text
-  g.renderBoxText(hullo, 5, 2, 1, 20, bgCol, fgCol);
+  gc.drawArrow(-10, 4, {
+    x:0, y:1,
+    shaftWidth: 8,
+    fillColor:'green'});
 }
 </pre>
 </div>
@@ -583,11 +893,127 @@ function drawHullo(cvsID)
   <canvas id="cvs5" class="cvsEg" width="400" height="300"></canvas>
 
 <div class="captionHolder" style="width: 400px">
-  <p class="caption"><b>Figure 4.</b> Simple example of 'renderBoxText' method.</p>
+  <p class="caption"><b>Figure 5.</b> Simple example of 'drawArrow' method.</p>
 </div>
 
 <hr class="ugHr" />
+<h3 id="drawArrowArc" style="color:blue">drawArrowArc</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>drawArrowArc</b>(radius, startAngle, stopAngle, options);</p>
+<h4>Description:</h4>
+<p>Draws a curved arrow whose shape is a circular arc of radius 'radius' starting at the angle 'startAngle' from the X axis and finishing at 'stopAngle'. An arrow head is drawn at the end with its tip at radius 'radius' and angle 'stopAngle'. The drawing origin will be at the center of the circular arc. If options properties 'x' and/or 'y' are specified then the center of the arc will be drawn at world coordinates x,y otherwise the center will be drawn at world coordinates 0,0.</p>
+<p><b>NOTE</b>: The arrow shape is always drawn with the 'iso' property set <b>true</b> to preserve the arrow shape when independent X and Y world coordinate scaling is used.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>radius</b>:Number - The radius of the circular arc formed by the arrow shaft. Measured in the world coordinates.</p>
+<p><b>startAngle</b>:Number - The angle at which the arrow arc starts . Measured in degrees from X axis.</p>
+<p><b>stopAngle</b>:Number - The angle at which the arrow arc stops. Measured in degrees from X axis.</p>
+<p><b>options</b>:Object - The values for the various optional properties may be passed as key-value pairs in this object (see Options Properties below).</p>
+</div>
 
+<h4>Optional Properties:</h4>
+
+<table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="18%">Property Name</th><th width="22%">Type</th><th>Description</th>
+  </tr>
+  <tr>
+  <td>x</td><td>Number<br/> (World Coordinates)</td><td>X coordinates of the drawing origin, start of arrow shaft (default = 0).</td>
+  </tr>
+  <tr>
+  <td>y</td><td>Number<br/> (World Coordinates)</td><td>Y coordinates of the drawing origin, start of arrow shaft (default = 0).</td>
+  </tr>
+  <tr>
+  <td>shaftWidth</td><td>Number<br/>(pixels)</td><td>Width of the arrow shaft.</td>
+  </tr>
+  <tr>
+  <td>shaftWidthWC</td><td>Number<br/>(world coordinates)</td><td>Width of the arrow shaft, this value takes precedence over shaft width set in pixels by 'shaftWidth' property.</td>
+  </tr>
+  <tr>
+  <td>headSize</td><td>Number</td><td>Relative size of the head. Length of head is ~headSize*shaftWidth (default = 4).</td>
+  </tr>
+  <tr>
+  <td>clockwise</td><td>Boolean</td><td>If true the arrow sweeps clockwise from startAngle to stopAngle, if false it sweeps counter-clockwise</td>
+  </tr>
+  <tr>
+  <td>fillColor</td><td>CSS Color or gradient</td><td>see <a href="CangoUserGuide.html#colors">Colors</a></td>
+  </tr>
+</table>
+
+  <p>The other Shape object optional properties are also supported:</p>
+  <ul class="syntax" style="float:left; width:7em;">
+    <li>scl</li>
+    <li>degs</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>border</li>
+    <li>strokeColor</li>
+    <li>lineWidthWC</li>
+    <li>lineWidth</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>dashed</li>
+    <li>dashOffset</li>
+  </ul>
+  <ul class="syntax"  style="float:left; width:7em;">
+    <li>shadowOffsetX</li>
+    <li>shadowOffsetY</li>
+    <li>shadowBlur</li>
+    <li>shadowColor</li>
+  </ul>
+  <p style="clear:left;">(see Shape.<a href='CangoUserGuide.html#shapeSetProperty'>setProperty</a> method for more details).</p>
+
+<h4>Example:</h4>
+
+<div class="srcFmt" style="max-height:600px">
+<pre>
+function arrowArcDemo(cvsID)
+{
+  var xmin = -15, xmax = 25,
+      ymin = -4, ymax = 4;
+
+  cgo = new Cango(cvsID),
+  cgo.clearCanvas("beige");
+  cgo.gridboxPadding(15, 2, 15, 2);  // data area, units are % of canvas width
+
+  cgo.setWorldCoordsRHC(xmin, ymin, xmax-xmin, ymax-ymin);
+  cgo.drawAxes(xmin, xmax, ymin, ymax, {
+    xOrigin: 0, yOrigin: 0,
+    xLabel:"X", yLabel:"Y",
+    fontSize: 10 });
+
+  cgo.drawArrowArc(8, 40, 280, {
+    x:-10,
+    y:-2,
+    clockwise:true,
+    shaftWidth:4,
+    fillColor:'black'});
+  cgo.drawArrowArc(12, 280, 40, {
+    clockwise:false,
+    shaftWidth:8,
+    fillColor:'green',
+    shadowOffsetX:0.50,
+    shadowOffsetY:-0.1,
+    shadowBlur:0.5,
+    shadowColor:'gray'});
+  cgo.drawArrowArc(15, 20, 156, {
+    clockwise: false,
+    shaftWidthWC: 1.7,
+    fillColor: 'steelblue',
+    border:true,
+    strokeColor:'red'});
+}
+</pre>
+</div>
+
+  <canvas id="cvs6" class="cvsEg" width="400" height="300"></canvas>
+
+<div class="captionHolder" style="width: 400px">
+  <p class="caption"><b>Figure 6.</b> Simple example of 'drawArrow' method.</p>
+</div>
+
+
+<hr class="ugHr" />
 <h2>Global utilities added</h2>
 
 <h3 id="toEngFixed"style="color:blue">toEngFixed</h3>
@@ -687,4 +1113,6 @@ Used with <tt>a</tt>, <tt>A</tt>, <tt>e</tt>, <tt>E</tt>, <tt>f</tt>, <tt>F</tt>
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/CangoAxesManual.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:39:05 GMT -->
 </html>

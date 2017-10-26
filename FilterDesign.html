@@ -1,15 +1,32 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/FilterDesign.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:22 GMT -->
 <head>
   <title>Digital Filter Design</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="DSP, Digital Signal Processing, Digital Filter Design, Kaiser-Bessel Window, Kaiser Filter Design, Finite Impulse Response Filter, FIR Filter" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="frontPanel-19.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
-    @import "frontPanel-19.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
 
     #coeffsList {
       height: 17em;
@@ -35,9 +52,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -53,119 +67,20 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="firFilter-11.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
+  <script type="text/javascript" src="firFilter-13.js"></script>
   <script type="text/javascript" src="dspUtils-11.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
 
   <script type="text/javascript">
-
     function genFilter()
     {
       var panel = document.getElementById("panelSA1"),
@@ -280,76 +195,58 @@
     {
       var g = new Cango(cvsID);
 
-      g.setGridboxRHC();
       g.clearCanvas();
-      g.setGridboxRHC(10,15,70,50);
-      g.setWorldCoords(0, 0, 100, 100);
+      g.gridboxPadding(10,15,20,5);
+      g.setWorldCoordsRHC(0, 0, 100, 100);
       // draw grid
-      g.drawPath(['M',0,0, 'L',100,0, 'M',0,0, 'L',0,70, 'M',100,0, 'L',100,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
-      g.drawText("0", 0, -10, {fillColor:'black', fontSize:12, lorg:2});
-      g.drawText("Fs/2", 100, -10, {fillColor:'black', fontSize:12, lorg:2});
+      g.drawPath(['M',0,0, 'L',100,0, 'M',0,0, 'L',0,70, 'M',100,0, 'L',100,70], {strokeColor:'rgba(128, 128, 128, 0.6)'});
+      g.drawText("0", {x:0, y:-10, fillColor:'black', fontSize:12, lorg:2});
+      g.drawText("Fs/2", {x:100, y:-10, fillColor:'black', fontSize:12, lorg:2});
       switch (type)
       {
         case 1:
         default:
-          g.drawPath(['M',0,50, 'L',40,50, 40,0, 100,0], 0, 0, {strokeColor:'black'});
-          g.drawPath(['M',40,0, 'L',40,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
-          g.drawText("Fa", 0, 80, {fillColor:'black', fontSize:12, lorg:8});
-          g.drawText("Fb", 40, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawPath(['M',0,50, 'L',40,50, 40,0, 100,0], {strokeColor:'black'});
+          g.drawPath(['M',40,0, 'L',40,70], {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", {x:0, y:80, fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", {x:40, y:80, fillColor:'black', fontSize:12, lorg:8});
           break;
         case 2:
-          g.drawPath(['M',0,0, 'L',60,0, 60,50, 100,50], 0, 0, {strokeColor:'black'});
-          g.drawPath(['M',60, 0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
-          g.drawText("Fa", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
-          g.drawText("Fb", 100, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawPath(['M',0,0, 'L',60,0, 60,50, 100,50], {strokeColor:'black'});
+          g.drawPath(['M',60, 0, 'L',60,70], {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", {x:60, y:80, fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", {x:100, y:80, fillColor:'black', fontSize:12, lorg:8});
           break;
         case 3:
-          g.drawPath(['M',0,0, 'L',30,0, 30,50, 60,50, 60,0, 100,0], 0, 0, {strokeColor:'black'});
-          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
-          g.drawText("Fa", 30, 80, {fillColor:'black', fontSize:12, lorg:8});
-          g.drawText("Fb", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawPath(['M',0,0, 'L',30,0, 30,50, 60,50, 60,0, 100,0], {strokeColor:'black'});
+          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", {x:30, y:80, fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", {x:60, y:80, fillColor:'black', fontSize:12, lorg:8});
           break;
         case 4:
-          g.drawPath(['M',0,50, 'L',30,50, 30,0, 60,0, 60,50, 100,50], 0, 0, {strokeColor:'black'});
-          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], 0, 0, {strokeColor:'rgba(128, 128, 128, 0.6)'});
-          g.drawText("Fa", 30, 80, {fillColor:'black', fontSize:12, lorg:8});
-          g.drawText("Fb", 60, 80, {fillColor:'black', fontSize:12, lorg:8});
+          g.drawPath(['M',0,50, 'L',30,50, 30,0, 60,0, 60,50, 100,50], {strokeColor:'black'});
+          g.drawPath(['M',30,0, 'L',30,70, 'M',60,0, 'L',60,70], {strokeColor:'rgba(128, 128, 128, 0.6)'});
+          g.drawText("Fa", {x:30, y:80, fillColor:'black', fontSize:12, lorg:8});
+          g.drawText("Fb", {x:60, y:80, fillColor:'black', fontSize:12, lorg:8});
           break;
        }
     }
   </script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
+
+      renderMathInElement(document.body);
+
       plotShape('grph1', 1);
       checkForm();
       genFilter();
-      enableStickyNav();
-
-      addEvent(window, 'resize', genFilter);
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -382,7 +279,7 @@
           <p>Rectangular windowing in the time domain will result in a frequency spectrum with the width of the pass band close to the desired value but with side lobes appearing at the band edges (the effects of time domain windowing on the frequency spectrum are discussed in more detail in the <a href="SpectrumAnalyser.html">Spectrum Analyser</a> page). To suppress the side lobes and make the filter frequency response approximate more closely to the ideal, the width of the window must be increased and the window function tapered down to zero at the ends. This will increase the width of the transition region between the pass and stop bands but will lower the side lobe levels outside the pass band.</p>
 
           <h3>Kaiser-Bessel filter generator</h3>
-          <p>The Kaiser-Bessel window function is simple to calculate and its parameters can be adjusted to produce the desired maximum side lobe level for a near minimal filter length. To demonstrate the power and simplicity of this technique, a Kaiser-Bessel filter generator is provided below. To use it, set the sample rate and the type of filter desired; low pass, band pass or high pass, then set the frequency of ideal filter edges and the minimum attenuation required in the stop band. Then press the "CALC FILTER" button. The filter coefficients are calculated and plotted along with a graph of the frequency response of the filter. The actually algorithm and the JavaScript code to implement it are presented at the bottom of the page.</p>
+          <p>The Kaiser-Bessel window function is simple to calculate and its parameters can be adjusted to produce the desired maximum side lobe level for a near minimal filter length. To demonstrate the power and simplicity of this technique, a Kaiser-Bessel filter generator is provided below. To use it, set the sample rate and the type of filter desired; low pass, band pass or high pass, then set the frequency of ideal filter edges and the minimum attenuation required in the stop band. Then press the "CALCULATE&nbsp;FILTER" button. The filter coefficients are calculated and plotted along with a graph of the frequency response of the filter. The actually algorithm and the JavaScript code to implement it are presented at the bottom of the page.</p>
 
 
 <div class="consoleHolder">
@@ -513,7 +410,7 @@
           <h3>Kaiser-Bessel filter design formulae</h3>
           <p>The methods used in this FIR generator were taken from the paper by J. F. Kaiser, "Nonrecursive digital filter design using I<sub>0</sub>-sinh window function". In this paper Kaiser presented empirical formulae for calculating the shape parameter of the Kaiser-Bessel window required to achieve a desired stop band side lode attenuation.</p>
 
-          <p>The values of window shape parameter \(\alpha\) needed to achieve the attenuation <i>Att</i> may be calculated from:</p>
+          <p>The values of window shape parameter \(\alpha\) needed to achieve the attenuation \( Att \) may be calculated from:</p>
 
 $$\alpha = \left\{ \begin{array}{l l} 0.1102(Att - 8.7) &amp; \quad Att &gt; 50\\ 0.5842(Att - 21)^{0.4} + 0.07886(Att - 21) &amp; \quad 21 \le Att \le 50\\ 0 &amp; \quad Att &lt; 21 \end{array}\right.$$
 
@@ -521,27 +418,33 @@ $$\alpha = \left\{ \begin{array}{l l} 0.1102(Att - 8.7) &amp; \quad Att &gt; 50\
 
 $$M \ge \frac{Att - 8}{14.36\ dF/{Fs}}$$
 
-          <p>The formula to actually generate the Kaiser-Bessel window coefficients is as follows:</p>
+          <p>The formula to actually generate the Kaiser-Bessel window coefficients is as follows:
 
-$$w[j] = \frac {I_0\left(\alpha\sqrt{1-\left(\displaystyle\frac{j-N\!p}{N\!p}\right)^2}\right)}{I_0(\alpha)} \qquad \mbox{for}\ \ 0 \le j &lt; M$$
-          <p style="margin-left: 2em">where:</p>
-<p style="margin-left: 2em">\(M\) is the number of points in the filter,</p>
-<p style="margin-left: 2em">\(N\!p = (M - 1)/2\),</p>
-<p style="margin-left: 2em">\(\alpha\) is the Kaiser-Bessel window shape factor,</p>
-<p style="margin-left: 2em">\(I_0()\) is the \(0^{th}\) order Bessel function of the first kind.</p>
+$$w[j] = \frac {I_0\left(\alpha\sqrt{1-\left(\displaystyle\frac{j-N\!p}{N\!p}\right)^2}\right)}{I_0(\alpha)} \qquad \text{for}\ \ 0 \le j &lt; M$$
 
-          <p>The two band-edge frequencies, Fa and Fb, determine the shape of the sinc function impulse response of the ideal filter. This sinc function may be calculated analytically. The formulae for this impulse response is:</p>
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(M\) is the number of points in the filter,<br/>
+\(N\!p = (M - 1)/2\),<br/>
+\(\alpha\) is the Kaiser-Bessel window shape factor,<br/>
+\(I_0()\) is the \(0^{th}\) order Bessel function of the first kind.
+</div>
+</p>
+
+          <p>The two band-edge frequencies, Fa and Fb, determine the shape of the sinc function impulse response of the ideal filter. This sinc function may be calculated analytically. The formulae for this impulse response is:
 
 $$A[j] = \frac{\sin \left(2\pi j \displaystyle\frac{F\!b}{F\!s}\right) - \sin \left(2\pi j \displaystyle\frac{F\!a}{F\!s}\right)}{\pi j}$$
+</p>
+          <p>Truncating this impulse response to just <i>M</i> points and suppressing the side lobes to the required level is achieved by windowing the ideal impulse response \(A[\ ]\), by the Kaiser-Bessel window \(w[\ ]\). The required filter coefficients are given by:
 
-          <p>Truncating this impulse response to just <i>M</i> points and suppressing the side lobes to the required level is achieved by windowing the ideal impulse response \(A[\ ]\), by the Kaiser-Bessel window \(w[\ ]\). The required filter coefficients are given by:</p>
+$$H[j] = A[j] w[j] \qquad \text{for} \ \ 0 \le j &lt; M$$
+</p>
 
-$$H[j] = A[j] w[j] \qquad \mbox{for} \ \ 0 \le j &lt; M$$
+<h3>Kaiser-Bessel filter design source code</h3>
+<p>The JavaScript code fragments to implement these formulae are shown below. The symmetry of the window function about the center point (j=Np) means that the window coefficients need only be calculated for <i>0&lt;j&lt;=Np</i>.</p>
+<p>JavaScript code to calculate the impulse response of the ideal filter.</p>
 
-          <h3>Kaiser-Bessel filter design source code</h3>
-          <p>The JavaScript code fragments to implement these formulae are shown below. The symmetry of the window function about the center point (j=Np) means that the window coefficients need only be calculated for <i>0&lt;j&lt;=Np</i>.</p>
-          <p>JavaScript code to calculate the impulse response of the ideal filter.</p>
-          <div class="srcFmt">
+<div class="srcFmt">
 <pre>
 A[0] = 2*(Fb-Fa)/Fs;
 for(j=1; j&lt;=Np; j++)
@@ -549,9 +452,11 @@ for(j=1; j&lt;=Np; j++)
   A[j] = (Math.sin(2*j*pi*Fb/Fs)-Math.sin(2*j*pi*Fa/Fs))/(j*pi);
 }
 </pre>
-          </div>
-          <p>The JavaScript code to calculate the desired shape Kaiser-Bessel window.</p>
-          <div class="srcFmt">
+</div>
+
+<p>The JavaScript code to calculate the desired shape Kaiser-Bessel window.</p>
+
+<div class="srcFmt">
 <pre>
 if (Att&lt;21)
 {
@@ -576,9 +481,10 @@ for (j=0; j&lt;Np; j++)
   H[j] = H[M-1-j];
 }
 </pre>
-          </div>
-          <p>The code to generate the \(0^{th}\) order Bessel function used in the code above is:</p>
-          <div class="srcFmt">
+</div>
+
+<p>The code to generate the \(0^{th}\) order Bessel function used in the code above is:</p>
+<div class="srcFmt">
 <pre>
 function Ino(x)
 {
@@ -596,10 +502,11 @@ function Ino(x)
   return s;
 }
 </pre>
-          </div>
-          <p>These algorithms are all that is needed to generate the filter coefficients for "low pass", "high pass" and "band pass" filters. The "band stop" filter type requires one additional manipulation. The coefficients start out the same as the equivalent "band pass" filter but then the center coefficient \(H[N\!p]\), is replaced with \(1 - H[N\!p]\), and all the other coefficients are inverted \(H[j] = -H[j]\).</p>
+</div>
 
-           <p>The complete JavaScript source code of the functions is all in the file <a href="dspUtils-11.js" download>dspUtils-11.js</a></p>
+<p>These algorithms are all that is needed to generate the filter coefficients for "low pass", "high pass" and "band pass" filters. The "band stop" filter type requires one additional manipulation. The coefficients start out the same as the equivalent "band pass" filter but then the center coefficient \(H[N\!p]\), is replaced with \(1 - H[N\!p]\), and all the other coefficients are inverted \(H[j] = -H[j]\).</p>
+
+ <p>The complete JavaScript source code of the functions is all in the file <a href="dspUtils-11.js" download>dspUtils-11.js</a></p>
 
         </div>  <!-- text_01 -->
       </div>   <!--  content -->
@@ -608,4 +515,6 @@ function Ino(x)
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/FilterDesign.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:24 GMT -->
 </html>

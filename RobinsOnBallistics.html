@@ -1,19 +1,33 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/RobinsOnBallistics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:20 GMT -->
 <head>
   <title>Benjamin Robins on Ballistics</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="keywords" content="ballistics, 'ballistics history', 'Robins ballistics', 'Benjamin Robins', 'muzzle velocity', 'ballistic pendulum', 'ballistics theory', 'physics of guns', 'The New Principles Of Gunnery'" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+  
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -29,138 +43,24 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
+
+      renderMathInElement(document.body);
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -193,7 +93,7 @@
 
 <img src="Images/RobinsNamePlate.jpg" style="float:right;width:250px; margin: 10px 40px;" alt="" />
 
-<p>Robins' work on ballistics was published in 1742, as a short book entitled "<a href="http://books.google.com.au/books?id=N3BUAAAAYAAJ&printsec=frontcover#v=onepage&q&f=false">The New Principles Of Gunnery</a>". A <a href="http://books.google.com.au/books/about/New_Principles_of_Gunnery.html?id=3j8FAAAAMAAJ&redir_esc=y">later edition</a>, published in 1805 includes &quot;<i>several other tracts on the improvement of practical gunnery</i>&quot; that Robins presented at the Royal Society.</p>
+<p>Robins' work on ballistics was published in 1742, as a short book entitled "<a href="http://books.google.com.au/books?id=N3BUAAAAYAAJ&amp;printsec=frontcover#v=onepage&q&f=false">The New Principles Of Gunnery</a>". A <a href="http://books.google.com.au/books/about/New_Principles_of_Gunnery.html?id=3j8FAAAAMAAJ&amp;redir_esc=y">later edition</a>, published in 1805 includes &quot;<i>several other tracts on the improvement of practical gunnery</i>&quot; that Robins presented at the Royal Society.</p>
 
 <p>&quot;The New Principles Of Gunnery&quot; has only 2 Chapters, in these Robins sets out a series of propositions which form a model of the physics of guns. He then reports the results of testing the model's predictions against experiment. A beautiful example of the scientific method.</p>
 
@@ -237,7 +137,7 @@
 
 <p>He takes as the example, a gun with barrel length 45&quot;, a bore of &frac34;" and the length of the powder charge in the barrel of 2&#x215D;" firing a lead ball. Robins models the interior ballistics of the gun as follows.</p>
 
-<p>The volume of exploding gunpowder produces a gas occupying the same volume as the powder and so exerts a pressure 1000 &times; atmospheric pressure. The force on the ball is this pressure &times; the cross-sectional area of the barrel. As the ball is pushed down the barrel the pressure will drop as the volume behind the ball increases. Boyle's law states that the pressure of a gas is inversely proportional to the volume it occupies. The volume increases linearly with distance down the barrel, so the pressure will be inversely proportional to the distance the ball moves down the barrel. Robins draws the graph of the force shown in Fig 1.</p>
+<p>The volume of exploding gunpowder produces a gas occupying the same volume as the powder and so exerts a pressure 1000 &times; atmospheric pressure. The force on the ball is this pressure &times; the cross-sectional area of the barrel. As the ball is pushed down the barrel the pressure will drop as the volume behind the ball increases. Boyle's law states that the pressure of a gas is inversely proportional to the volume it occupies. The volume increases linearly with distance down the barrel, so the pressure will be inversely proportional to the distance the ball moves down the barrel. Robins draws the graph of the force shown in Fig&nbsp;1.</p>
 
 <div class="figHolder" style="width: 350px">
   <img src="Images/Robins-diagram-01.jpg" alt="" />
@@ -246,78 +146,86 @@
   </div>
 </div>
 
-<p> The line HNQ represents the force on the ball due to the gas pressure, which falls as <i>1/x</i>,</p>
+<p> The line HNQ represents the force on the ball due to the gas pressure, which falls as \( \frac{1}{x} \),</p>
 
 $$F(x) = \frac{k}{x} $$
 
-<p>where <i>k</i> is a constant and <i>x</i> is the distance from the breech end of the barrel. The force on the ball immediately after the explosion, <i>F<sub>0</sub></i> is represented by the line FH, this is equal to the initial pressure, P<sub>0</sub>, acting on the cross-sectional area of the ball, <i>A</i>.</p>
+<p>where \(k\) is a constant and \(x\) is the distance from the breech end of the barrel.</p>
+
+<p>The force on the ball immediately after the explosion, \(F_0\) is represented by the line FH, this is equal to the initial pressure, \(P_0\), acting on the cross-sectional area of the ball, \(A\).
 
 $$F_0 = P_0 \; A $$
 
-<p>and</p>
+and
 
 $$ P_0 = R \; P_{atm}, $$
 
-<p>where R is the ratio of the initial gas pressure to atmospheric pressure, \( P_{atm}\), which Robins measured to be 1000 from Prop. VI. Hence</p>
 
-$$  \begin{eqnarray}
-F_0 & = & R  P_{atm}  A \\
-    & = & R P_{atm} \pi (\frac{ d}{2})^2
- \end{eqnarray}
+where \(R\) is the ratio of the initial gas pressure to atmospheric pressure, \( P_{atm}\), which Robins measured to be 1000 from Prop.&nbsp;VI.</p>
+
+<p>Hence
+
+$$  \begin{aligned}
+F_0 &= R  P_{atm}  A \\
+    &= R P_{atm} \pi (\frac{ d}{2})^2
+ \end{aligned}
 $$
+</p>
 
-<p><i>k</i> can be calculated from the initial force on the ball at its initial position, a distance <i>c</i> along the barrel. <i>c</i> is the length of powder charge in the barrel <i>c = 2&#x215D;"</i></p>
+<p>\(k\) can be calculated from the initial force on the ball at its initial position, a distance \(c\) along the barrel. \(c\) is the length of powder charge in the barrel \(c\) <i>= 2&#x215D;"</i></p>
 
 <p>Hence</p>
 
 $$ F_0 = k/c $$
 
-<p>Noting that atmospheric pressure is equivalent to the weight of a column of water 34 ft high, and the density of water is 62.4 lb/ft<sup>2</sup>, and the diameter of the ball is &frac34;"</p>
+<p>Noting that atmospheric pressure is equivalent to the weight of a column of water 34&nbsp;ft high, and the density of water is 62.4&nbsp;lb/ft<sup>2</sup>, and the diameter of the ball is &frac34;"</p>
 
-$$\begin{eqnarray}
-   k & = & 1000 \times 34 \times 62.4 \times 32.2 \times \pi \left(\frac{0.75}{2 \times 12}\right)^2 \times \left(\frac{2.625}{12}\right) \\
-     & = & 45,800.
-\end{eqnarray} $$
+$$\begin{aligned}
+   k &= 1000 \times 34 \times 62.4 \times 32.2 \times \pi \left(\frac{0.75}{2 \times 12}\right)^2 \times \left(\frac{2.625}{12}\right) \\
+     &= 45,800.
+\end{aligned} $$
 
-<p>so when the ball has moved a distance <i>x</i> down the barrel, shown in the diagram as point M, the force on the ball, represented by length MN, will be</p>
+<p>so when the ball has moved a distance <i>x</i> down the barrel, shown in the diagram as point M, the force on the ball, represented by length MN, will be
 
-$$ F(x) = \frac{45,800}{x} \quad\mbox{ where x is in ft} $$
+$$ F(x) = \frac{45,800}{x}$$
 
-<p>To calculate the expected muzzle velocity of the ball, Robins quotes from Newton's &quot;Principia&quot; that the integral of the force as a function of distance moved by a body is proportional to the square of the velocity the body acquires i.e. equal to its increase in kinetic energy</p>
+where \(x\) is in ft.</p>
+
+<p>To calculate the expected muzzle velocity of the ball, Robins quotes from Newton's &quot;Principia&quot; that the integral of the force as a function of distance moved by a body is proportional to the square of the velocity the body acquires i.e. equal to its increase in kinetic energy
 
 $$ \tfrac{1}{2} m v^2 = \int F(x) dx $$
 
-<p>where <i>m</i> is the mass of the Lead ball &frac34;" diameter = 0.09 lb</p>
+where \(m\) is the mass of the Lead ball &frac34;" diameter = 0.09 lb</p>
 
-<p>Noting that the integral of \(\frac{1}{x}\) is \(ln(x)\), the integral of the force on the ball as it travels from point F&nbsp;(<i>x</i>&nbsp;=&nbsp;c) to B&nbsp;(<i>x</i>&nbsp;=&nbsp;L), where c is the length of the charge (= 2&#x215D;") and L the length of the barrel (= 45&quot;).</p>
+<p>Noting that the integral of \(\frac{1}{x}\) is \(ln(x)\), the integral of the force on the ball as it travels from point <b>F</b>&nbsp;( \( x = c \) ) to <b>B</b>&nbsp;( \( x = L \) ), where \(c\) is the length of the charge (= 2&#x215D;") and \(L\) the length of the barrel (= 45&quot;).</p>
 
-$$ \begin{eqnarray}
-  v^2 & = & \frac{2k}{m} \int_{c}^{L} \frac{1}{x}dx \\
-   & = & \frac{2 \times 45,800}{0.09} \int_{2.6}^{45} \frac{1}{x}dx \\
-   & = & \frac{2 \times 45,800}{0.09} \times (ln(45) - ln(2.625)) \\
-   & = & 1,018,000 \times 2.84 \\
-   & = & 2,890,000 \\
+$$ \begin{aligned}
+  v^2 &= \frac{2k}{m} \int_{c}^{L} \frac{1}{x}dx \\
+   &= \frac{2 \times 45,800}{0.09} \int_{2.6}^{45} \frac{1}{x}dx \\
+   &= \frac{2 \times 45,800}{0.09} \times (ln(45) - ln(2.625)) \\
+   &= 1,018,000 \times 2.84 \\
+   &= 2,890,000 \\
 \\
- v & = & 1700 \quad ft/sec.
-\end{eqnarray} $$
+ v &= 1700 \quad ft/sec.
+\end{aligned} $$
 
 <p>Robins uses some slightly different values for the parameters at various points in his calculation and reports a muzzle velocity of 1668 ft/sec.</p>
 
-<p>Robins then goes on to state how this velocity would scale with the various factors in the calculation, length of barrel, different bore etc. His points may be summarised by the following expression for muzzle velocity:</p>
+<p>Robins then goes on to state how this velocity would scale with the various factors in the calculation, length of barrel, different bore etc. His points may be summarised by the following expression for muzzle velocity:
 
-$$ v \propto \sqrt{\frac{c}{d} ln(\frac{L}{c})}  \\
-\\
-\mbox{where:} \\
-\mbox{c = distance to the back of the ball} \\
-\mbox{d = bore diameter} \\
-\mbox{L = full length of the barrel} \\
-$$
+$$ v \propto \sqrt{\frac{c}{d} ln(\frac{L}{c})} $$
+
+<div style="margin-left:3em; text-indent:-3em">
+where: \(c\) = distance to the back of the ball,<br/>
+\(d\) = bore diameter,<br/>
+\(L\) = full length of the barrel<br/>
+</div>
+</p>
 
 
+<p>In the scholium to Prop. VII, a further example is given of the way the muzzle velocity scales, the velocity is inversely proportional to the square root of the mass of the ball. If the same gun is loaded with 2 balls (shot mass is doubled but all else the same), then the muzzle velocity would be change by a factor \( \frac{1}{\sqrt{2}} = 0.707\). If the single ball has muzzle velocity of 1700&nbsp;ft/sec, then double shotted, the muzzle velocity will be approximately 1200&nbsp;ft/sec.</p>
 
-<p>In the scholium to Prop. VII, a further example is given of the way the muzzle velocity scales, the velocity is inversely proportional to the square root of the mass of the ball. If the same gun is loaded with 2 balls (shot mass is doubled but all else the same), then the muzzle velocity would be change by a factor \( \frac{1}{\sqrt{2}} = 0.707\). If the single ball has muzzle velocity of 1700 ft/sec, then double shotted, the muzzle velocity will be approximately 1200 ft/sec.</p>
-
-<p>[A more complete description of the equation for muzzle velocity implied by Robins' propositions is given in the <a href="CannonBallistics.html">Smooth Bore Cannon Ballistics</a> page.]</p>
+<p>[A more complete description of the equation for muzzle velocity implied by Robins' propositions is given in the <a href="CannonBallistics.html">Smooth&nbsp;Bore&nbsp;Cannon&nbsp;Ballistics</a> page.]</p>
   </li>
 
   <li><b><i>Prop VIII. To determine the Velocity, which any Ball moves with at any Distance from the Piece, it is discharged from.</i></b>
@@ -336,26 +244,32 @@ $$
 
 <p>Robins shows how the velocity of the bullet can be calculated by working through an example.</p>
 
-<p>A compound pendulum may be modelled as a simple pendulum with the same period, if the simple pendulum's length is equal to the distance from the pivot to the centre of oscillation <i>R<sub>co</sub></i>, given by</p>
+<p>A compound pendulum may be modelled as a simple pendulum with the same period, if the simple pendulum's length is equal to the distance from the pivot to the centre of oscillation <i>R<sub>co</sub></i>, given by
 $$ R_{co} = \frac{I}{M R_{cm}}  $$
 
-$$\mbox{where: }\\
-I \mbox{ is the moment of inertia of the compound pendulum,} \\
-M \mbox{ is the mass of the compound pendulum,}\\
-\mbox{and } R_{cm} \mbox{ is the distance from the pivot point to the centre of mass.} $$
+<div style="margin-left:3em; text-indent:-3em">
+where: \(I\) is the moment of inertia of the compound pendulum, <br/>
+\(M\) is the mass of the compound pendulum, <br/>
+\(R_{cm} \) is the distance from the pivot point to the centre of mass.
+</div>
+</p>
 
-<p>The moment of inertia of a compound pendulum is given by</p>
+<p>The moment of inertia of a compound pendulum is given by
 
 $$I = \left(\frac{T^2}{4\pi^2} \right)MgR_{cm} $$
 
-$$\mbox{where } T \mbox{ is the period of its swing. }$$
+where \(T\) is the period of its swing.</p>
 
 <p>Robins' ballistic pendulum had the following parameters</p>
 
-$$M = 56.19 \mbox{ lb} \\
-R_{cm} = 52&quot; \\
-T = 2.53 \mbox{ sec}$$
+$$ \begin{aligned} 
+  M &= 56.19 \text{lb} \\
+  R_{cm} &= 52&quot; \\
+  T &= 2.53 \text{ sec} 
+\end{aligned} $$
+
 <p>yielding</p>
+
 $$R_{co} = 62.65&quot;. $$
 
 <p>The equivalent simple pendulum model will have the same moment of inertia if its mass, \(M_{co}\) is taken to be</p>
@@ -363,51 +277,56 @@ $$M_{co} = \frac{R_{cm}}{R_{co}} M. $$
 
 <p>The equivalent mass of the simple pendulum is therefore 46.63 <i>lb</i>.</p>
 
-<p>Robins fired bullets at the centre of the wooden block, 66&quot; from the pivot. He models the system for this point of impact as a simple pendulum 66&quot; long and with the same moment of inertia as the compound pendulum, equivalent to a mass,<i> M'</i> at distance 66&quot; from the pivot. <i>M'</i> is given by
-$$ M' = \frac{62.65}{66}\times 46.63 = 42.02 \mbox{ lb.} $$
+<p>Robins fired bullets at the centre of the wooden block, 66&quot; from the pivot. He models the system for this point of impact as a simple pendulum 66&quot; long and with the same moment of inertia as the compound pendulum, equivalent to a mass, \( M'\) at distance 66&quot; from the pivot. \( M'\) is given by
+$$ M' = \frac{62.65}{66}\times 46.63 = 42.02 \text{ lb.} $$
 </p>
 
-<p>The calculation of the bullet velocity is then a two step process. The conservation of momentum gives the following</p>
+<p>The calculation of the bullet velocity is then a two step process. The conservation of momentum gives the following:
 
-$$  \begin{eqnarray}
-mv & = & (M' + m)V \\
-v & = & \left(\frac{M' + m}{m}\right)V
-  \end{eqnarray}
+$$  \begin{aligned}
+  mv &= (M' + m)V \\
+   v &= \left(\frac{M' + m}{m}\right)V
+  \end{aligned}
 $$
 
-$$\mbox{where: }\\
-m \mbox{ is the mass of the bullet,} \\
-v \mbox{ is velocity of the bullet just before impact} \\
-V \mbox{ is the velocity of the merged pendulum and bullet just after impact, at a distance 66&quot; from the pivot.}$$
+<div style="margin-left:3em; text-indent:-3em">
+where: \(m\) is the mass of the bullet,<br/>
+\(v\) is velocity of the bullet just before impact<br/>
+\(V\) is the velocity of the merged pendulum and bullet just after impact, at a distance 66&quot; from the pivot.
+</div>
+</p>
 
-<p>The bullets used in this experiment had a mass \( m = \frac{1}{12} \mbox{ lb } (0.083\mbox{ lb}) \), substituting,</p>
+<p>The bullets used in this experiment had a mass \( m = \frac{1}{12} \text{ lb } (0.083\text{ lb}) \). Substituting,</p>
 
-$$  \begin{eqnarray}
- v & = & \left(\frac{42.02 + 0.083}{0.083} \right) V \\
-   & = & 505 \times V
-  \end{eqnarray}
+$$  \begin{aligned}
+ v &= \left(\frac{42.02 + 0.083}{0.083} \right) V \\
+   &= 505 \times V
+  \end{aligned}
 $$
 
-<p>Robins then calculates <i>V</i> using the conservation of energy. The equivalent simple pendulum, with initial velocity V, will swing up to some maximum height, <i>h</i>, converting its kinetic energy into potential energy at the top of the swing.</p>
+<p>Robins then calculates \(V\) using the conservation of energy. The equivalent simple pendulum, with initial velocity \(V\), will swing up to some maximum height, \(h\), converting its kinetic energy into potential energy at the top of the swing.
 
 $$ \frac{1}{2}(M' + m)V^2 = (M' + m)gh $$
 
-$$\mbox{where } h \mbox{ is the maximum vertical height reached by the point of impact.}$$
+where \(h\) is the maximum vertical height reached by the point of impact.
 
 $$ V = \sqrt{2gh} $$
+</p>
 
 <p>Substituting into the equation for the bullet's velocity</p>
 
 $$v = 505 \times \sqrt{2gh} $$
 
-<p>The ribbon, attached at a distance of 71&#x215B;" from the pivot gave a measurement of the arc length of 17&frac14;", this scales to 16&quot; as the length of the arc described by the point of impact, the corresponding vertical height, <i>h</i> may be calculated as</p>
+<p>The ribbon, attached at a distance of 71&#x215B;" from the pivot gave a measurement of the arc length of 17&frac14;", this scales to 16&quot; as the length of the arc described by the point of impact, the corresponding vertical height, \(h\) may be calculated as
 
 $$ h = 66 - 66cos\left(\frac{16}{66}\right) = 1.93&quot; $$
+</p>
 
-<p>Hence the velocity of the bullet is</p>
-$$ v = 1625 \mbox{ ft/sec} $$
+<p>Hence the velocity of the bullet is
+$$ v = 1625 \text{ ft/sec} $$
+</p>
 
-<p>Robins introduces some inaccuracy when rounding various parameters and he quotes a muzzle velocity value of 1641 ft/sec.</p>
+<p>Robins introduces some inaccuracy when rounding various parameters and he quotes a muzzle velocity value of 1641&nbsp;ft/sec.</p>
 
 <h4>Corrected Muzzle Velocity</h4>
 
@@ -417,34 +336,34 @@ $$ v = 1625 \mbox{ ft/sec} $$
 
 <p>The corrected calculation is as follows:</p>
 
-<p>The height, \(h_{co}\) that the centre of oscillation rises, where the energy is all potential, is given by</p>
+<p>The height, \(h_{co}\) that the centre of oscillation rises, where the energy is all potential, is given by
 
 $$h_{co} = \left(\frac{62.65}{66} \right) h $$
-$$\mbox{where } h \mbox{ is the height the point of impact reached.} $$
+where \(h\) is the height the point of impact reached.</p>
 
-<p>The velocity that the centre of oscillation will reach at the bottom of the swung, where all energy would be kinetic, V<sub>co</sub> will be</p>
+<p>The velocity that the centre of oscillation will reach at the bottom of the swung, where all energy would be kinetic, \(V_{co} \) will be
 
 $$V_{co} = \sqrt{2g\frac{62.65}{66}h} $$
-
+</p>
 <p>and this means that the velocity of the point of impact will be</p>
 
-$$  \begin{eqnarray}
-V & = & \left(\frac{66}{62.65}\right) \sqrt{2g\frac{62.65}{66}h} \\
-  & = & \sqrt{\frac{66}{62.65}} \sqrt{2gh}
- \end{eqnarray} $$
+$$  \begin{aligned}
+V &= \left(\frac{66}{62.65}\right) \sqrt{2g\frac{62.65}{66}h} \\
+  &= \sqrt{\frac{66}{62.65}} \sqrt{2gh}
+ \end{aligned} $$
 
-<p>So the original equation for the bullet velocity</p>
+<p>So the original equation for the bullet velocity
 
 $$v = 505 \times \sqrt{2gh} $$
 
-<p>becomes</p>
+becomes
 
-$$ \begin{eqnarray}
-v & = & 505 \times \sqrt{\frac{66}{62.65}} \times \sqrt{2g 1.93} \mbox{ in/sec}\\
-  & = & 1625 \times \sqrt{\frac{66}{62.65}} \mbox{ ft/sec}\\
-v & = & 1668 \mbox{ ft/sec.}
- \end{eqnarray} $$
-
+$$ \begin{aligned}
+v &= 505 \times \sqrt{\frac{66}{62.65}} \times \sqrt{2g 1.93} \text{ in/sec}\\
+  &= 1625 \times \sqrt{\frac{66}{62.65}} \text{ ft/sec}\\
+v &= 1668 \text{ ft/sec.}
+ \end{aligned} $$
+</p>
   </li>
 
   <li><b><i>Prop IX. To compare the actual Velocities with which Bullets of different Kinds are discharged from their respective Pieces, with their Velocities computed from the Theory.</i></b>
@@ -490,59 +409,67 @@ v & = & 1668 \mbox{ ft/sec.}
   </li>
   <li><b><i>Prop II. To determine the resistance of the air to projectiles by experiments.</i></b>
       <p>To test his hypothesis in Prop. I, Robins measures the velocity of &frac34;" musket balls using his ballistic pendulum. The bullet speed was measured at 25 ft, 75 ft and 125 ft from the muzzle. The velocities were 1670, 1550 and 1425 ft/sec respectively. This represents a drag 120 times the weight of the ball which, weighing \(\frac{1}{12}\)lb would amount to 10 lb weight of drag.</p>
-<p>to arrive at this figure Robins would have used the equation of motion </p>
+<p>to arrive at this figure Robins would have used the equation of motion:
 
   $$ v^2 = u^2 + 2ax $$
 
-  $$\mbox{where: }\\
-  v \mbox{ is the final velocity}\\
-  u \mbox{ is the initial velocity}\\
-  a \mbox{ is the acceleration, in this case deceleration due to drag}\\
-  x \mbox{ the distance travelled.}$$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(v\) is the final velocity,<br/>
+\(u\) is the initial velocity,<br/>
+\(a\) is the acceleration, in this case deceleration due to drag,<br/>
+\(x\) the distance travelled.
+</div>
+</p>
 
-<p>re-arranging and substituting,</p>
+<p>re-arranging and substituting,
 
-$$ \begin{eqnarray}
-a & = &\frac{1550^2 - 1670^2}{2 \times 50}\\
-& = &-3864 \mbox{  ft/sec}^2
-\end{eqnarray} $$
+$$ \begin{aligned}
+a &= \frac{1550^2 - 1670^2}{2 \times 50}\\
+  &= -3864 \text{  ft/sec}^2
+\end{aligned} $$
 
-<p>taking \( g = -32 \mbox{ ft/sec}^2 \),</p>
+taking \( g = -32 \text{ ft/sec}^2 \),
 
 $$ a = 120 g. $$
-
+</p>
 <p>Since the bullet weighed \(\frac{1}{12}\)lb this is equivalent to 10 lb weight of drag.</p>
 
-<p>Robins compares this value to that predicted by Newton's model for fluid drag. Newton investigated the resistance to motion through a fluid, which he discussed in Vol&nbsp;2 of his &quot;Principia&quot;. Newton's measurements of drag were all conducted at low speeds. He concluded that the resistance is be proportional to the square of the velocity, more specifically, the drag force, \(F_D \) is given by</p>
+<p>Robins compares this value to that predicted by Newton's model for fluid drag. Newton investigated the resistance to motion through a fluid, which he discussed in Vol&nbsp;2 of his &quot;Principia&quot;. Newton's measurements of drag were all conducted at low speeds. He concluded that the resistance is be proportional to the square of the velocity, more specifically, the drag force, \(F_D \) is given by
 
 $$ F_D = C_D \frac{1}{2}\rho A v^2$$
-$$ \mbox{where: }\\
-C_D \mbox{ is the drag coefficient = 0.5 for a sphere}\\
-\rho \mbox{ is the density of air = 0.074} \quad \mbox{lb/ft}^3 \\
-A \mbox{ is the cross-sectional area of the projectile = } \pi({\frac{3}{8}\frac{1}{12})^2} \quad \mbox{ft}^2.$$
 
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\( C_D \) is the drag coefficient \( = 0.5 \) for a sphere<br/>
+\( \rho \) is the density of air \( = 0.074 \quad \text{lb/ft}^3 \)<br/>
+\( A \) is the cross-sectional area of the projectile \(= \pi({\frac{3}{8}\frac{1}{12})^2} \quad \text{ft}^2 \).
+</div>
+</p>
 
-<p>Hence the drag predicted by Newton's model for Robins' musket ball, travelling at 1600 ft/sec would be</p>
+<p>Hence the drag predicted by Newton's model for Robins' musket ball, travelling at 1600 ft/sec would be
 
-$$ F_D = 145.3 \mbox{ lb ft/sec}^2$$
+$$ F_D = 145.3 \text{ lb ft/sec}^2$$
 
-<p>taking \( g = 32 \mbox{ ft/sec}^2 \),</p>
+taking \( g = 32 \text{ ft/sec}^2 \),
 
-$$ F_D = 4.5 \mbox{ lb weight.} $$
+$$ F_D = 4.5 \text{ lb weight.} $$
 
-<p>Robins quotes \(4\frac{1}{6}\) lb.</p>
+Robins quotes \(4\frac{1}{6}\) lb.</p>
 
 <p>Robins measurement indicated a drag of 10 lb, for bullets travelling at around 1600 ft/sec, a force between 2 and 3 times the drag predicted by the Newtonian model.</p>
 
 
 <p>He repeated the experiment taking the average of 5 shots over 175 ft and found the ratio of the drag for high speed drag compared to the drag observed by Newton and others for low speed experiments, to be nearer to the ratio of 3 to 1.</p>
 <p>Repeating the experiments for projectile velocities near 1000 ft/sec Robins finds the drag to be about 1.6 times that the Newtonian model predicts.</p>
-<p>To test even lower speeds Robins measured the time of flight of a bullets with initial velocity of 400 ft/sec, they typically travelled about 950 ft in about 4.25 sec. The Newtonian drag formula for time of flight over this distance is</p>
+<p>To test even lower speeds Robins measured the time of flight of a bullets with initial velocity of 400 ft/sec, they typically travelled about 950 ft in about 4.25 sec. The Newtonian drag formula for time of flight over this distance is:
 
 $$ s = \frac{v_t^2}{g} ln\left(\frac{v_t^2 + gut}{v_t^2} \right) $$
-$$\mbox{where } v_t \mbox{ is the terminal velocity for freefall } = \sqrt{\frac{2mg}{C_DA\rho}} $$
 
-<p>which gives an expected time of flight for 950 ft of 3.2 sec. So the observed time of flight is slower than Newtonian V<sup>2</sup> drag by a factor of \((4.25/3.2)^2 = 1.76\).</p>
+where \(v_t \) is the terminal velocity for freefall \(= \sqrt{\frac{2mg}{C_DA\rho}} \)
+</p>
+
+<p>which gives an expected time of flight for 950 ft of 3.2 sec. So the observed time of flight is slower than Newtonian \(V^2\) drag by a factor of \((4.25/3.2)^2 = 1.76\).</p>
   </li>
 
   <li><b><i>Prop III. To assign the different augmentations of the resisting power of the air according to the different velocities of the resisted body.</i></b>
@@ -570,16 +497,19 @@ $$\mbox{where } v_t \mbox{ is the terminal velocity for freefall } = \sqrt{\frac
       </tbody>
     </table>
 
-    <p>In a corollary to this proposition, Robins calculates the charge that would give maximum velocity to a cannonball. Increasing the charge beyond this value will actually result in a lesser muzzle velocity. Robins would have used Newton's calculus to find the maximum value of his equation for the muzzle velocity as a function of the length of charge. Robins doesn't actually show the equation, but, as shown on this page in the discussion of Ch 1, Prop. VII, it is of the form</p>
+    <p>In a corollary to this proposition, Robins calculates the charge that would give maximum velocity to a cannonball. Increasing the charge beyond this value will actually result in a lesser muzzle velocity. Robins would have used Newton's calculus to find the maximum value of his equation for the muzzle velocity as a function of the length of charge. Robins doesn't actually show the equation, but, as shown on this page in the discussion of Ch 1, Prop. VII, it is of the form:
 
 $$ v = k \sqrt{c \times ln(\frac{L}{c})} $$
 
-$$ \mbox{where:} \\
-\mbox{k = is a constant} \\
-\mbox{L = full length of the barrel} \\
-\mbox{c = length of the powder charge, distance to the back of the ball} $$
+<div style="margin-left:3em; text-indent:-3em">
+where:
+\(k\) = is a constant<br/>
+\(L\) = full length of the barrel<br/>
+\(c\) = length of the powder charge, distance to the back of the ball.
+</div>
+</p>
 
-<p>The maximum velocity as a function of charge length, c, will occur where the differential, with respect to c, of this function is 0.</p>
+<p>The maximum velocity as a function of charge length, \(c\), will occur where the differential, with respect to \(c\), of this function is 0.</p>
 
 $$ln(\frac{L}{c}) - 1 = 0$$
 $$\frac{L}{c} = e. $$
@@ -611,4 +541,6 @@ $$\frac{L}{c} = e. $$
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/RobinsOnBallistics.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:30 GMT -->
 </html>

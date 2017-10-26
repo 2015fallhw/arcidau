@@ -1,15 +1,16 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/CanvasLayers.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:29 GMT -->
 <head>
   <title>Canvas Layers</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="canvas, javascript graphics, canvas overlay, canvas layers, HTML5 canvas" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="userManual-01.css" media="all" type="text/css" />
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "userManual-01.css";
-
     #cvs1 {
       position: relative;   /* positioned to parent bottom menus */
       display: block;
@@ -21,9 +22,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -39,113 +37,12 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
   <script type="text/javascript" src="canvasStack1v06.js"></script>
 
   <script type="text/javascript">
@@ -173,9 +70,12 @@
           hr -= 12;
         }
         gL1.clearCanvas();    // erase previous hands
-        gL1.render(hrHnd, 0, 0, 1, -hr*30 - min*0.5 + 90);
-        gL1.render(mnHnd, 0, 0, 1, -min*6 - sec*0.1 + 90);
-        gL1.render(scHnd, 0, 0, 1, -sec*6 +90);
+        hrHnd.transform.rotate(-hr*30 - min*0.5 + 90);
+        gL1.render(hrHnd);
+        mnHnd.transform.rotate(-min*6 - sec*0.1 + 90);
+        gL1.render(mnHnd);
+        scHnd.transform.rotate(-sec*6 +90);
+        gL1.render(scHnd);
       }
 
       function drawClock()
@@ -184,46 +84,48 @@
 
         // hour marks
         g.setPropertyDefault("lineCap", "round");
-        hrMarks = new Cobj(['M',100,0, 'L',120,0], "PATH", {strokeColor:'black', lineWidth:6});
+        hrMarks = new Path(['M',100,0, 'L',120,0], {strokeColor:'black', lineWidthWC:7});
         for (i=0; i<12; i++)
         {
-          g.render(hrMarks, 0, 0, 1, i*30);
+          hrMarks.transform.rotate(i*30);
+          g.render(hrMarks);
         }
         // minute marks
-        mnMarks = new Cobj(['M',117,0, 'L',120,0], "PATH", {strokeColor:'black', lineWidth:4});
+        mnMarks = new Path(['M',117,0, 'L',120,0], {strokeColor:'black', lineWidthWC:5});
         for (i=0; i<60; i++)
         {
           if (i%5)        // skip the hour marks
           {
-            g.render(mnMarks, 0, 0, 1, i*6);
+            mnMarks.transform.rotate(i*6);
+            g.render(mnMarks);
           }
         }
         // draw face bezel
-        bezel = new Cobj(shapeDefs.circle(284), "PATH", {strokeColor:'#325FA2', lineWidth:10, iso:true});
+        bezel = new Path(shapeDefs.circle(284), {strokeColor:'#325FA2', lineWidthWC:11, iso:true});
         g.render(bezel);
         // create hr hand
-        hrHnd = new Cobj(['M',-20,0, 'L',80,0], "PATH", {
+        hrHnd = new Path(['M',-20,0, 'L',80,0], {
           strokeColor:'black',
-          lineWidth:10,
+          lineWidthWC:11,
           lineCap: "round" });
         // create min hand
-        mnHnd = new Cobj(['M',-28,0, 'L',112,0], "PATH", {
+        mnHnd = new Path(['M',-28,0, 'L',112,0], {
           strokeColor:'black',
-          lineWidth:6,
+          lineWidthWC:7,
           lineCap: "round" });
         // create sec hand
-        arm = new Cobj(['M',-30,0, 'L',83,0], "PATH", {strokeColor:"#D40000", lineWidth:4});
-        c1 = new Cobj(shapeDefs.circle(16), "SHAPE", {fillColor:"#555555"});
-        c2 = new Cobj(shapeDefs.circle(16), "PATH", {strokeColor:"#D40000", lineWidth:4});
-        c3 = new Cobj(shapeDefs.circle(20), "PATH", {strokeColor:"#D40000", lineWidth:4});
+        arm = new Path(['M',-30,0, 'L',83,0], {strokeColor:"#D40000", lineWidthWC:5});
+        c1 = new Shape(shapeDefs.circle(16), {fillColor:"#555555"});
+        c2 = new Path(shapeDefs.circle(16), {strokeColor:"#D40000", lineWidthWC:5});
+        c3 = new Path(shapeDefs.circle(20), {strokeColor:"#D40000", lineWidthWC:5});
         c3.translate(95, 0);
-        scHnd = [arm, c1, c2, c3];
+        scHnd = new Group(arm, c1, c2, c3);
       }
 
       g = new Cango(cvsID);         // g is the graphics context for the background
-      g.setGridboxRHC(25, 5, 50, 50);     // start drawing the face in the background canvas
+      g.gridboxPadding(25, 5, 25, 5);     // start drawing the face in the background canvas
       g.fillGridbox("white");
-      g.setWorldCoords(-175, -175, 350);
+      g.setWorldCoordsRHC(-175, -175, 350);
 
       this.clockCS = new CanvasStack(cvsID);  // create a CanvasStack
       L1_ID = this.clockCS.createLayer();     // create a layer for the clock hands
@@ -241,16 +143,18 @@
 
       if (!ovlyID)
       {
-        ovlyID = clock.clockCS.createLayer();     // create a canvas layer (save ID as global to remove later)
-        oCtx = new Cango(ovlyID);       // create an graphics context for overlay
-        oCtx.setGridboxRHC(20, 20, 50, 50);   // define square viewport width=50% of canvas width
-        oCtx.setWorldCoords(0, 0, 10);  // scale x axis 0 to 10, and y axis 0 to 10
-        hullo = new Cobj("Hullo World", "TEXT", {
+        ovlyID = clock.clockCS.createLayer(); // create a canvas layer (save ID as global to remove later)
+        oCtx = new Cango(ovlyID);             // create an graphics context for overlay
+        oCtx.gridboxPadding(25, 5, 25, 5);   // define square viewport width=50% of canvas width
+        oCtx.setWorldCoordsRHC(-175, -175, 350);        // scale x axis 0 to 10, and y axis 0 to 10
+        oCtx.drawText("Hullo World", {
+          x:0,
+          y:75,
+          degs:20,
           fillColor:"#ffa500",
           fontSize:36,
           lorg:5,
           fontWeight: "bold" });
-        oCtx.render(hullo, 5, 4, 1, 20);    // x=5,y=4, scale=1, rotation=20deg
       }
     }
 
@@ -267,15 +171,14 @@
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
+      
       clock = new Clock('cvs1');
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -370,16 +273,15 @@
 </pre>
 </div>
 
-<p>If drawing with the <i>Cango</i> library the call is:</p>
+<p>If drawing with the Cango library the call is:</p>
 <div class="srcFmt">
 <pre>
   var L1_ctx = new Cango(layer1_ID);
 </pre>
 </div>
-<p>All the <a href="CangoUserGuide.html">Cango</a> commands are available as methods of the <i>L1_ctx</i>.</p>
 
 <h3>CanvasStack example</h3>
-<p>Figure 1 shows a clock, its a reproduction of the clock from the Mozilla canvas animation <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Basic_animations/#An_animated_clock">tutorial</a>, but here it has been drawn using the <i>Cango</i> library. In this demonstration two layers have been used, the background canvas holds the image of the face and the second layer is used to draw the hands. Every 250 msec the 'hands' layer is cleared and the hands are redrawn rotated to show the new time.</p>
+<p>Figure 1 shows a clock, its a reproduction of the clock from the Mozilla canvas animation <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Basic_animations/#An_animated_clock">tutorial</a>, but here it has been drawn using the <a href="CanvasGraphics.html">Cango</a> library. In this demonstration two layers have been used, the background canvas holds the image of the face and the second layer is used to draw the hands. Every 250 msec the 'hands' layer is cleared and the hands are redrawn rotated to show the new time.</p>
 <p>Here is the code snippet to create the canvas for the clock face and the canvasStack holding a layer for the hands and other layers for 'Hullo World' message:</p>
 
 <p>The 'drawClock' function creates the clock face in the background layer. It then creates the hands which are to be drawn using a different graphics context which is associated with a layer. Here are relevant few lines:</p>
@@ -387,9 +289,9 @@
 <pre>
 ...
 g = new Cango(cvsID);         // g is the graphics context for the background
-g.setGridboxRHC(25, 5, 50, 50);     // start drawing the face in the background canvas
+g.gridboxPadding(25, 5, 25, 5);     // start drawing the face in the background canvas
 g.fillGridbox("white");
-g.setWorldCoords(-175, -175, 350);
+g.setWorldCoordsRHC(-175, -175, 350);
 
 this.clockCS = new CanvasStack(cvsID);  // create a CanvasStack
 L1_ID = this.clockCS.createLayer();     // create a layer for the clock hands
@@ -420,16 +322,18 @@ function drawHullo()
 
   if (!ovlyID)
   {
-    ovlyID = clock.clockCS.createLayer(); // create a canvas layer (save ID for layer removal)
+    ovlyID = clock.clockCS.createLayer(); // create a canvas layer (save ID as global to remove later)
     oCtx = new Cango(ovlyID);             // create an graphics context for overlay
-    oCtx.setGridboxRHC(20, 20, 50, 50);   // define square viewport width=50% of canvas width
-    oCtx.setWorldCoords(0, 0, 10);        // scale x axis 0 to 10, and y axis 0 to 10
-    hullo = new Cobj("Hullo World", "TEXT", {
+    oCtx.gridboxPadding(25, 5, 25, 5);   // define square viewport width=50% of canvas width
+    oCtx.setWorldCoordsRHC(-175, -175, 350);        // scale x axis 0 to 10, and y axis 0 to 10
+    oCtx.drawText("Hullo World", {
+      x:0,
+      y:75,
+      degs:20,
       fillColor:"#ffa500",
       fontSize:36,
       lorg:5,
       fontWeight: "bold" });
-    oCtx.render(hullo, 5, 4, 1, 20);      // x=5,y=4, scale=1, rotation=20deg
   }
 }
 </pre>
@@ -522,4 +426,6 @@ function drawHullo()
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/CanvasLayers.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:30 GMT -->
 </html>

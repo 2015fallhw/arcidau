@@ -1,14 +1,17 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/ArmstrongPattern.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:15 GMT -->
 <head>
   <title>Armstrong-Frederick Gun Design of 1760</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="underwater acoustics, sound level measurement, underwater sounds, sound in air and water, sound levels compared" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
 
     blockquote p, blockquote h3 {
       font-style: italic;
@@ -24,7 +27,7 @@
       background-color: #33FFCC;
     }
     .txtTbl td {
-        padding: 5px 2px 5px 2px;
+      padding: 5px 2px 5px 2px;
     }
 
     #cvs1, #cvs2 {
@@ -38,9 +41,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -56,116 +56,14 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
 <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoSVGtext-1v01.js"></script>
-  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
-  <script type="text/javascript" src="armstrongGunUtils-03.js"></script>
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
+  <script type="text/javascript" src="armstrongGunUtils-05.js"></script>
 
   <script type="text/javascript">
     var gunLengths = [
@@ -188,6 +86,42 @@
                       "6": 7,
                       "4": 6,
                       "3": 4.5 };
+
+    function genScale(gc, xOrg, yOrg, nat, len)
+    {
+      var clbr = patternTable[nat].calibre,     // in inches
+          s = [],   // length scale in ft
+          i;
+
+      // ft-inches vernier scale
+      s.push("M",0,0, "l",36/clbr,0, 0,10/clbr, -36/clbr,0,"z",             // 36"x 10" rectangle
+             "M", 12/clbr,0, "l",0,10/clbr, "M", 24/clbr,0, "l",0,10/clbr);   // divide into 12" boxes
+      for (i=0; i < 10; i++)
+      {
+        s.push("M",0,0, "m",0, i/clbr, "l",12/clbr,0);   // 10 horizontals in first box
+      }
+      for (i=0; i < 12; i++)
+      {
+        s.push("M",i/clbr,10/clbr, "l",1/clbr,-10/clbr);         // 1/10" vernier lines
+      }
+      gc.drawPath(s, {x:xOrg, y:yOrg, strokeColor:"darkgray"});
+      // label the scale
+      for (i=0; i<=3; i++)                                                   // 0, 1, 2, 3 feet labels
+      {
+        gc.drawVectorText(i.toString(), {x:xOrg+i*12/clbr, y:yOrg+10.2/clbr, fontSize:gc.xscl*1.3/clbr, lorg:8, strokeColor:"dimgray"});
+      }
+      gc.drawVectorText("ft", {x:xOrg+36.75/clbr, y:yOrg+10.2/clbr, fontSize:gc.xscl*1.3/clbr, lorg:7, strokeColor:"dimkgray"});
+
+      for (i=1; i<11; i++)
+      {  // 1 to 19 inch labels
+        gc.drawVectorText(i.toString(), {x:xOrg+i/clbr, y:yOrg+10.2/clbr, fontSize:gc.xscl*0.8/clbr, lorg:8, strokeColor:"dimgray"});
+      }
+      gc.drawVectorText("11", {x:xOrg+10.7/clbr, y:yOrg+10.2/clbr, fontSize:gc.xscl*0.8/clbr, lorg:7, strokeColor:"dimgray"});  // 11 inch label
+      for (i=1; i<10; i++)     // 1 to 10 1/10" labels
+      {
+        gc.drawVectorText("."+i, {x:xOrg-0.5/clbr, y:yOrg+10/clbr-i/clbr, fontSize:gc.xscl*0.8/clbr, lorg:6, strokeColor:"dimgray"});
+      }
+    }
 
     function drawGun(nat, len)
     {
@@ -217,43 +151,43 @@
         g1.drawPath(astragal3);
         g1.drawPath(trunnionFace);       // only in elevation view
         g1.drawPath(ventfield);          // only in elevation view
-        g1.drawPath(vent, 0,0, {strokeColor:'lightgray'});
-        g1.drawPath(bore, 0,0, {strokeColor:'lightgray'});
+        g1.drawPath(vent, {strokeColor:'lightgray'});
+        g1.drawPath(bore, {strokeColor:'lightgray'});
         g1.drawPath(muzzle);
         g1.drawPath(cascable);
         // ======================  plan  ===================================
-        g1.drawPath(barrel, 0, -8);
-        g1.drawPath(baseRingPlan, 0, -8);
-        g1.drawPath(astragal1Plan, 0, -8);
-        g1.drawPath(reinforceRing1, 0, -8);
-        g1.drawPath(reinforceRing2, 0, -8);
-        g1.drawPath(astragal2, 0, -8);
-        g1.drawPath(astragal3, 0, -8);
-        g1.drawPath(trunnionTopArm, 0, -8);     // only in plan view
-        g1.drawPath(trunnionBotArm, 0, -8);     // only in plan view
-        g1.drawPath(bore, 0, -8, {strokeColor:'lightgray'});
-        g1.drawPath(ventPlan, 0, -8, {strokeColor:'lightgray'});
-        g1.drawPath(ventfieldPlan, 0, -8);      // only in plan view
-        g1.drawPath(muzzle, 0, -8);
-        g1.drawPath(cascable, 0, -8);
+        g1.drawPath(barrel, {y:-8});
+        g1.drawPath(baseRingPlan, {y:-8});
+        g1.drawPath(astragal1Plan, {y:-8});
+        g1.drawPath(reinforceRing1, {y:-8});
+        g1.drawPath(reinforceRing2, {y:-8});
+        g1.drawPath(astragal2, {y:-8});
+        g1.drawPath(astragal3, {y:-8});
+        g1.drawPath(trunnionTopArm, {y:-8});     // only in plan view
+        g1.drawPath(trunnionBotArm, {y:-8});     // only in plan view
+        g1.drawPath(bore, {y:-8, strokeColor:'lightgray'});
+        g1.drawPath(ventPlan, {y:-8, strokeColor:'lightgray'});
+        g1.drawPath(ventfieldPlan, {y:-8});      // only in plan view
+        g1.drawPath(muzzle, {y:-8});
+        g1.drawPath(cascable, {y:-8});
 
         // scales etc
         selectedVals.mValTxt, selectedVals.sValTxt;
-        title = new Cobj("Armstrong pattern "+selectedVals.mValTxt+", barrel length "+selectedVals.sValTxt, "TEXT", {
+        title = new Text("Armstrong pattern "+selectedVals.mValTxt+", barrel length "+selectedVals.sValTxt, {
           fillColor:"black",
           fontSize:18,
           lorg:1,
           fontFamily: "serif" });
-        g2ovl.render(title, ul.x, ul.y);
+        title.transform.translate(ul.x, ul.y);
+        g2ovl.render(title);
         ruleSVG = ["M",0,15/calibre, "l",12*length/calibre,0];       // length scale (units are calibre)
         for (ft=0; ft<=length; ft++)
         {
           ruleSVG.push("M",ft*12/calibre,15/calibre, "l",0,5/24);   // ft tick marks (units are calibre)
         }
-        g2ovl.drawPath(ruleSVG, ll.x, ll.y, {strokeColor:"darkgray"});
+        g2ovl.drawPath(ruleSVG, {x:ll.x, y:ll.y, strokeColor:"darkgray"});
 
-        scaleSVG = genScale(nature, length);
-        g2ovl.drawPath(scaleSVG, ll.x, ll.y, {strokeColor:"darkgray"});
+        scaleSVG = genScale(g2ovl, ll.x, ll.y, nature, length);
       }
 
       calcGunDimensions(nat, len);
@@ -261,8 +195,7 @@
 
       g1 = new Cango("cvs1");
       g1.deleteAllLayers();
-      g1.setGridboxRHC();  //full canvas
-      g1.setWorldCoords(-3.5, -17, 34); // square pixels
+      g1.setWorldCoordsRHC(-3.5, -17, 34); // square pixels
 
       g2ovl = new Cango("cvs1");
       g2ovl.dupCtx(g1);
@@ -398,9 +331,7 @@
 
   <script type="text/javascript">
     addLoadEvent( function(){
-
       buildMenu(indexData);
-      enableStickyNav();
 
       handleLength();      // fake a selection from drop down options
     });
@@ -409,7 +340,6 @@
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -661,7 +591,7 @@
 
 <h2>Armstrong pattern design instructions</h2>
 
-          <p>The instructions for drawing a design template for an Armstrong pattern gun were recorded by Isaac Landman, Professor of Fortification and Artillery, Royal Military Academy in his "Notes on Artillery" in 1788. It is these instructions that have been converted to JavaScript code to produce the drawing above. The source code used to create the drawings is available in the file <a href="armstrongGunUtils-03.js" download>armstrongGunUtils-03.js</a>.</p>
+          <p>The instructions for drawing a design template for an Armstrong pattern gun were recorded by Isaac Landman, Professor of Fortification and Artillery, Royal Military Academy in his "Notes on Artillery" in 1788. It is these instructions that have been converted to JavaScript code to produce the drawing above. The source code used to create the drawings is available in the file <a href="armstrongGunUtils-05.js" download>armstrongGunUtils-05.js</a>.</p>
 
 <p>Here is a transcript of Landman's original drawing instructions:</p>
 
@@ -788,7 +718,7 @@ The thickness of metal PK, at the extremity of the second reinforce is equal to 
 
 <p>Despite this minimum length requirement the Establishment of the Fleet shows guns that were made with barrel lengths too short for the length of the first reinforce to extend beyond the length of the standard proof charge length. The actual lengths of proof charge compared to the distance from the breech end of the bore to the front of the first reinforce, has been calculated for all gun lengths of each different nature gun and the results shown in Table 3. The length of the proof charge is calculated assuming a powder density of 0.0329 lb/in<sup>3</sup>. Guns where the proof charge is longer than the length of the bore covered by the first reinforce are indicated in red, these guns would be more prone to fail proof firing.</p>
 
-<p>Table 3 is calculated from the average gunpowder density of 0.0329 pounds/in<sup>3</sup> and the regulation proof charges shown in column 2.</p>
+<p>Table 3 is calculated from the average gunpowder density of 0.0329 pounds/in<sup>3</sup> and the regulation proof charges shown in column&nbsp;2.</p>
 
           <table class="txtTbl" style="width:620px" cellpadding="1" cellspacing="0" border="1">
             <tbody style="text-align: right">
@@ -990,4 +920,6 @@ The thickness of metal PK, at the extremity of the second reinforce is equal to 
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/ArmstrongPattern.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:37:16 GMT -->
 </html>

@@ -1,18 +1,35 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/SpectrumAnalyser.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:51 GMT -->
 <head>
   <title>JavaScript Spectrum Analyzer</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="digital signal processing, DSP, FFT, JavaScript FFT, JavaScript DSP, Cango, graphing DSP waveforms, JavaScript Spectrum Analyser, JavaScript Spectrum Analyzer, FFT source code, windowing, Hanning Window, Kaiser-Bessel Window, scalloping loss" />
-<meta name="description" content="A Spectrum Analyzer which takes a JavaScript expression describing the input time domain waveform and calculates the Fourier transform. The output plots can be real and imaginary, magnitude and phase or power." />
+  <meta name="description" content="A Spectrum Analyzer which takes a JavaScript expression describing the input time domain waveform and calculates the Fourier transform. The output plots can be real and imaginary, magnitude and phase or power." />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="frontPanel-19.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
-    @import "frontPanel-19.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
 
-    #mkrDecal {
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
+
+    frontPanel-19.css    #mkrDecal {
       position:absolute;
       width: 1em;
       height: 4.5em;
@@ -25,9 +42,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -43,262 +57,305 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
   <script type="text/javascript" src="dspUtils-11.js"></script>
-  <script type="text/javascript" src="dspPlot-25.js"></script>
-  <script type="text/javascript" src="specAnalyser-03.js"></script>
+  <script type="text/javascript" src="dspPlot-29.js"></script>
   <script type="text/javascript" src="hpKnob-27.js"></script>
 
   <script type="text/javascript">
-    // Constructor for the Spectrum Analyser object
-    function SA(panelId, cvsHolderId, knobId, fftSize, fs)
+
+function genTimeData(funcStr, fsmpl, subFs, numSmp)
+{
+  var abs = function(x){return Math.abs(x);},
+      acos = function(x){return Math.acos(x);},
+      asin = function(x){return Math.asin(x);},
+      atan = function(x){return Math.atan(x);},
+      atan2 = function(y,x){return Math.atan2(y,x);},
+      ceil = function(x){return Math.ceil(x);},
+      cos = function(x){return Math.cos(x);},
+      exp = function(x){return Math.exp(x);},
+      floor = function(x){return Math.floor(x);},
+      log = function(x){return Math.log(x);},
+      max = function(){return Math.max.apply(this, arguments);},
+      min = function(){return Math.min.apply(this, arguments);},
+      pow = function(x,y){return Math.pow(x,y);},
+      random = function(){return Math.random();},
+      round = function(x){return Math.round(x);},
+      sin = function(x){return Math.sin(x);},
+      sqrt = function(x){return Math.sqrt(x);},
+      tan = function(x){return Math.tan(x);},
+      E = Math.E,
+      PI = Math.PI,
+      SQRT2 = Math.SQRT2,
+      SQRT1_2 = Math.SQRT1_2,
+      LN2 = Math.LN2,
+      LN10 = Math.LN10,
+      LOG2E = Math.LOG2E,
+      LOG10E = Math.LOG10E;
+
+  var buf = [];
+  var dt = 1/fsmpl;
+  var t;
+
+  try
+  {
+    for (var i=0; i<numSmp; i++)
     {
-      this.fftSize = fftSize;
-      this.fSmp = fs;
-      this.panel = document.getElementById(panelId);
-      this.sigProc = new SpectrumAnalyser(fftSize);   // signal processer from SpectrumAnalyser-xx.js
-      this.disp = new DspPlot(cvsHolderId, fftSize);    // dsp display routines
-
-      var savThis = this;       // make a closure for knob callback
-
-      function updateMkr(inc)
-      {
-        if (savThis.disp.mkr)
-        {
-          savThis.disp.moveMkr(inc);
-        }
-      }
-
-      this.hpKnob = new Knob(knobId, updateMkr);
+      t = i*dt/subFs;            // funcStr is a function of this 't'
+      buf[i] = eval(funcStr);
     }
+  }
+  catch(err)
+  {
+    alert("Function syntax error: "+err.message);
+    return;
+  }
 
-    SA.prototype.mkrOn = function()
+  return buf;
+}
+
+SpectrumAnalyser = function(cvsId, tSize)
+{
+  this.Npair = tSize || 512;
+  this.disp = new DspPlot(cvsId, this.Npair);
+  this.aaf = true;     // anti-aliasing filter
+  this.wnd = "RECT";   // time domain window type
+  this.log = false;    // use log scale for frequency/time display 
+  this.w = [];
+  this.tBuf = [];
+  this.fsmp = 32768;
+  this.subSmp = 16;    // time data over sample rate
+  this.ar = [];
+  this.ai = [];
+  this.H = // Kaiser-Bessel Window LP filter: M=161, Att=-40dB, Fs=32768, Fa=0, Fb=820Hz
+[0.000007,-0.000092,-0.000206,-0.000332,-0.000466,-0.000606,-0.000746,-0.000882,-0.001009,
+-0.001120,-0.001210,-0.001274,-0.001305,-0.001300,-0.001253,-0.001163,-0.001026,-0.000842,
+-0.000611,-0.000336,-0.000020,0.000331,0.000711,0.001109,0.001518,0.001924,0.002316,
+0.002682,0.003006,0.003277,0.003481,0.003606,0.003640,0.003574,0.003401,0.003116,0.002716,
+0.002202,0.001578,0.000852,0.000034,-0.000862,-0.001818,-0.002813,-0.003823,-0.004823,
+-0.005784,-0.006677,-0.007471,-0.008136,-0.008642,-0.008959,-0.009061,-0.008923,-0.008524,
+-0.007847,-0.006880,-0.005616,-0.004051,-0.002191,-0.000045,0.002373,0.005039,0.007928,
+0.011006,0.014238,0.017580,0.020989,0.024417,0.027815,0.031131,0.034317,0.037322,0.040100,
+0.042607,0.044801,0.046648,0.048117,0.049184,0.049832,0.050049,0.049832,0.049184,0.048117,
+0.046648,0.044801,0.042607,0.040100,0.037322,0.034317,0.031131,0.027815,0.024417,0.020989,
+0.017580,0.014238,0.011006,0.007928,0.005039,0.002373,-0.000045,-0.002191,-0.004051,-0.005616,
+-0.006880,-0.007847,-0.008524,-0.008923,-0.009061,-0.008959,-0.008642,-0.008136,-0.007471,
+-0.006677,-0.005784,-0.004823,-0.003823,-0.002813,-0.001818,-0.000862,0.000034,0.000852,
+0.001578,0.002202,0.002716,0.003116,0.003401,0.003574,0.003640,0.003606,0.003481,0.003277,
+0.003006,0.002682,0.002316,0.001924,0.001518,0.001109,0.000711,0.000331,-0.000020,-0.000336,
+-0.000611,-0.000842,-0.001026,-0.001163,-0.001253,-0.001300,-0.001305,-0.001274,-0.001210,
+-0.001120,-0.001009,-0.000882,-0.000746,-0.000606,-0.000466,-0.000332,-0.000206,-0.000092,
+0.000007];       // anti-aliasing filter coeffs
+  this.buf = []; // raw time domain data (longer than tBuf to avoid end effects)
+  this.currDispType = dType.TM;
+}
+
+SpectrumAnalyser.prototype.analyseTimeData = function()
+{
+  var Np,
+      i;
+
+  // anti-alias filter
+  if (this.aaf)
+  {
+    convFilter(this.H, this.buf, this.ar, this.Npair, this.subSmp);
+  }
+  else
+  {
+    Np = (this.H.length-1)/2;
+    for (i=0; i<this.Npair; i++)
     {
-      if (this.disp.dispType == dType.TM)
+      this.ar[i] = this.buf[Np+i*this.subSmp];      // offset so that with and without filter have same phase
+    }
+  }
+  for (i=0; i<this.Npair; i++)
+  {
+    this.ai[i] = 0;
+  }
+
+  // apply window
+  if (this.wnd === "KB")
+  {
+    this.w = kbWnd(this.Npair, 2.5);
+    for (i=0; i<this.Npair; i++)
+    {
+      this.ar[i] *= this.w[i];
+    }
+  }
+  else if (this.wnd === "HANN")
+  {
+    this.w = hannWnd(this.Npair);
+    for (i=0; i<this.Npair; i++)
+    {
+      this.ar[i] *= this.w[i];
+    }
+  }
+  for (i=0; i<this.Npair; i++)
+  {
+    this.tBuf[i] = this.ar[i];          // grab a copy to plot time data
+  }
+
+  fft(1, this.Npair, this.ar, this.ai);
+};
+
+SpectrumAnalyser.prototype.fetchTimeData = function()
+{
+  var func = document.getElementById("func").value,      // panel is the 'form' element which holds SA inputs
+      fs = parseFloat(document.getElementById("fs").value),
+      bufLen = this.subSmp*(this.Npair+this.H.length);
+
+  this.log = false;
+  document.getElementById("sclLin").checked = "checked";
+
+  if ((fs>0.001)&&(fs<1000001))
+  {
+    this.fsmp = fs;
+    this.buf = genTimeData(func, this.fsmp, this.subSmp, bufLen);
+    this.analyseTimeData();
+    this.plotData(dType.TM);
+  }
+  else
+  {
+    alert("Sampling Frequency error: 1mHz<fs<1MHz");
+  }
+};
+
+SpectrumAnalyser.prototype.plotData = function(type)
+{
+  var dispBins = 100*this.Npair/256+1;  // 100 non corrupted points from 256 frequency domain points
+
+  switch (type)
+  {
+    case dType.TM:
+      this.currDispType = type;
+      this.disp.plotTimeData(this.tBuf, this.Npair, this.fsmp, 0, 0);
+      break;
+    case dType.RI:
+      document.getElementById("sclLin").checked = true;
+      this.log = false;
+      this.currDispType = type;
+      this.disp.plotSpectrum(type, this.ar, this.ai, dispBins, this.fsmp, this.log);
+      break;
+    case dType.PW:
+      this.currDispType = type;
+      this.disp.plotSpectrum(type, this.ar, this.ai, dispBins, this.fsmp, this.log);
+      break;
+    default:    // dType.MP = Mag-Phase
+      this.currDispType = type;
+      this.disp.plotSpectrum(dType.MP, this.ar, this.ai, dispBins, this.fsmp, this.log);
+      break;
+  }
+}
+
+function btnHandler(elem)
+{
+  var id = elem.id;
+
+  switch (id)
+  {
+    case "wndKB":
+      sigProc.wnd = "KB";
+      sigProc.fetchTimeData();
+      break;
+    case "wndHann":
+      sigProc.wnd = "HANN";
+      sigProc.fetchTimeData();
+      break;
+    case "wndRect":
+      sigProc.wnd = "RECT";
+      sigProc.fetchTimeData();
+      break;
+    case "mkr":
+      if (sigProc.currDispType == dType.TM)
       {
+        sigProc.disp.mkr = false;
         return;         // no marker on time display, the data has been overwritten by the FFT
       }
-      if (this.disp.mkr)
+      if (sigProc.disp.mkr === true)
       {
-        this.disp.hideMkr();
+        sigProc.disp.hideMkr();
       }
       else
       {
-        this.disp.showMkr();
+        sigProc.disp.showMkr();
       }
-    }
+      break;
+    case "plotTM":
+      sigProc.fetchTimeData();
+      break;
+    case "aafOn":
+      sigProc.aaf = true;
+      sigProc.fetchTimeData();
+      break;
+    case "aafOff":
+      sigProc.aaf = false;
+      sigProc.fetchTimeData();
+      break;
+    case "sclLin":
+      sigProc.log = false;
+      sigProc.plotData(sigProc.currDispType);
+      break;
+    case "sclLog":
+      sigProc.log = true;
+      sigProc.plotData(sigProc.currDispType);
+      break;
+    case "plotMP":
+      sigProc.plotData(dType.MP)
+      break;
+    case "plotRI":
+      sigProc.plotData(dType.RI)
+      break;
+    case "plotPW":
+      sigProc.plotData(dType.PW)
+      break;
+    default:
+      break;
+  }
+}
 
-    SA.prototype.analyse = function()
-    {
-      var func = document.getElementById("func").value,      // panel is the 'form' element which holds SA inputs
-          fs = parseFloat(document.getElementById("fs").value),
-          log = false;
+var sigProc;
 
-      if (document.getElementById("sclLog").checked)     // if 'log' checked force linear
-      {
-        document.getElementById("sclLin").checked = true;
-      }
-      // apply anti-aliasing filter if requested
-      this.sigProc.aaf = document.getElementById("aafOn").checked;
-      // which window type is checked?
-      if (document.getElementById("wndKB").checked)
-      {
-        this.sigProc.wnd = wType.KB;
-      }
-      else if (document.getElementById("wndHann").checked)
-      {
-        this.sigProc.wnd = wType.HANN;
-      }
-      else
-      {
-        this.sigProc.wnd = wType.RECT;
-      }
+function initSA()
+{
+  var hpKnob;
 
-      if ((fs>0.001)&&(fs<1000001))
-      {
-        this.fSmp = fs;
-        this.sigProc.analyseTimeFn(func, this.fSmp);
-        this.disp.plotTimeData(this.sigProc.tBuf, this.fftSize, this.fSmp, 0, 0);
-      }
-      else
-      {
-        alert("Sampling Frequency error: 1mHz<fs<1MHz");
-        return;
-      }
-    }
+  sigProc = new SpectrumAnalyser("scrn1", 512);   // signal processor from SpectrumAnalyser-xx.js;
+  hpKnob = new Knob("knob1", function(inc){sigProc.disp.moveMkr(inc);});
+  // set the default radio button states
+  document.getElementById("wndRect").checked = "checked";
+  sigProc.wnd = "RECT";
+  document.getElementById("aafOff").checked = "checked";
+  sigProc.aaf = false;
+  document.getElementById("sclLin").checked = "checked";
+  sigProc.log = false;
 
-    SA.prototype.plotFreq = function(type)
-    {
-      var logLED = document.getElementById("sclLog"),
-          log = logLED.checked,
-          dispBins = 25*this.fftSize/64+1;
+  sigProc.fetchTimeData();   // process the default func and fs
+}
 
-      switch (type)
-      {
-        case dType.RI:
-          if (log)        // force linear, too many negative values for logs
-          {
-            document.getElementById("sclLin").checked = true;
-            logLED.checked = false;
-          }
-          // this.disp.plotData(type, log);
-          this.disp.plotSpectrum(type, this.sigProc.ar, this.sigProc.ai, dispBins, this.fSmp, log);
-          break;
-        case dType.PW:
-          // this.disp.plotData(type, log);
-          this.disp.plotSpectrum(type, this.sigProc.ar, this.sigProc.ai, dispBins, this.fSmp, log);
-          break;
-        default:    // dType.MP = Mag-Phase
-          // this.disp.plotData(MP, log);
-          this.disp.plotSpectrum(dType.MP, this.sigProc.ar, this.sigProc.ai, dispBins, this.fSmp, log);
-      }
-    }
-
-    var SA1;
-
-    function initSA1()
-    {
-      SA1 = new SA("panelSA1", "scrn1", "knob1", 512, 2048);
-
-      SA1.analyse();   // process the default func and fs
-    }
-  </script>
-
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+</script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      initSA1();
-      enableStickyNav();
+
+      renderMathInElement(document.body);
+
+      initSA();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -331,7 +388,7 @@
 <p>The Anti-aliasing filter was designed using the <a href="FilterDesign.html">Filter Design</a> page, more detail is presented below. The time domain windows and the FFT are written in JavaScript, all the computations are done within the browser. The data are plotted using the <a href="CanvasGraphics.html">Cango</a> canvas graphics library.</p>
 
 <h3>Simulated input signal</h3>
-<p>The input waveform function may be any suitable JavaScript expression of the single variable <b><i>t</i></b>, representing time. The time variable must be written as 't' and the time data will be generated by using the JavaScript <i>eval()</i> function for 512 equally spaced values of <i>t</i> from 0 to 511*<i>dt</i>, where <i>dt = 1/Fs</i>. For brevity, wrapper functions for the Math library methods are provided, Math.PI may be entered as PI, Math.random() may be entered as random() and so on.</p>
+<p>The input waveform function may be any suitable JavaScript expression of the single variable \(t\), representing time. The time variable must be written as '<b>t</b>' and the time data will be generated by using the JavaScript <b>eval</b> function for 512 equally spaced values of <b>t</b> from 0 to 511*<i><b>dt</b></i>, where <i><b>dt = 1/Fs</b></i>. For brevity, wrapper functions for the Math library methods are provided, Math.PI may be entered as <b>PI</b>, Math.random() may be entered as <b>random()</b> and so on.</p>
 <p>The sample frequency may also be changed as required, it has been arbitrarily limited to values between 1mHz and 1MHz.</p>
 <p>The following JavaScript expressions may be copied and pasted to the input as examples:</p>
 <pre>
@@ -341,17 +398,17 @@
   amplitude modulation: (1+0.3*sin(2*PI*60*t))*sin(2*PI*400*t)
   sine wave + noise:  random()+random()-1+0.3*sin(2*PI*270*t)
 </pre>
-<p>With the expression entered, check the anti-aliasing 'on' or 'off' and select the type of windowing to be applied. Windowing is recommended for continuous signals, and not for transients whose duration is within the 512 sample periods used in for generating the spectrum. Press the 'GEN TIME DATA' button to see the time domain data. The resulting spectrum of the input can then be viewed in various formats, Magnitude-Phase, Real-Imaginary or Power Spectrum by pressing the corresponding button. For the Magnitude-Phase and Power Spectrum plots, logarithmic or linear scaling are available by clicking the corresponding checkbox.</p>
-<p>A measuring marker is available for the frequency domain plots. Press 'MKR' and a small square will appear on the spectrum waveform, rotating the knob will move the marker left or right and the corresponding waveform frequency and amplitude will be displayed at the top of the plot.</p>
+<p>With the expression entered, check the anti-aliasing 'on' or 'off' and select the type of windowing to be applied. Windowing is recommended for continuous signals, and not for transients whose duration is within the 512 sample periods used in for generating the spectrum. Press the '<b>Generate&nbsp;Time&nbsp;Date</b>' button to see the time domain data. The resulting spectrum of the input can then be viewed in various formats, Magnitude-Phase, Real-Imaginary or Power Spectrum by pressing the corresponding button. For the Magnitude-Phase and Power Spectrum plots, logarithmic or linear scaling are available by clicking the corresponding checkbox.</p>
+<p>A measuring marker is available for the frequency domain plots. Press '<b>Mkr</b>' and a small square will appear on the spectrum waveform, rotating the knob will move the marker left or right and the corresponding waveform frequency and amplitude will be displayed at the top of the plot.</p>
 
 
 <div class="consoleHolder">
-<div class="console">
-  <div class="bezel">
-    <div class="scrnBevel" >
-
-      <div class="screenHolder" style="width:700px; height:410px;">
-
+  <div class="console">
+    <div class="bezel">
+      <div class="scrnBevel" >
+  
+        <div class="screenHolder" style="width:700px; height:410px;">
+  
           <div class="ctrlPanel" style="width:19.7em;">
             <form id="panelSA1" action="#" name="panelSA1">
 
@@ -380,7 +437,7 @@
                     <label class="valueLabel" style="margin-top:6px;">Hz</label>
                   </td>
                   <td style="width:12em; vertical-align:top">
-                    <button type="button" id="plotTM" class="button-link" onclick="SA1.analyse()" style="width: 10.8em;">Generate Time Data</button>
+                    <button type="button" id="plotTM" class="button-link" onclick="btnHandler(this)" style="width: 10.8em;">Generate Time Data</button>
                   </td>
                 </tr>
               </table>
@@ -390,11 +447,11 @@
               <div class="blkRadio">
                 <label class="valueLabel" style="float: left;">Anti-Alias Filter:</label>
                 <div class="led">
-                  <input type="radio" name="aaf" value="off" id="aafOff" onclick="SA1.analyse()" checked="checked">
+                  <input type="radio" name="aaf" value="off" id="aafOff" onclick="btnHandler(this)" checked="checked">
                   <label for="aafOff"><span>Off</span></label>
                 </div>
                 <div class="led">
-                  <input type="radio" name="aaf" value="on" id="aafOn" onclick="SA1.analyse()">
+                  <input type="radio" name="aaf" value="on" id="aafOn" onclick="btnHandler(this)">
                   <label for="aafOn"><span>On</span></label>
                 </div>
               </div>
@@ -402,15 +459,15 @@
               <div class="blkRadio" style="border-radius: 0 0 4px 4px">
                 <label class="valueLabel" style="float:left;">Window:</label>
                 <div class="led">
-                  <input type="radio" name="wnd" value="off" id="wndKB" onclick="SA1.analyse()">
+                  <input type="radio" name="wnd" value="off" id="wndKB" onclick="btnHandler(this)">
                   <label for="wndKB"><span>KB</span></label>
                 </div>
                 <div class="led">
-                  <input type="radio" name="wnd" value="off" id="wndHann" onclick="SA1.analyse()">
+                  <input type="radio" name="wnd" value="off" id="wndHann" onclick="btnHandler(this)">
                   <label for="wndHann"><span>Hann</span></label>
                 </div>
                 <div class="led">
-                  <input type="radio" name="wnd" value="off" id="wndRect" onclick="SA1.analyse()" checked="checked">
+                  <input type="radio" name="wnd" value="off" id="wndRect" onclick="btnHandler(this)" checked="checked">
                   <label for="wndRect"><span>Rect</span></label>
                 </div>
               </div>
@@ -420,12 +477,12 @@
                 <table>
                   <tr>
                     <td style="height: 2em; width: 50%">
-                      <button type="button" id="mkr" class="button-link" onclick="SA1.mkrOn()" style="width: 3em;">Mkr</button>
+                      <button type="button" id="mkr" class="button-link" onclick="btnHandler(this)" style="width: 3em;">Mkr</button>
                     </td>
                     <td rowspan="2" style="width:7em;padding-left:0.5em">
-                      <button type="button" id="plotMP" class="button-link" onclick="SA1.plotFreq(dType.MP)" style="width: 7em;">Mag-Phase</button>
-                      <button type="button" id="plotRI" class="button-link" onclick="SA1.plotFreq(dType.RI)" style="width: 7em; margin-top: 1em">Real-Img</button>
-                      <button type="button" id="plotPW" class="button-link" onclick="SA1.plotFreq(dType.PW)" style="width: 7em; margin: 1em 0 0.5em 0">Power</button>
+                      <button type="button" id="plotMP" class="button-link" onclick="btnHandler(this)" style="width: 7em;">Mag-Phase</button>
+                      <button type="button" id="plotRI" class="button-link" onclick="btnHandler(this)" style="width: 7em; margin-top: 1em">Real-Img</button>
+                      <button type="button" id="plotPW" class="button-link" onclick="btnHandler(this)" style="width: 7em; margin: 1em 0 0.5em 0">Power</button>
                     </td>
                   </tr>
                   <tr>
@@ -440,15 +497,14 @@
                 </table>
               </div>
 
-
               <div class="blkRadio" style="border-radius: 0 0 4px 4px">
                 <label class="valueLabel" style="float: left;">Y Scale:</label>
                 <div class="led" style="margin-right: 3em;">
-                  <input type="radio" name="LogLin" value="log" id="sclLog" onclick="SA1.plotFreq(SA1.disp.dispType)">
+                  <input type="radio" name="LogLin" value="log" id="sclLog" onclick="btnHandler(this)">
                   <label for="sclLog"><span>Log</span></label>
                 </div>
                 <div class="led" style="margin-right: 2em;">
-                  <input type="radio" name="LogLin" value="lin" id="sclLin" onclick="SA1.plotFreq(SA1.disp.dispType)" checked="checked">
+                  <input type="radio" name="LogLin" value="lin" id="sclLin" onclick="btnHandler(this)" checked="checked">
                   <label for="sclLin"><span>Linear</span></label>
                 </div>
               </div>
@@ -459,36 +515,34 @@
             <canvas id="scrn1" width="400" height="335" style="background-color: #303f30"></canvas>
           </div>
 
-      </div> <!-- screenHolder  -->
-
-    </div>   <!-- scrnBevel -->
-  </div>  <!-- bezel -->
-  <div style="clear: both"></div>
-</div> <!-- console -->
-
-</div>   <!-- consoleHolder -->
-
+        </div> <!-- screenHolder  -->
+  
+      </div>   <!-- scrnBevel -->
+    </div>  <!-- bezel -->
+    <div style="clear: both"></div>
+  </div> <!-- console -->
+  </div>   <!-- consoleHolder -->
 
 <h2>Notes on JavaScript spectrum analyzer</h2>
 <h3>Aliasing</h3>
-<p>A real time varying signal has a spectrum that is symmetric around 0Hz. If the spectrum has a component line at 300Hz then there will be a corresponding frequency line at -300Hz. Digitizing a real, time domain signal at a sampling frequency <i>F<sub>s</sub></i> generates a time domain waveform that is a series of delta functions (spikes) at intervals of <i>dT = 1 /F<sub>s</sub></i> the envelope of these spikes reproduces the original waveform. The spectrum of this digital series is a series of copies of the original spectrum. Spectrum analysers display only the positive frequencies of the copy centred on 0Hz.</p>
+<p>A real time varying signal has a spectrum that is symmetric around 0Hz. If the spectrum has a component line at 300Hz then there will be a corresponding frequency line at -300Hz. Digitizing a real, time domain signal at a sampling frequency \(F_s\) generates a time domain waveform that is a series of delta functions (spikes) at intervals of \(dT = 1 /F_s\) the envelope of these spikes reproduces the original waveform. The spectrum of this digital series is a series of copies of the original spectrum. Spectrum analysers display only the positive frequencies of the copy centred on 0Hz.</p>
 <p>If the sampling frequency is too low, then the negative frequency side of each spectrum will overlap the positive frequency side of the adjacent copy of spectrum. This overlap results in spurious frequency components appearing in the waveform spectrum. This effect is called aliasing.</p>
-<p>For the frequency spectrum of a waveform to be accurately described by the FFT, the input signal should not have any frequency components higher than half the sample frequency. Any spectral components of the input waveform with frequency higher than <i>F<sub>s</sub>/2</i>, known as the Nyquist rate, appear to fold back into the lower frequency part of the spectrum. They are just the negative frequency aliases of the signal's frequency components that lie above the Nyquist rate from the next highest frequency copy of the waveform's spectrum.</p>
+<p>For the frequency spectrum of a waveform to be accurately described by the FFT, the input signal should not have any frequency components higher than half the sample frequency. Any spectral components of the input waveform with frequency higher than \(F_s / 2 \), known as the Nyquist rate, appear to fold back into the lower frequency part of the spectrum. They are just the negative frequency aliases of the signal's frequency components that lie above the Nyquist rate from the next highest frequency copy of the waveform's spectrum.</p>
 <h4>Anti-aliasing Filters</h4>
-<p>Spectrum Analysers avoid displaying aliased frequencies by using a low-pass, 'Anti-aliasing' filter, which is designed to remove all the frequency components of the input signal that have frequencies above the Nyquist rate before the signal is sampled. Ideally the anti-aliasing filter would pass all frequencies up to <i>F<sub>s</sub>/2</i> and then its response would drop to zero after that. Filters can't be made infinitely steep, so the cutoff must start at a lower frequency and have a steep enough roll off to so that signal above the Nyquist rate is sufficiently attenuated so that when aliased back it is below the dynamic range of the display at the cut-off frequency of the filter.</p>
-<p>Anti-aliasing filters typically start about 80% of the Nyquist frequency and all frequencies above this value are considered corrupt. Thus only the first 400 bins of a 512 bin frequency spectrum are usually displayed. In the early days of digital signal analysis Analogue-to-Digital Converters (ADCs) were much slower than today and they set the upper limit of sampling rate. Over sampling a signal to reduce the complexity and tight tolerance on the multi-pole anti-aliasing filters was out of the question. Modern ADCs are so fast that the waveform may be over sampled at frequencies many times the displayed frequency and simple 2 or 3 pole anti-aliasing filters are all that is required to produce a digital signal with the low frequency part of the spectrum free from aliases. A second digital filter can then do the hard anti-aliasing filtering required prior to sub-sampling at the desired value of <i>F<sub>s</sub></i>. The advantage of using the digital filter is that it has a perfectly reproducible response within the mathematical precision used, unlike the components of multi-pole analogue filter. As an example, using 128 times over-sampling, a simple, low tolerance two pole filter which attenuates aliased signals by 12dB per octave, will give 96dB rejection at the Nyquist rate.</p>
+<p>Spectrum Analysers avoid displaying aliased frequencies by using a low-pass, 'Anti-aliasing' filter, which is designed to remove all the frequency components of the input signal that have frequencies above the Nyquist rate before the signal is sampled. Ideally the anti-aliasing filter would pass all frequencies up to \(F_s / 2 \) and then its response would drop to zero after that. Filters can't be made infinitely steep, so the cutoff must start at a lower frequency and have a steep enough roll off to so that signal above the Nyquist rate is sufficiently attenuated so that when aliased back it is below the dynamic range of the display at the cut-off frequency of the filter.</p>
+<p>Anti-aliasing filters typically start about 80% of the Nyquist frequency and all frequencies above this value are considered corrupt. Thus only the first 400 bins of a 512 bin frequency spectrum are usually displayed. In the early days of digital signal analysis Analogue-to-Digital Converters (ADCs) were much slower than today and they set the upper limit of sampling rate. Over sampling a signal to reduce the complexity and tight tolerance on the multi-pole anti-aliasing filters was out of the question. Modern ADCs are so fast that the waveform may be over sampled at frequencies many times the displayed frequency and simple 2 or 3 pole anti-aliasing filters are all that is required to produce a digital signal with the low frequency part of the spectrum free from aliases. A second digital filter can then do the hard anti-aliasing filtering required prior to sub-sampling at the desired value of \(F_s\). The advantage of using the digital filter is that it has a perfectly reproducible response within the mathematical precision used, unlike the components of multi-pole analogue filter. As an example, using 128 times over-sampling, a simple, low tolerance two pole filter which attenuates aliased signals by 12dB per octave, will give 96dB rejection at the Nyquist rate.</p>
 
 <h4>JavaScript anti-aliasing filter</h4>
-<p>Anti-aliasing filters must be applied before the input signal is digitized, since it is the digitizing that causes the aliasing. This JavaScript Spectrum Analyser has its input created as discrete samples so there is no opportunity to use an analogue anti-aliasing filter. The anti-aliasing filter used here over-samples by a factor of 16, but instead of an analogue filter, it relies of the nature of the synthesized signals effectively providing a 1 pole (6dB per octave) low pass filter. The idea behind this is that all repetitive waveforms, have harmonics that fall in amplitude by at least <i>1/n</i>, i.e. the 10th harmonic will have amplitude 1/10th of the fundamental. Since signals to be studied in this JavaScript Spectrum Analyser should have their fundamental frequency in the displayed spectrum, i.e. below 0.4*<i>F<sub>s</sub></i> (80% of the Nyquist rate), thus the amplitude of the first harmonic that aliases below 0.8 of the Nyquist rate will be (16*<i>F<sub>s</sub></i>)/(0.8*<i>F<sub>s</sub>/2</i>), the 40th harmonic. This has amplitude 20*log(1/40) = -32dB with respect to the fundamental. Signals with lower frequency fundamentals will have greater rejection. This JavaScript spectrum analyser has a dynamic range limited to 40dB very little aliasing should be noticed if the anti-aliasing filter is used.</p>
-<p>The first stage of the anti-aliasing filter delivers a digital representation of the waveform which has a spectrum with aliased components typically suppressed by 40dB for frequencies up to half the requested sample rate. The second phase of the anti-aliasing filter is to resample the waveform at the requested sample rate. This will cause the spectral components above the Nyquist rate to be aliased into the displayed spectrum, so a second digital anti-aliasing filter is used prior to the sub-sampling. This filter is a multi-pole (order 161) low pass filter with cut off frequency at 0.8*<i>F<sub>s</sub>/2</i> and very steep fall off. The filters transition band extends to the frequency 1.2*<i>F<sub>s</sub>/2</i>, which will be aliased to 0.8*<i>F<sub>s</sub>/2</i>. Signal level at this point should be below 40dB. This filter's coefficients were calculated using the Kaiser-Bessel windowing technique and the filter is applied to the over sampled digital waveform with the output simultaneous sub-sampled by a factor of 16 to the generate the requested sample rate.</p>
+<p>Anti-aliasing filters must be applied before the input signal is digitized, since it is the digitizing that causes the aliasing. This JavaScript Spectrum Analyser has its input created as discrete samples so there is no opportunity to use an analogue anti-aliasing filter. The anti-aliasing filter used here over-samples by a factor of 16, but instead of an analogue filter, it relies of the nature of the synthesized signals effectively providing a 1 pole (6dB per octave) low pass filter. The idea behind this is that all repetitive waveforms, have harmonics that fall in amplitude by at least \(1/n\), i.e. the 10th harmonic will have amplitude 1/10th of the fundamental. Since signals to be studied in this JavaScript Spectrum Analyser should have their fundamental frequency in the displayed spectrum, i.e. below 0.4*\(F_s\) (80% of the Nyquist rate), thus the amplitude of the first harmonic that aliases below 0.8 of the Nyquist rate will be (16*\(F_s\))/(0.8*\(F_s / 2\)), the 40th harmonic. This has amplitude 20*log(1/40) = -32dB with respect to the fundamental. Signals with lower frequency fundamentals will have greater rejection. This JavaScript spectrum analyser has a dynamic range limited to 40dB very little aliasing should be noticed if the anti-aliasing filter is used.</p>
+<p>The first stage of the anti-aliasing filter delivers a digital representation of the waveform which has a spectrum with aliased components typically suppressed by 40dB for frequencies up to half the requested sample rate. The second phase of the anti-aliasing filter is to re-sample the waveform at the requested sample rate. This will cause the spectral components above the Nyquist rate to be aliased into the displayed spectrum, so a second digital anti-aliasing filter is used prior to the sub-sampling. This filter is a multi-pole (order 161) low pass filter with cut off frequency at 0.8*\(F_s / 2\) and very steep fall off. The filters transition band extends to the frequency 1.2*\(F_s / 2\), which will be aliased to 0.8*\(F_s / 2\). Signal level at this point should be below 40dB. This filter's coefficients were calculated using the Kaiser-Bessel windowing technique and the filter is applied to the over sampled digital waveform with the output simultaneous sub-sampled by a factor of 16 to the generate the requested sample rate.</p>
 
 <p>To demonstrate, examine the spectrum of a 115Hz square wave with and without the anti-aliasing filter.</p>
 <p>Set the sample frequency to be 2000Hz, this gives a Nyquist rate of 1000Hz, select anti-aliasing filter 'off', check the 'K-B' window then copy and paste the following input function which generates a 115Hz square wave.</p>
 <pre>
 (sin(2*PI*115*t)&gt;0)?2:-2
 </pre>
-<p>Press 'GEN TIME DATA' and then press 'POWER' to display the power spectrum, then check the 'log' display mode. As expected the frequency components of a square wave consist of every odd harmonic, 155, 345 (=3*115), 575 (=5*115). The harmonics above the Nyquist rate appear folded back into the displayed spectrum, they are actually the negative frequency harmonics from the copy of the spectrum centred at the sample frequency 2000Hz. The 11th negative frequency harmonic is 11*-115=-1265 this appears at 2000-1265=735, the 13th harmonic appears at 505, the 15th at 275, the 17th at 45Hz. It gets worse, the 19th harmonic from the spectrum copy centred on -2000Hz appears at 185Hz (-2000+19*115) and so on. Figure 1a shows the messy result.</p>
-<p>Now check the anti-aliasing filter 'on' and press 'GEN TIME DATA', then press "POWER" and check the 'log' checkbox. The anti-aliasing filter removes all the aliases and leaves only the harmonics that lie in the displayed frequency range, 115, 345 and 575Hz. This anti-aliased spectrum is shown in Fig 1b.</p>
+<p>Press '<b>Generate&nbsp;Time&nbsp;Data</b>' and then press '<b>Power</b>' to display the power spectrum, then check the 'log' display mode. As expected the frequency components of a square wave consist of every odd harmonic, 155, 345 (=3*115), 575 (=5*115). The harmonics above the Nyquist rate appear folded back into the displayed spectrum, they are actually the negative frequency harmonics from the copy of the spectrum centred at the sample frequency 2000Hz. The 11th negative frequency harmonic is 11*-115=-1265 this appears at 2000-1265=735, the 13th harmonic appears at 505, the 15th at 275, the 17th at 45Hz. It gets worse, the 19th harmonic from the spectrum copy centred on -2000Hz appears at 185Hz (-2000+19*115) and so on. Figure 1a shows the messy result.</p>
+<p>Now check the anti-aliasing filter '<b>On</b>' and press '<b>Generate&nbsp;Time&nbsp;Data</b>', then press '<b>Power</b>' and check the '<b>Log</b>' checkbox. The anti-aliasing filter removes all the aliases and leaves only the harmonics that lie in the displayed frequency range, 115, 345 and 575Hz. This anti-aliased spectrum is shown in Fig 1b.</p>
 
 <div class="captionHolder"  style="width: 325px; float:left">
   <img style="width: 325px" src="Images/Aliasing-03.jpg" alt="Aliasing"/>
@@ -509,18 +563,18 @@
   w(t) = 1   0&lt;t&lt;T;
 </pre>
 <p>The Fourier transform of signals with sharp discontinuities contain broad frequency components and generate many side lobes of prominent spectral lines. This spread of energy reduces the peak value of spectral lines. If the waveform happens to join seamlessly at the ends then the power will all land within the appropriate frequency bin without this artificial splatter. The analyser measurement of peak spectral level of a narrow band signal will thus vary as a function of its frequency, depending on how smoothly the front and back ends of the windowed signal join. This reduction in peak spectral level is called 'scalloping loss'.</p>
-<p>Scalloping can be demonstrated by measuring the peak spectral level of a sine wave signal with small changes to the frequency. Try an 80Hz sine wave input sampled at <i>Fs</i> = 2048Hz. This <i>Fs</i> value will give output frequency bins spaced RBW of 4Hz:</p>
+<p>Scalloping can be demonstrated by measuring the peak spectral level of a sine wave signal with small changes to the frequency. Try an 80Hz sine wave input sampled at \(F_s\) = 2048Hz. This \(F_s\) value will give output frequency bins spaced RBW of 4Hz:</p>
 <pre>
 Input Function: 20*sin(2*PI*80*t)
 Sample Frequency: 2048
 Window: Rect
 </pre>
-<p>The logarithmic power display shows the signal has peak power 23.0dBV. Edit the '80' Hz frequency in the input function to be 82Hz, press "GEN TIME DATA' and show the log power spectrum. The signal now falls half way between two frequency bins, 80Hz and 84Hz, the situation with most spectral splatter and largest peak power loss. The peak has gone down to 19.1dB, a loss of 3.9dB. Try other frequencies, say 83Hz, you should observe several dB variation in peak signal and varying amount of spectral splatter. The scalloping loss for the rectangular window varies from 0 to -3.9dB.</p>
+<p>The logarithmic power display shows the signal has peak power 23.0dBV. Edit the '80' Hz frequency in the input function to be 82Hz, press '<b>Generate&nbsp;Time&nbsp;Data</b>' and show the log power spectrum. The signal now falls half way between two frequency bins, 80Hz and 84Hz, the situation with most spectral splatter and largest peak power loss. The peak has gone down to 19.1dB, a loss of 3.9dB. Try other frequencies, say 83Hz, you should observe several dB variation in peak signal and varying amount of spectral splatter. The scalloping loss for the rectangular window varies from 0 to -3.9dB.</p>
 <p>To minimize this variation caused by cutting off the time record sharply at the beginning and end, the input time data can be multiplied by a smoothly varying window function that will taper the signal down to zero at the beginning and end of the time record.</p>
 
 <h4>Hanning window</h4>
 <p>The Hanning window is simply one period of a sinusoid having a length equal to the time record, T, but its lifted to start and stop at 0 and its scaled to have a central maximum of 2.</p>
-<p>The effect of the Hanning versus the Rectangular window may be seen by repeating the measurements of the sine waves but having the 'Hann' windowing button checked. The power at 80Hz is still at 23dB but the peak level at 82Hz should be about 21.6dB, a smaller peak loss than the rectangular window and greatly reduced spectral splatter. The maximum scalloping loss for the Hanning window is reduced to 1.4dB.</p>
+<p>The effect of the Hanning versus the Rectangular window may be seen by repeating the measurements of the sine waves but having the '<b>Hann</b>' windowing button checked. The power at 80Hz is still at 23dB but the peak level at 82Hz should be about 21.6dB, a smaller peak loss than the rectangular window and greatly reduced spectral splatter. The maximum scalloping loss for the Hanning window is reduced to 1.4dB.</p>
 <p>These improvements in measurement quality by using the Hanning window applies to continuous type inputs only. For transient signals whose full extent fits within the length of the input time record, there will be no discontinuities at the beginning and end so the rectangular windowing will have no effect on the output spectrum and the FFT gives an accurate Fourier transform. If a Hanning window is applied to this type of signal there will be little effect on the spectrum and if the compensation for the expected windowing loss is applied the answer would be less accurate.</p>
 <h4>Kaiser-Bessel Window</h4>
 <p>The Kaiser-Bessel window is another window shape designed to perform the same function as the simpler Hanning window but it has some advantages. The window generation code takes a parameter 'alpha', a number with a useful range of 1.5 to 4.0. This parameter can be used to set the maximum height of the side lobe level the window will generate. This is a very useful characteristic particularly in limiting the effects of aliasing. The alpha value here is preset to 2.5. The maximum scalloping loss for K-B window with alpha 2.5 is 1.2dB</p>
@@ -530,40 +584,40 @@ Window: Rect
 <pre>
 10*sin(2*PI*162*t)+0.4*sin(2*PI*192*t)
 </pre>
-<p>Again use 2048Hz as the sampling frequency. Generate the time data with the 'Rect' window selected. Observe the log power display, spectral splatter masks the lower level 192Hz signal. Next select the Hann window and press 'GEN TIME DATA'. Now when the log power is displayed, the peaks are easily resolved.</p>
+<p>Again use 2048Hz as the sampling frequency. Generate the time data with the <b>Rect</b> window selected. Observe the log power display, spectral splatter masks the lower level 192Hz signal. Next select the <b>Hann</b> window and press '<b>Generate&nbsp;Time&nbsp;Data</b>'. Now when the log power is displayed, the peaks are easily resolved.</p>
 
 <h3>Fourier transform</h3>
 <p>The Fourier transform converts information from the time domain into the frequency domain or vice versa. No information is gained or lost in transforming from one domain to the other. The idea of Fourier analysis is to present the information in such a way that it is easy to interpret and facilitate solutions to problems.</p>
-<p>The Fourier transform of a time signal <i>a(t)</i> defines the complex spectrum <i>A(f)</i> and is given by:</p>
+<p>The Fourier transform of a time signal \(a(t)\) defines the complex spectrum \(A(f)\) and is given by:</p>
 
 $$A(f) = \int^{+\infty}_{-\infty} a(t) e^{\displaystyle{-i2\pi ft}}dt$$
 
 <h4>Discrete Fourier Transform </h4>
-<p>The approximation to the Fourier transform used in modern digital signal processing is called the Discrete Fourier Transform (DFT). The DFT operates on a series of data points obtained by sampling the input signal discrete intervals. The input series is of a fixed length, say N points. The DFT will generate a series of N frequency domain points which are a uniformly spaced samples of the spectrum of the input signal if it were repeated infinitely end to end.</p>
+<p>The approximation to the Fourier transform used in modern digital signal processing is called the Discrete Fourier Transform (DFT). The DFT operates on a series of data points obtained by sampling the input signal discrete intervals. The input series is of a fixed length, say \(N\) points. The DFT will generate a series of \(N\) frequency domain points which are a uniformly spaced samples of the spectrum of the input signal if it were repeated infinitely end to end.</p>
 
 <p>A general expression for the forward DFT is given by:</p>
 
-$$A_n = \frac{1}{N}\sum^{N-1}_{k=0}a_k e^{-\displaystyle\frac{i2\pi kn}{N}} \qquad\mbox{for}\ n=0\ ...\ N\!-\!1$$
+$$A_n = \frac{1}{N}\sum^{N-1}_{k=0}a_k e^{-\displaystyle\frac{i2\pi kn}{N}} \qquad\text{for}\ n=0\ ...\ N\!-\!1$$
 
-<p>A typical application may be to determine the spectrum of a time domain signal. If a DFT takes an input of length N, then input series a<sub>n</sub> is generated by sampling the input signal N times at time intervals of <i>dt</i>. The total length of the input record will be <i>T=N*dt</i>. If the input signal is defined as <i>f(t)</i> then the input series will be:</p>
+<p>A typical application may be to determine the spectrum of a time domain signal. If a DFT takes an input of length \(N\), then input series \(a_n\) is generated by sampling the input signal \(N\) times at time intervals of \(dt\). The total length of the input record will be \(T=N*dt\). If the input signal is defined as \(f(t)\) then the input series will be:</p>
 
-$$a_0 = f(0),\ \ a_1 = f(dt),\ \ a_2 = f(2dt)\quad...\ a_N = f(N dt)$$
+$$a_0 = f(0),\ \ a_1 = f(dt),\ \ a_2 = f(2dt), \; ... \; a_N = f(N dt)$$
 
-<p>The sampling frequency, <i>F<sub>s</sub></i> is then defined as: </p>
+<p>The sampling frequency, \( F_s \) is then defined as: </p>
 
-$$Fs = \frac{1}{dt}$$
+$$F_s = \frac{1}{dt}$$
 
-<p>The output series A<sub>n</sub> represents the frequency spectrum of the input. The frequency spacing of the discrete points in the transformed data is termed the frequency resolution, or resolution bandwidth <i>dF</i>, given by:</p>
+<p>The output series \( A_n \) represents the frequency spectrum of the input. The frequency spacing of the discrete points in the transformed data is termed the frequency resolution, or resolution bandwidth \(dF\), given by:</p>
 
 $$dF = \frac{1}{T}$$
 
-<p>where <i><b>T</b></i> is the length of the time domain record.</p>
+<p>where \(T\) is the length of the time domain record.</p>
 
-$$dF = \frac{Fs}{N}$$
+$$dF = \frac{F_s}{N}$$
 
-<p>The frequency data represent both positive and negative frequency components of the input signal. The frequencies generated range from -F<sub>s</sub>/2+dF Hz through 0 Hz (DC) to F<sub>s</sub>/2 Hz.</p>
+<p>The frequency data represent both positive and negative frequency components of the input signal. The frequencies generated range from \( -F_s/2+dF \) Hz through \(0\) Hz (DC) to \(F_s/2\) Hz.</p>
 
-<p>The Fourier transform and the DFT may be equally well applied to waveforms domains other than time, for example if the input series samples distance, then the output data represents a spatial frequency response. A scenario often used in image processing and antenna beamformimg.</p>
+<p>The Fourier transform and the DFT may be equally well applied to waveforms domains other than time, for example if the input series samples distance, then the output data represents a spatial frequency response. A scenario often used in image processing and antenna beam forming.</p>
 
 <h4>Fast Fourier Transform</h4>
 <p>The Fast Fourier Transform (FFT) is just an algorithm which computes the DFT with a greatly reduced number of arithmetic operations compared to a direct computation.</p>
@@ -576,4 +630,6 @@ $$dF = \frac{Fs}{N}$$
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/SpectrumAnalyser.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:55 GMT -->
 </html>

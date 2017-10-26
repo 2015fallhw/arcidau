@@ -1,20 +1,34 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/GearDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:25 GMT -->
 <head>
   <title>Gear Drawing with Bézier Curves</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="gear drawing, gear animation, involute gears, involute approximation, Bezier approximation, Bézier curve drawing" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="console-45.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="katex-0.8.3/katex.min.css" media="screen"  type="text/css" />
+  
   <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "console-43.css";
+    .katex-display {
+      text-align: left;
+      margin-left: 4em; 
+      position: relative;
+    }
+
+    .katex-display .katex .eqno {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 450px;
+      text-align: right;
+    }
   </style>
 
-  <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
+<script type="text/javascript">
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -30,116 +44,17 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
-  <script type="text/javascript" src="Cango-8v03-min.js"></script>
-  <script type="text/javascript" src="CangoAxes-1v33.js"></script>
-  <script type="text/javascript" src="CangoDragAndDrop-2v00.js"></script>
-  <script type="text/javascript" src="CangoAnimation-4v01.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/katex.min.js"></script>
+  <script type="text/javascript" src="katex-0.8.3/contrib/auto-render.min.js"></script>
+  <script type="text/javascript" src="katex-render-tags.js"></script>
+
+  <script type="text/javascript" src="Cango-12v05-min.js"></script>
+  <script type="text/javascript" src="CangoAxes-4v00-min.js"></script>
   <script type="text/javascript" src="gearUtils-05.js"></script>
 
   <script type="text/javascript">
@@ -226,7 +141,7 @@
           gear, invData,
           invMax, invMin,
           xspan, yspan,
-          pt, A, arc1,
+          pt, A,
           cx1, cy1,
           c1,
           g, xmin, xmax, ymin, ymax,
@@ -275,8 +190,7 @@
       ymin = -5;
       ymax = 40;
 
-      g.setGridboxRHC();          // full canvas
-      g.setWorldCoords(xmin, ymin, xmax-xmin);   // square pixels
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);   // square pixels
       g.setPropertyDefault("fillColor", 'black');
       g.setPropertyDefault("fontSize", 12);
       // =============== DIN GEAR DESIGN ===================
@@ -289,20 +203,19 @@
       Ra = Rpitch + addendum;       // addendum (outer) radius
       // generate gear tooth outline path
       toothData = createGearTooth(m, Z, phi);
-      toothObj = new Cobj(toothData, "PATH", {strokeColor:'red'});
-      toothObj.rotate(-270/Z);
-      // rotate the tooth to put start of involute on the x axis
-      pitchToBaseAngle = (Math.sqrt(Rpitch*Rpitch - Rb*Rb)/Rb) - Math.acos(Rb/Rpitch);
-      toothObj.rotate(180*pitchToBaseAngle/Math.PI);
+      toothObj = new Path(toothData, {strokeColor:'red'});
       // make 5 teeth by duplicating
-      gear = [];
-      gear.push(toothObj);
-      for (i=0, newTooth; i<4; i++)
+      gear = toothObj.dup();  // new Group(toothObj);
+      for (i=1; i<4; i++)
       {
         newTooth = toothObj.dup();
         newTooth.rotate(360*i/Z);
-        gear.push(newTooth);
+        gear.appendPath(newTooth, true);
       }
+      gear.rotate(-270/Z);
+      // rotate the tooth to put start of involute on the x axis
+      pitchToBaseAngle = (Math.sqrt(Rpitch*Rpitch - Rb*Rb)/Rb) - Math.acos(Rb/Rpitch);
+      gear.rotate(180*pitchToBaseAngle/Math.PI);
       // now draw the extended involute
       invData = [];
       pt = {};
@@ -320,7 +233,7 @@
       cx1 = 59.7-Rb;
       cy1 = 7.5;  // eqiv x,y on involute for 0.8 theta
       // compile the involute control point and make it draggable
-      c1 = new Cobj(shapeDefs.circle(2), "SHAPE", {fillColor:'red', iso:true});
+      c1 = new Shape(shapeDefs.circle(2), {fillColor:'red', iso:true});
       c1.enableDrag(null, dragC1, null);
 
       this.showConst = false;    // show construction lines
@@ -331,42 +244,48 @@
 
         g.clearCanvas();
         g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:-Rb, yOrigin:0, yTickInterval:50, strokeColor:"#888888", fillColor:"#888888"});  // don't show y ticks
-        g.render(gear, -Rb, 0);
-        g.drawPath(shapeDefs.circle(Rb*2), -Rb, 0, {strokeColor:'rgba(0,0,255,0.3)'});
+        gear.transform.translate(-Rb, 0);
+        g.render(gear);
+        g.drawPath(shapeDefs.circle(Rb*2), {x:-Rb, y:0, strokeColor:'rgba(0,0,255,0.3)'});
 
-        g.drawPath(invData, -Rb, 0, {strokeColor:'magenta'});
+        g.drawPath(invData, {x:-Rb, y:0, strokeColor:'magenta'});
 
         // draw generating right angle
         compA = Math.PI/2 - A;
         gPt = toCartesian(Rb, A);
         genLines = ['M', 0, 0, 'l', gPt.x, gPt.y, Rb*A*Math.cos(compA), -Rb*A*Math.sin(compA)];
-        g.drawPath(genLines, -Rb, 0);
+        g.drawPath(genLines, {x:-Rb, y:0});
         // draw little right angle sign
         genLines = ['M', 0.95*gPt.x, 0.95*gPt.y, 'l', 0.05*Rb*Math.cos(compA), -0.05*Rb*Math.sin(compA),
                     0.05*Rb*Math.cos(A), 0.05*Rb*Math.sin(A)];
-        g.drawPath(genLines, -Rb, 0);
+        g.drawPath(genLines, {x:-Rb, y:0});
         // draw draggable end point
-        g.render(c1, cx1, cy1);
+        c1.transform.translate(cx1, cy1);
+        g.render(c1);
         if (this.showConst)
         {
           genLines = ['M', 0, 0, 'L', gPt.x, gPt.y, gPt.x, 0, "Z", "M", gPt.x, gPt.y,
                       "l", Rb*A*Math.cos(compA), -Rb*A*Math.sin(compA), -Rb*A*Math.cos(compA), 0, "Z"];
-          g.drawPath(genLines, -Rb, 0);
+          g.drawPath(genLines, {x:-Rb, y:0});
           // label if they fit
-          g.drawText("R", gPt.x/2-Rb-1.8, gPt.y/2+1.5, {lorg:9});
-          g.drawText("b", gPt.x/2-Rb-1, gPt.y/2+1, {fontSize:10, lorg:9});
+          g.drawText("R", {x:gPt.x/2-Rb-1.8, y:gPt.y/2+1.5, lorg:9});
+          g.drawText("b", {x:gPt.x/2-Rb-1, y:gPt.y/2+1, fontSize:10, lorg:9});
           if (A>0.3)
           {
-            arc1 = shapeDefs.arrowArc(7.5, 0, 180*A/Math.PI, false, 1/g.xscl, 7);
-            g.drawShape(arc1, -Rb, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
-            g.drawText("\u03B8", gPt.x/4-Rb, gPt.y/8, {lorg:4});
-            g.drawText("x'", 2*gPt.x/3-Rb, 2, {lorg:5});
-            g.drawText("y'", gPt.x-Rb-1, gPt.y/3, {lorg:3});
-            g.drawText("\u03B8", gPt.x-Rb+Rb*A*Math.sin(A)/20, gPt.y-4, {lorg:1});
-            g.drawText("x", gPt.x-Rb+Rb*A*Math.sin(A)/2, gPt.y-Rb*A*Math.cos(A)+1, {lorg:9});
-            g.drawText("y", gPt.x-Rb+1, 2*gPt.y/3, {lorg:1});
-            g.drawText("c", gPt.x-Rb+Rb*A*Math.sin(A)/2+1, gPt.y-Rb*A*Math.cos(A)/2+1, {lorg:7});
-            g.drawText("c'", -Rb+Rb*Math.cos(A/2)-1, Rb*Math.sin(A/2)-1, {lorg:6});
+            g.drawArrowArc(7.5, 0, 180*A/Math.PI, {
+              x:-Rb, y:0,
+              fillColor:"#aaaaaa",
+              clockWise:false,
+              shaftWidth:1,
+              headSize:7});
+            g.drawText("\u03B8", {x:gPt.x/4-Rb, y:gPt.y/8, lorg:4});
+            g.drawText("x'", {x:2*gPt.x/3-Rb, y:2, lorg:5});
+            g.drawText("y'", {x:gPt.x-Rb-1, y:gPt.y/3, lorg:3});
+            g.drawText("\u03B8", {x:gPt.x-Rb+Rb*A*Math.sin(A)/20, y:gPt.y-4, lorg:1});
+            g.drawText("x", {x:gPt.x-Rb+Rb*A*Math.sin(A)/2, y:gPt.y-Rb*A*Math.cos(A)+1, lorg:9});
+            g.drawText("y", {x:gPt.x-Rb+1, y:2*gPt.y/3, lorg:1});
+            g.drawText("c", {x:gPt.x-Rb+Rb*A*Math.sin(A)/2+1, y:gPt.y-Rb*A*Math.cos(A)/2+1, lorg:7});
+            g.drawText("c'", {x:-Rb+Rb*Math.cos(A/2)-1, y:Rb*Math.sin(A/2)-1, lorg:6});
           }
         }
       };
@@ -387,7 +306,7 @@
           xspan, yspan,
           A, cx1, cy1,
           compA, gPt,
-          genLines, arc1, arc2, ph,
+          genLines, ph,
           g, xmin, xmax, ymin, ymax;
 
       function toCartesian(radius, angle)
@@ -409,8 +328,7 @@
       ymin = -4;
       ymax = 40;
       g = new Cango(cvsID);     // g is the graphics context for the background
-      g.setGridboxRHC();          // full canvas
-      g.setWorldCoords(xmin, ymin, xmax-xmin);  // square pixels
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);  // square pixels
       g.setPropertyDefault("fillColor", 'black');
       g.setPropertyDefault("fontSize", 12);
       // =============== DIN GEAR DESIGN ===================
@@ -423,20 +341,19 @@
       Ra = Rpitch + addendum;       // addendum (outer) radius
       // generate gear tooth outline path
       toothData = createGearTooth(m, Z, phi);
-      toothObj = new Cobj(toothData, "PATH", {strokeColor:'red'});
-      toothObj.rotate(-270/Z);
-      // rotate the tooth to put start of involute on the x axis
-      pitchToBaseAngle = (Math.sqrt(Rpitch*Rpitch - Rb*Rb)/Rb) - Math.acos(Rb/Rpitch);
-      toothObj.rotate(180*pitchToBaseAngle/Math.PI);
+      toothObj = new Path(toothData, {strokeColor:'red'});
       // make 5 teeth by duplicating
-      gear = [];
-      gear.push(toothObj);
-      for (i=0, newTooth; i<3; i++)
+      gear = toothObj.dup();
+      for (i=1; i<3; i++)
       {
         newTooth = toothObj.dup();
         newTooth.rotate(360*i/Z);
-        gear.push(newTooth);
+        gear.appendPath(newTooth, true);
       }
+      gear.rotate(-270/Z);
+      // rotate the tooth to put start of involute on the x axis
+      pitchToBaseAngle = (Math.sqrt(Rpitch*Rpitch - Rb*Rb)/Rb) - Math.acos(Rb/Rpitch);
+      gear.rotate(180*pitchToBaseAngle/Math.PI);
       // now draw the extended involute
       invData = [];
       pt = {};
@@ -455,33 +372,46 @@
       cy1 = 7.5;  // eqiv x,y on involute for 0.8 theta
 
       g.clearCanvas();
-      g.drawAxes(xmin, xmax, ymin, ymax, {xOrigin:-Rb, yOrigin:0, yTickInterval:50, strokeColor:"#888888", fillColor:"#888888"});  // don't show y ticks
-      g.render(gear, -Rb, 0);
-      g.drawPath(shapeDefs.circle(Rb*2), -Rb, 0, {strokeColor:'rgba(0,0,255,0.3)'});
-      g.drawPath(invData, -Rb, 0, {strokeColor:'magenta'});
+      g.drawAxes(xmin, xmax, ymin, ymax, {
+        xOrigin:-Rb, yOrigin:0,
+        yTickInterval:50,
+        strokeColor:"#888888",
+        fillColor:"#888888"});  // don't show y ticks
+      gear.transform.translate(-Rb, 0);
+      g.render(gear);
+      g.drawPath(shapeDefs.circle(Rb*2), {x:-Rb, y:0, strokeColor:'rgba(0,0,255,0.3)'});
+      g.drawPath(invData, {x:-Rb, y:0, strokeColor:'magenta'});
       // draw generating right angle
       compA = Math.PI/2 - A;
       gPt = toCartesian(Rb, A);
       genLines = ['M', 0, 0, 'l', gPt.x, gPt.y, Rb*A*Math.cos(compA), -Rb*A*Math.sin(compA), 'z'];
-      g.drawPath(genLines, -Rb, 0);
+      g.drawPath(genLines, {x:-Rb, y:0});
 
-      arc1 = shapeDefs.arrowArc(9, 0, 180*A/Math.PI, false, 1/g.xscl, 7);
-      g.drawShape(arc1, -Rb, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      g.drawArrowArc(9, 0, 180*A/Math.PI, {
+        x:-Rb, y:0,
+        fillColor:"#aaaaaa",
+        clockwise:false,
+        shaftWidth:1,
+        headSize:7});
       ph = 0.13;
-      arc2 = shapeDefs.arrowArc(20, 0, 180*ph/Math.PI, false, 1/g.xscl, 7);
-      g.drawShape(arc2, -Rb, 0, {lineWidth: 1, fillColor:"#aaaaaa"});
+      g.drawArrowArc(20, 0, 180*ph/Math.PI, {
+        x:-Rb, y:0,
+        fillColor:"#aaaaaa",
+        clockWise:false,
+        shaftWidth:1,  
+        headSize:7});
       // draw little right angle sign
       genLines = ['M', 0.95*gPt.x, 0.95*gPt.y, 'l', 0.05*Rb*Math.cos(compA), -0.05*Rb*Math.sin(compA),
                   0.05*Rb*Math.cos(A), 0.05*Rb*Math.sin(A)];
-      g.drawPath(genLines, -Rb, 0);
+      g.drawPath(genLines, {x:-Rb, y:0});
       // label if they fit
-      g.drawText("R", gPt.x/2-Rb-1.8, gPt.y/2+1.5, {lorg:9});
-      g.drawText("b", gPt.x/2-Rb-1, gPt.y/2+1, {fontSize:10, lorg:9});
-      g.drawText("R", gPt.x-Rb, gPt.y/6, {lorg:9});
-      g.drawText("\u03B8", 3*gPt.x/8-Rb, gPt.y/8, {lorg:4});
-      g.drawText("\u03C8", 7*gPt.x/8-Rb, 1.5, {lorg:5});
-      g.drawText("c", gPt.x-Rb+Rb*A*Math.sin(A)/2+1, gPt.y-Rb*A*Math.cos(A)/2+1, {lorg:7});
-      g.drawText("c'", -Rb+Rb*Math.cos(A/2)-1, Rb*Math.sin(A/2)-1, {lorg:6});
+      g.drawText("R", {x:gPt.x/2-Rb-1.8, y:gPt.y/2+1.5, lorg:9});
+      g.drawText("b", {x:gPt.x/2-Rb-1, y:gPt.y/2+1, fontSize:10, lorg:9});
+      g.drawText("R", {x:gPt.x-Rb, y:gPt.y/6, lorg:9});
+      g.drawText("\u03B8", {x:3*gPt.x/8-Rb, y:gPt.y/8, lorg:4});
+      g.drawText("\u03C8", {x:7*gPt.x/8-Rb, y:1.5, lorg:5});
+      g.drawText("c", {x:gPt.x-Rb+Rb*A*Math.sin(A)/2+1, y:gPt.y-Rb*A*Math.cos(A)/2+1, lorg:7});
+      g.drawText("c'", {x:-Rb+Rb*Math.cos(A/2)-1, y:Rb*Math.sin(A/2)-1, lorg:6});
     }
 
     function InvoluteProfile(g, module, teeth, pressureAngle)
@@ -506,8 +436,7 @@
       ymin = -0.5;
       ymax = 5.5;
 
-      g.setGridboxRHC();
-      g.setWorldCoords(xmin, ymin, xmax-xmin);  // square pixels
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);  // square pixels
 
       // =============== Demo Gear ===================
       m = module;                         // Module = pitch diameter (mm)/teeth
@@ -539,24 +468,24 @@
           yUnits:"mm",
           xLabel:"X",
           yLabels:"Y" });
-        g.drawPath(shapeDefs.circle(Rpitch*2), -Rpitch, 0, {strokeColor:'orange'});
-        g.drawPath(shapeDefs.circle(Rb*2), -Rpitch, 0, {strokeColor:'red'});
-        g.drawPath(shapeDefs.circle(Ra*2), -Rpitch, 0, {strokeColor:'green'});
+        g.drawPath(shapeDefs.circle(Rpitch*2), {x:-Rpitch, y:0, strokeColor:'orange'});
+        g.drawPath(shapeDefs.circle(Rb*2), {x:-Rpitch, y:0, strokeColor:'red'});
+        g.drawPath(shapeDefs.circle(Ra*2), {x:-Rpitch, y:0, strokeColor:'green'});
 
         // draw the approximation
         data = ["M", dedBez[0].x, dedBez[0].y,
                     "C", dedBez[1].x, dedBez[1].y, dedBez[2].x, dedBez[2].y, dedBez[3].x, dedBez[3].y,
                     "C", addBez[1].x, addBez[1].y, addBez[2].x, addBez[2].y, addBez[3].x, addBez[3].y];
-        g.drawPath(data, -Rpitch, 0, {strokeColor:'blue'});
+        g.drawPath(data, {x:-Rpitch, y:0, strokeColor:'blue'});
         // plot the Bezier nodes as exes
         for (p=0; p<dedBez.length; p++)    // skip duplicate at start
         {
-          g.drawPath(shapeDefs.ex(0.2), dedBez[p].x-Rpitch, dedBez[p].y, {strokeColor:'blue'});
+          g.drawPath(shapeDefs.ex(0.2), {x:dedBez[p].x-Rpitch, y:dedBez[p].y, strokeColor:'blue'});
         }
         // plot the Bezier nodes
         for (p=0; p<addBez.length; p++)    // skip duplicate at start
         {
-          g.drawPath(shapeDefs.cross(0.2), addBez[p].x-Rpitch, addBez[p].y, {strokeColor:'green'});
+          g.drawPath(shapeDefs.cross(0.2), {x:addBez[p].x-Rpitch, y:addBez[p].y, strokeColor:'green'});
         }
         // calculate the errors
         sa = (Ra*Ra - Rb*Rb)/(2*Rb);
@@ -591,7 +520,7 @@
         }
         pt = genInvolute2(Rb, ta);     // add the end point
         data.push(pt.x, pt.y);
-        g.drawPath(data, -Rpitch, 0, {strokeColor:'magenta'});
+        g.drawPath(data, {x:-Rpitch, y:0, strokeColor:'magenta'});
       };
 
       this.drawCubicBezInvolute();
@@ -644,8 +573,7 @@
       ymin = -0.5;
       ymax = 5.5;
 
-      g.setGridboxRHC();          // full canvas
-      g.setWorldCoords(xmin, ymin, xmax-xmin);  // square pixels
+      g.setWorldCoordsRHC(xmin, ymin, xmax-xmin);  // square pixels
 
       // =============== this Demo Gear has Rroot < Rbase ===================
       m = module;                         // Module = pitch diameter (mm)/teeth
@@ -677,9 +605,9 @@
           yUnits:"mm",
           xLabel:"X",
           yLabels:"Y"});
-        g.drawPath(shapeDefs.circle(Rpitch*2), -Rpitch, 0, {strokeColor:'orange'});
-        g.drawPath(shapeDefs.circle(Rb*2), -Rpitch, 0, {strokeColor:'red'});
-        g.drawPath(shapeDefs.circle(Ra*2), -Rpitch, 0, {strokeColor:'green'});
+        g.drawPath(shapeDefs.circle(Rpitch*2), {x:-Rpitch, y:0, strokeColor:'orange'});
+        g.drawPath(shapeDefs.circle(Rb*2), {x:-Rpitch, y:0, strokeColor:'red'});
+        g.drawPath(shapeDefs.circle(Ra*2), {x:-Rpitch, y:0, strokeColor:'green'});
 
         // draw approximation Bezier
         for (theta=ts; theta<ta; theta+= 0.05) // fraction of theta_a
@@ -690,11 +618,11 @@
         }
         // add the end point
         data.push(bez[bez.length-1].x, bez[bez.length-1].y);
-        g.drawPath(data, -Rpitch, 0, {strokeColor:'green'});
+        g.drawPath(data, {x:-Rpitch, y:0, strokeColor:'green'});
         // plot the Bezier nodes
         for (p=0; p<bez.length; p++)
         {
-          g.drawPath(shapeDefs.ex(0.2), bez[p].x-Rpitch, bez[p].y, {strokeColor:'green'});
+          g.drawPath(shapeDefs.ex(0.2), {x:bez[p].x-Rpitch, y:bez[p].y, strokeColor:'green'});
         }
 
         // calculate the errors (need a higher order version of Simon Porritt's jsBezier code)
@@ -728,7 +656,7 @@
         }
         pt = genInvolute2(Rb, ta);     // add the end point
         data.push(pt.x, pt.y);
-        g.drawPath(data, -Rpitch, 0, {strokeColor:'magenta'});
+        g.drawPath(data, {x:-Rpitch, y:0, strokeColor:'magenta'});
       };
 
       this.drawBezInvolute();
@@ -767,16 +695,14 @@
           gearConfig, pinionConfig,
           twnr;
 
-      g.setGridboxRHC();
-      g.setWorldCoords(xmin, ymin, xspan);
+      g.setWorldCoordsRHC(xmin, ymin, xspan);
 
       // generate gear
       data = createGearTooth(m, Zg, phi);
-      gearTooth = new Cobj(data, "SHAPE", {
+      gearTooth = new Shape(data, {
         fillColor:"#ddd0dd",
         border: true,
         strokeColor: "#606060" });
-      gearTooth.rotate(180/Zg);     // rotate gear 1/2 tooth to mesh
       gear = gearTooth.dup();
       for (i=1; i<Zg; i++)
       {
@@ -784,19 +710,19 @@
         newTooth.rotate(360*i/Zg);
         gear.appendPath(newTooth, true);  // trim move command = true
       }
+      gear.rotate(180/Zg);     // rotate gear 1/2 tooth to mesh
       // add axle hole
       Dsg = 0.6*Rg;             // diameter of gear shaft
-      shaft = new Cobj(shapeDefs.circle(Dsg), "PATH");
+      shaft = new Path(shapeDefs.circle(Dsg));
       shaft.revWinding();
       gear.appendPath(shaft);       // retain the 'moveTo' command for shaft sub path
 
       // generate pinion
       data = createGearTooth(m, Zp, phi);
-      pinionTooth = new Cobj(data, "SHAPE", {
+      pinionTooth = new Shape(data, {
         fillColor:"#d0d0e8",
         border: true,
         strokeColor: "#606060" });
-      pinionTooth.rotate(-(180/Math.PI)*0.5*bklsh/Rp);  // rotate gear to take up backlash
       pinion = pinionTooth.dup();
       for (i=1; i<Zp; i++)
       {
@@ -804,33 +730,64 @@
         newTooth.rotate(360*i/Zp);
         pinion.appendPath(newTooth, true);  // trim 'moveto' command = true
       }
+      pinion.rotate(-(180/Math.PI)*0.5*bklsh/Rp);  // rotate gear to take up backlash
       // add axle hole
       Dsp = 0.6*Rp;             // diameter of pinion shaft
-      shaft = new Cobj(shapeDefs.circle(Dsp), "PATH");
+      shaft = new Path(shapeDefs.circle(Dsp));
       shaft.revWinding();
       pinion.appendPath(shaft);     // retain the 'moveTo' command for shaft sub path
 
       // setup the animation
-      gearConfig = {cx:-Rg, cy:0, rot:[0, 360]};
-      pinionConfig = {cx:Rp+dC, cy:0, rot:[0, -gr*360]};  // gr*0.666 rpm
-			twnr = new Tweener(0, 90000, "loop");               // 0.666 rpm
+      gearConfig = {cx:-Rg, cy:0, degs:[0, 360]};
+      pinionConfig = {cx:Rp+dC, cy:0, degs:[0, -gr*360]};  // gr*0.666 rpm
+      twnr = new Tweener(0, 90000, "loop");               // 0.666 rpm
 
       function initGear(opts)
       {
         // create the required contents of next state vector (the default for others are OK)
         this.nextState.x = opts.cx;
         this.nextState.y = opts.cy;
+        gear.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      function drawGear(opts)
+      {
+        this.gc.render(gear);
       }
 
       function gearPath(time, opts)
       {
-        var rotVal = twnr.getVal(time, opts.rot);
+        var rotVal = twnr.getVal(time, opts.degs);
         // create the required contents of next state vector (the default for others are OK)
-        this.nextState.rot = rotVal;
+        this.nextState.degs = rotVal;
+        gear.transform.rotate(this.nextState.degs);
+        gear.transform.translate(this.nextState.x, this.nextState.y);
       }
 
-      g.animate(gear, initGear, gearPath, gearConfig);
-      g.animate(pinion, initGear, gearPath, pinionConfig);
+      function initPinion(opts)
+      {
+        // create the required contents of next state vector (the default for others are OK)
+        this.nextState.x = opts.cx;
+        this.nextState.y = opts.cy;
+        pinion.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      function drawPinion(opts)
+      {
+        this.gc.render(pinion);
+      }
+
+      function pinionPath(time, opts)
+      {
+        var rotVal = twnr.getVal(time, opts.degs);
+        // create the required contents of next state vector (the default for others are OK)
+        this.nextState.degs = rotVal;
+        pinion.transform.rotate(this.nextState.degs);
+        pinion.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      g.animation(initGear, drawGear, gearPath, gearConfig);
+      g.animation(initPinion, drawPinion, pinionPath, pinionConfig);
 
       this.run = function()
       {
@@ -871,19 +828,17 @@
           gearConfig, pinionConfig,
           twnr;
 
-      g.setGridboxRHC();              // full canvas
-      g.setWorldCoords(xmin, ymin, xspan);
+      g.setWorldCoordsRHC(xmin, ymin, xspan);
 
       // create ring gear outer rim
-      gear = new Cobj(shapeDefs.circle(2*Rrim), "SHAPE", {
+      gear = new Shape(shapeDefs.circle(2*Rrim), {
         fillColor:"#ddddd0",
         border: true,
         strokeColor: "#606060" });
       gear.revWinding();   // reverse winding so hole center hole won't be filled
       // now generate ring gear teeth
       data = createIntGearTooth(m, Zg, phi);
-      gearTooth = new Cobj(data, "PATH");
-      gearTooth.rotate(180/Zg);  // rotate gear 1/2 tooth to mesh
+      gearTooth = new Path(data);
       teeth = gearTooth.dup();
       for (i=1, newTooth; i<Zg; i++)
       {
@@ -891,14 +846,14 @@
         newTooth.rotate(360*i/Zg);
         teeth.appendPath(newTooth, true); // trim initial 'moveTo'
       }
+      teeth.rotate(180/Zg);  // rotate gear 1/2 tooth to mesh
       gear.appendPath(teeth);   // retain the moveTo to make sub-path
       // generate pinion
       data = createGearTooth(m, Zp, phi);
-      pinionTooth = new Cobj(data, "SHAPE", {
+      pinionTooth = new Shape(data, {
         fillColor:"#d0dddd",
         border: true,
         strokeColor: "#606060" });
-      pinionTooth.rotate((180/Math.PI)*0.5*bklsh/Rp);  // rotate gear close backlash
       pinion = pinionTooth.dup();
       for (i=1; i<Zp; i++)
       {
@@ -906,33 +861,64 @@
         newTooth.rotate(360*i/Zp);
         pinion.appendPath(newTooth, true);  // trim move command = true
       }
+      pinion.rotate((180/Math.PI)*0.5*bklsh/Rp);  // rotate gear close backlash
       // add axle shaft hole
       Rshaft = 0.3*Rp;      // shaft radius
-      shaft = new Cobj(shapeDefs.circle(2*Rshaft), "PATH");
+      shaft = new Path(shapeDefs.circle(2*Rshaft));
       shaft.revWinding();       // reverse the winding so hole not filled
       pinion.appendPath(shaft); // retain the moveTo to make sub-path
 
       // setup the animation
-      gearConfig = {cx:-Rg, cy:0, rot:[0, 360]};
-      pinionConfig = {cx:-Rp-dC, cy:0, rot:[0, gr*360]};    // gr*1 rpm
-			twnr = new Tweener(0, 60000, "loop");                 // 1 rpm
+      gearConfig = {cx:-Rg, cy:0, degs:[0, 360]};
+      pinionConfig = {cx:-Rp-dC, cy:0, degs:[0, gr*360]};   // gr*1 rpm
+      twnr = new Tweener(0, 60000, "loop");                 // 1 rpm
 
       function initGear(opts)
       {
         // create the required contents of next state vector (the default for others are OK)
         this.nextState.x = opts.cx;
         this.nextState.y = opts.cy;
+        gear.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      function drawGear(opts)
+      {
+        this.gc.render(gear);
       }
 
       function gearPath(time, opts)
       {
-        var rotVal = twnr.getVal(time, opts.rot);
+        var rotVal = twnr.getVal(time, opts.degs);
         // create the required contents of next state vector (the default for others are OK)
-        this.nextState.rot = rotVal;
+        this.nextState.degs = rotVal;
+        gear.transform.rotate(this.nextState.degs);
+        gear.transform.translate(this.nextState.x, this.nextState.y);
       }
 
-      g.animate(gear, initGear, gearPath, gearConfig);
-      g.animate(pinion, initGear, gearPath, pinionConfig);
+      function initPinion(opts)
+      {
+        // create the required contents of next state vector (the default for others are OK)
+        this.nextState.x = opts.cx;
+        this.nextState.y = opts.cy;
+        pinion.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      function drawPinion(opts)
+      {
+        this.gc.render(pinion);
+      }
+
+      function pinionPath(time, opts)
+      {
+        var rotVal = twnr.getVal(time, opts.degs);
+        // create the required contents of next state vector (the default for others are OK)
+        this.nextState.degs = rotVal;
+        pinion.transform.rotate(this.nextState.degs);
+        pinion.transform.translate(this.nextState.x, this.nextState.y);
+      }
+
+      g.animation(initGear, drawGear, gearPath, gearConfig);
+      g.animation(initPinion, drawPinion, pinionPath, pinionConfig);
 
       this.run = function()
       {
@@ -994,34 +980,21 @@
     };
   </script>
 
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      displayAlign: "left",
-      displayIndent: "2em",
-      TeX: {
-        extensions: ["AMSmath.js"],
-        TagIndent: "20em"
-      },
-      styles: {
-        ".MathJax": { color: "#404040" }
-      },
-      "HTML-CSS": { scale: 95 }
-    });
-  </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
+
+      // render all the tagged equations separately to get the tag working
+      renderTaggedEqns();
+      renderMathInElement(document.body);
+
       init();
-      enableStickyNav();
     });
   </script>
 
 </head>
 
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -1063,26 +1036,25 @@
   <div style="position: relative; width: 500px; margin: 20px auto;" >
     <canvas id="cvs0" width="475" height="300"></canvas>
     <div class="captionHolder">
-      <p><b>Figure 1.</b> Schematic diagram of gear showing involute profile (magenta) and its base circle (blue).</p>
+      <p><b>Figure 1.</b> Schematic diagram of gear showing involute profile (magenta) and its base circle (blue). Drag the red dot to demostrate the involute generation geometry.</p>
     </div>  <!-- captionHolder -->
   </div>
 
+<p>The Cartesian coordinates of a point on the involute may be expressed in parametric form using the generating angle \( \theta \) as a parameter. Click <a href="#" onclick="return showConstruction()">here</a> to show the construction lines of the derivation (click again to hide them).</p>
 
-<p>The Cartesian coordinates of a point on the involute may be expressed in parametric form using the generating angle &theta; as a parameter. Click <a href="#" onclick="return showConstruction()">here</a> to show the construction lines of the derivation (click again to hide them).</p>
+<p>From the diagram, point \( x',y' \) is at radius \( R_b \) and angle \( \theta \), therefore:</p>
 
-<p>From the diagram, point x',y' is at radius R<sub>b</sub> and angle &theta;, therefore:</p>
-
-$$\begin{align}
+$$\begin{aligned}
 x' &= R_b\, \cos(\theta)\\
 y' &= R_b\, \sin(\theta)
-\end{align}$$
+\end{aligned}$$
 
-<p>The line c, as it unwinds from the circle, is always tangential to the circumference and the radius R<sub>b</sub> is always perpendicular to c. Therefore:</p>
+<p>The line c, as it unwinds from the circle, is always tangential to the circumference and the radius \( R_b \) is always perpendicular to c. Therefore:</p>
 
-$$\begin{align}
+$$\begin{aligned}
 x &= x' + c\, \sin(\theta)\\
 y &= y' - c\, \cos(\theta)
-\end{align}$$
+\end{aligned}$$
 
 <p>The involute is the locus of the end of a string being 'unwound' from the base circle. This implies:</p>
 
@@ -1092,28 +1064,30 @@ $$
 
 <p>Therefore, the parametric equations for the involute, to be approximated with Bézier curves, are:</p>
 
-$$\begin{align}
-x &= R_b \cos(\theta) + R_b \theta \sin(\theta) \tag{1}\\
-y &= R_b \sin(\theta) - R_b \theta \cos(\theta)
-\end{align}$$
+<div class="tagged">
+\begin{aligned}
+  x &= R_b \cos(\theta) + R_b \theta \sin(\theta) \tag{1}\\
+  y &= R_b \sin(\theta) - R_b \theta \cos(\theta)
+\end{aligned}
+</div>
 
 <h3>Involute gear tooth profile dimensions</h3>
 
 <p>The geometry of a gear is set by the following basic factors: </p>
 
-<p>the module value, <b><i>m</i></b>, </br>
-the number of gear teeth <b><i>Z</i></b>, </br>
-and the pressure angle <b>\(\phi\)</b>.</p>
+<p style="margin-left:2em">Module value, \( m \), </br>
+Number of gear teeth \( Z \), </br>
+Pressure angle \( \phi \).</p>
 
-<p>The pitch circle diameter <b>D</b>, involute base circle radius <b>R<sub>b</sub></b> and addendum circle radius <b>R<sub>a</sub></b> are related by the formulae:</p>
+<p>The pitch circle diameter \( D \), involute base circle radius \( R_b \) and addendum circle radius \( R_a \) are related by the formulae:</p>
 
-$$\begin{align}
+$$\begin{aligned}
 D &= m*Z\\
 R_b &= D/2 \, \cos(\phi)\\
 R_a &= D/2 + m
-\end{align}$$
+\end{aligned}$$
 
-<p>The involute gear profile starts at the base circle and ends where the involute meets the tip circle, also known as the addendum circle. The value of the involute generating parameter <i>&theta;</i> starts at 0 on the base circle and ends at value, <i>&theta;<sub>a</sub></i>, which may be calculated the schematic diagram shown in Fig. 2 as follows:</p>
+<p>The involute gear profile starts at the base circle and ends where the involute meets the tip circle, also known as the addendum circle. The value of the involute generating parameter \( \theta \) starts at \( 0 \) on the base circle and ends at value, \( \theta_a \), which may be calculated the schematic diagram shown in Fig. 2 as follows:</p>
 
   <div style="position: relative; width: 500px; margin: 20px auto;" >
     <canvas id="cvsA" width="450" height="250"></canvas>
@@ -1122,25 +1096,25 @@ R_a &= D/2 + m
     </div>  <!-- captionHolder -->
   </div>
 
-<p>The Cartesian coordinates of a point on the involute are given at eqn 1. Substituting the polar coordinates of the point, (R, &psi;), results in the expression:</p>
+<p>The Cartesian coordinates of a point on the involute are given at eqn 1. Substituting the polar coordinates of the point, \( (R, \psi) \), results in the expression:</p>
 
-$$\begin{align}
+$$\begin{aligned}
 R \cos(\psi) &= R_b \cos(\theta) + R_b \theta \sin(\theta)\\
 R \sin(\psi) &= R_b \sin(\theta) - R_b \theta \cos(\theta)
-\end{align}$$
+\end{aligned}$$
 
 <p>Squaring both sides and adding:</p>
 
-$$\begin{align}
+$$\begin{aligned}
 R^2 &= R_b^2 (1 + \theta^2)\\
 \theta &= \frac{\sqrt{R^2 - R_b^2}}{R_b}
-\end{align}$$
+\end{aligned}$$
 
-<p>Hence the value of &theta; at the addendum, the outer radius of the gear teeth, is given by</p>
+<p>Hence the value of \( \theta \) at the addendum, the outer radius of the gear teeth, is given by</p>
 
 $$\theta_a = \frac{\sqrt{R_a^2 - R_b^2}}{R_b}$$
 
-<p>Also useful in Higuchi's approximation method, is an expression for the distance along the involute, s, as a function of &theta;.</p>
+<p>Also useful in Higuchi's approximation method, is an expression for the distance along the involute, \( s \), as a function of \( \theta \).</p>
 
 $$s(\theta) = \frac{R_b\theta^2}{2} $$
 
@@ -1256,11 +1230,12 @@ var fe = 1;     // end at 100%
 var dedBz = involuteBezCoeffs(module, teeth, pressureAngle, 3, fs, fm);
 var addBz = involuteBezCoeffs(module, teeth, pressureAngle, 3, fm, fe);
  ...
-var data = ["M", dedBz[0].x, dedBz[0].y,
-            "C", dedBz[1].x, dedBz[1].y, dedBz[2].x, dedBz[2].y, dedBz[3].x, dedBz[3].y,
-            "C", addBz[1].x, addBz[1].y, addBz[2].x, addBz[2].y, addBz[3].x, addBz[3].y];
+// draw the approximation
+data = ["M", dedBez[0].x, dedBez[0].y,
+        "C", dedBez[1].x, dedBez[1].y, dedBez[2].x, dedBez[2].y, dedBez[3].x, dedBez[3].y,
+        "C", addBez[1].x, addBez[1].y, addBez[2].x, addBez[2].y, addBez[3].x, addBez[3].y];
 // draw the involute using Cango library
-g.drawPath(data, -Rpitch, 0, {strokeColor:'blue'});
+g.drawPath(data, {x:-Rpitch, y:0, strokeColor:'blue'});
 </pre>
 </div>
 
@@ -1334,11 +1309,11 @@ pitch angle = \( 2\pi/Z \)
 
 <p>Using the cosine rule of the triangle in Fig. 2:</p>
 
-$$\begin{align}
+$$\begin{aligned}
 R_b^2 + R^2 - 2R_b\, R\, \cos(\theta - \psi) &= c^2\\
                                         &= R^2 - R_b^2\\
                      \cos(\theta - \psi) &= \frac{R_b}{R}
-\end{align}$$
+\end{aligned}$$
 
 <p>Since \(c = R_b \theta\)</p>
 
@@ -1346,7 +1321,7 @@ $$
 \psi(R) = \frac{\sqrt{R^2 - R_b^2}}{R_b} - \cos^{-1}(\frac{R_b}{R})
 $$
 
-<p>Shown below is the JavaScript source code to create a set of drawing commands for a single gear tooth outline. The output of this function is an array of drawing commands in SVG format that can be used to create a Cango PATH object representing the outline of a single gear tooth. This Cango object can be duplicated and rotated and appended to create all the teeth on a gear. This code is included in the 'gearUtils' file.</p>
+<p>Shown below is the JavaScript source code to create a set of drawing commands for a single gear tooth outline. The output of this function is an array of drawing commands in SVG format that can be used to create a Cango Path object representing the outline of a single gear tooth. This Cango object can be duplicated and rotated and appended to create all the teeth on a gear. This code is included in the 'gearUtils' file.</p>
 
 <div class="srcFmt">
 <pre>
@@ -1463,7 +1438,7 @@ createGearTooth = function(module, teeth, pressureAngle)
 </div>
 
 <h2>Drawing gears with Cango</h2>
-<p>To create the outline of a full gear from the profile of the tooth, the Cango PATH object representing one tooth is created, this is then duplicated, rotated by the pitch angle and appended to the gear object to make each of the gear's teeth. This gear outline then has a circular axle shaft hole appended, its then ready to be rendered to the screen and animated. The code snippet to create a gear using Cango is shown below:</p>
+<p>To create the outline of a full gear from the profile of the tooth, the Cango Path object representing one tooth is created, this is then duplicated, rotated by the pitch angle and appended to the gear object to make each of the gear's teeth. This gear outline then has a circular axle shaft hole appended, its then ready to be rendered to the screen and animated. The code snippet to create a gear using Cango is shown below:</p>
 
 <div class="srcFmt">
 <pre>
@@ -1474,11 +1449,10 @@ var m = module,               // Module = mm of pitch diameter per tooth
 
 // generate gear
 data = createGearTooth(m, Zg, phi);
-gearTooth = new Cobj(data, "SHAPE", {
+gearTooth = new Shape(data, {
   fillColor:"#ddd0dd",
   border: true,
   strokeColor: "#606060" });
-gearTooth.rotate(180/Zg);     // rotate gear 1/2 tooth to mesh
 gear = gearTooth.dup();
 for (i=1; i&lt;Zg; i++)
 {
@@ -1486,9 +1460,10 @@ for (i=1; i&lt;Zg; i++)
   newTooth.rotate(360*i/Zg);
   gear.appendPath(newTooth, true);  // trim move command = true
 }
+gear.rotate(180/Zg);     // rotate gear 1/2 tooth to mesh
 // add axle hole
 Dsg = 0.6*Rg;             // diameter of gear shaft
-shaft = new Cobj(shapeDefs.circle(Dsg), "PATH");
+shaft = new Path(shapeDefs.circle(Dsg));
 shaft.revWinding();
 gear.appendPath(shaft);       // retain the 'moveTo' command for shaft sub path
 </pre>
@@ -1584,4 +1559,6 @@ Processing"
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/GearDrawing.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:36:26 GMT -->
 </html>

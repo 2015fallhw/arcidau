@@ -1,13 +1,16 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/index.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:38:37 GMT -->
 <head>
   <title>Index</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="keywords" content="underwater acoustics, sound level measurement, underwater sounds, sound in air and water, sound levels compared" />
+  <meta name="keywords" content="A.R.Collins, A.R.Collins Home Page, A.R.Collins Web page, Tony Collins, Tony Collins Home Page, Tony Collins Web Page" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+
+<style type="text/css" media="screen">
 
     .pgThumb {
       border: 1px solid #404040;
@@ -31,9 +34,6 @@
   </style>
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -49,107 +49,10 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
+
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
   <script type="text/javascript">
     var xRef = {
@@ -160,7 +63,6 @@
       "p4": "FilterDesign.html",
       "p5": "Flintlock.html",
       "p6": "GearDrawing.html",
-      "p7": "CanvasAnimation.html",
       "p8": "Canvas3DGraphics.html",
       "p9": "HelixDrawing.html",
       "p10": "CanvasLayers.html",
@@ -171,19 +73,16 @@
       "p15": "XEyes.html",
       "p16": "ZoomFFT.html",
       "p17": "ArmstrongPattern.html",
-      "p18": "SonarRayTracing.html"
+      "p18": "SonarRayTracing.html",
+      "p19": "Wheellock.html",
+      "p20":"SphereShading.html",
+      "p21":"RobinsOnBallistics.html"
     };
-
   </script>
-
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
     });
   </script>
 
@@ -231,7 +130,7 @@
 
 <div class="pgThumb fltRight" onclick="window.location = xRef['p2']">
   <h3>Canvas Graphics</h3>
-  <img src="Thumbs/Cango.jpg" style="display:block; height:170px" alt="">
+  <img src="Thumbs/Cango.jpg" style="display:block; height:190px" alt="">
 </div>
 
 <div class="pgThumb" onclick="window.location = xRef['p3']">
@@ -246,7 +145,7 @@
 
 <div class="pgThumb fltRight" onclick="window.location = xRef['p6']">
   <h3>Gear Drawing</h3>
-  <img src="Thumbs/GearDrawing.jpg" style="display:block; height:160px" alt="">
+  <img src="Thumbs/GearDrawing.jpg" style="display:block; height:180px" alt="">
 </div>
 
 <div class="pgThumb" onclick="window.location = xRef['p5']">
@@ -254,9 +153,9 @@
   <img src="Thumbs/Flintlock.jpg" style="display:block; height:140px" alt="">
 </div>
 
-<div class="pgThumb" onclick="window.location = xRef['p7']">
-  <h3>Canvas Animation</h3>
-  <img src="Thumbs/Graphics2D.jpg" style="display:block; width:170px" alt="">
+<div class="pgThumb" onclick="window.location = xRef['p10']">
+  <h3>Canvas Layers</h3>
+  <img src="Thumbs/Layers.jpg" style="display:block; height:110px" alt="">
 </div>
 
 <div class="pgThumb fltRight" onclick="window.location = xRef['p8']">
@@ -269,9 +168,9 @@
   <img src="Thumbs/HelixDrawing.jpg" style="display:block; height:160px" alt="">
 </div>
 
-<div class="pgThumb" onclick="window.location = xRef['p10']">
-  <h3>Canvas Layers</h3>
-  <img src="Thumbs/Layers.jpg" style="display:block; height:140px" alt="">
+<div class="pgThumb" onclick="window.location = xRef['p13']">
+  <h3>Thread Drawing</h3>
+  <img src="Thumbs/ThreadDrawing.jpg" style="display:block; height:160px" alt="">
 </div>
 
 <div class="pgThumb fltRight" onclick="window.location = xRef['p11']">
@@ -279,24 +178,19 @@
   <img src="Thumbs/Ordnance1637.jpg" style="display:block; width:180px" alt="">
 </div>
 
+<div class="pgThumb" onclick="window.location = xRef['p15']">
+  <h3>XEyes</h3>
+  <img src="Thumbs/XEyes.jpg" style="display:block; width:160px" alt="">
+</div>
+
 <div class="pgThumb" onclick="window.location = xRef['p12']">
   <h3>Spectrum Analyser</h3>
   <img src="Thumbs/SpectrumAnalyser.jpg" style="display:block; height:160px" alt="">
 </div>
 
-<div class="pgThumb" onclick="window.location = xRef['p13']">
-  <h3>Thread Drawing</h3>
-  <img src="Thumbs/ThreadDrawing.jpg" style="display:block; height:160px" alt="">
-</div>
-
 <div class="pgThumb" onclick="window.location = xRef['p18']">
   <h3>Ray Tracing</h3>
   <img src="Thumbs/RayTracing.jpg" style="display:block; height:180px" alt="">
-</div>
-
-<div class="pgThumb" onclick="window.location = xRef['p15']">
-  <h3>XEyes</h3>
-  <img src="Thumbs/XEyes.jpg" style="display:block; width:160px" alt="">
 </div>
 
 <div class="pgThumb" onclick="window.location = xRef['p16']">
@@ -311,7 +205,22 @@
 
 <div class="pgThumb" onclick="window.location = xRef['p14']">
   <h3>UW Acoustics</h3>
-  <img src="Thumbs/UWAcoustics.jpg" style="display:block; width:250px" alt="">
+  <img src="Thumbs/UWAcoustics.jpg" style="display:block; width:260px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p21']">
+  <h3>Benjamin Robins</h3>
+  <img src="Thumbs/Robins.jpg" style="display:block; width:150px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p19']">
+  <h3>Wheellock</h3>
+  <img src="Thumbs/Wheellock.jpg" style="display:block; width:240px" alt="">
+</div>
+
+<div class="pgThumb" onclick="window.location = xRef['p20']">
+  <h3>Sphere Shading</h3>
+  <img src="Thumbs/SphereShading.jpg" style="display:block; width:250px" alt="">
 </div>
 
         </div>  <!-- text_01 -->
@@ -322,4 +231,6 @@
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/index.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:38:56 GMT -->
 </html>

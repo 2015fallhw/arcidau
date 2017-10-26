@@ -1,20 +1,17 @@
 <!DOCTYPE HTML>
 <html>
+
+<!-- Mirrored from www.arc.id.au/Canvas3DManual.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:39:13 GMT -->
 <head>
   <title>Cango3D User Guide</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="keywords" content="JavaScript 3D graphics, client-side graphics, canvas graphics, Cango3D, canvas 3D graphics library, cross browser 3D graphics, Cango3D Reference Manual" />
 
-  <link rel="stylesheet" href="2ColStickyScroll-14.css" media="all" type="text/css" />
-  <style type="text/css" media="screen">
-    @import "contentStyle-18.css";
-    @import "userManual-01.css";
-  </style>
+  <link rel="stylesheet" href="2ColStickyScroll-16.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="contentStyle-18.css" media="all" type="text/css" />
+  <link rel="stylesheet" href="userManual-01.css" media="all" type="text/css" />
 
   <script type="text/javascript">
-    var sidebar = null,
-        sidebar_top = 100;
-
     if (typeof addLoadEvent === "undefined")
     {
       var addLoadEvent = function(func)
@@ -30,122 +27,19 @@
         }
       }
     }
-
-    if (typeof addEvent === "undefined")
-    {
-      var addEvent = function(element, eventType, handler)
-      {
-        if (element.attachEvent)
-        {
-          return element.attachEvent('on'+eventType, handler);
-        }
-        return element.addEventListener(eventType, handler, false);
-      };
-    }
-
-    function cancelBubble(e)
-    {
-      var evt = e ? e:window.event;
-      if (evt.stopPropagation) evt.stopPropagation();
-      if (evt.cancelBubble!=null) evt.cancelBubble = true;
-    }
-
-    /* -------------------------------------------------------------------------
-     * buildMenu(dataArray)
-     *
-     * dataArray should be in JSON format as follows
-     * [ {"url":"url of file", "title":"String to display in index"},
-     *   {"url":"url of file", "title":"String to display in index",
-     *    "chapters": [
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       {"url":"url of file", "title":"String to display in index"},
-     *       ...
-     *       {"url":"url of file", "title":"String to display in index"}
-     *     ]
-     *   },
-     *   {"url":"url of file", "title":"String to display in index"},
-     *   ...
-     * ]
-     * Then build HTML anchors from the array.
-     *--------------------------------------------------------------------------*/
-    function buildMenu(dataArray)
-    {
-      var menuNode = document.getElementById("sideNav"),
-          htmlStr = "",
-          currPage,
-          i;
-
-      function subStringReplaceAt(str, index, newSubStr, oldSubStrLength)
-      {
-        return str.slice(0, index) + newSubStr + str.slice(index+oldSubStrLength);
-      }
-
-      function parseAry(obj)
-      {
-        var currPage = document.URL.replace(/^.*[\\\/]/, ''),   // split off the page name (cross platform)
-            i;
-        for (i=0; i<obj.length; i++)
-        {
-          if (obj[i].chapters)
-          {
-            htmlStr += "<ul>";
-            htmlStr += "<li class='sectClosed'><input type='button' onclick='toggleSection(this)' value='"+obj[i].title+"'><ul class='options'>";
-            parseAry(obj[i].chapters);
-            htmlStr += "</ul></li>";
-          }
-          else
-          {
-            htmlStr += "<li><a href='"+obj[i].url+"' target='_top'>"+obj[i].title+"</a></li>";
-            // check if this index entry is the current page, if open this section to show link
-            if (currPage == obj[i].url)
-            {
-              htmlStr = subStringReplaceAt(htmlStr, htmlStr.lastIndexOf("sectClosed"), "sectOpen", 10);
-            }
-          }
-        }
-      }
-
-      parseAry(dataArray);
-      menuNode.innerHTML += htmlStr;
-    }
-
-    function toggleSection(btn)
-    {
-      if (btn && btn.parentNode.className === "sectClosed")
-      {
-        btn.parentNode.className = "sectOpen";
-      }
-      else if (btn && btn.parentNode.className === "sectOpen")
-      {
-        btn.parentNode.className = "sectClosed";
-      }
-      return false;   // is used with anchor will prevent going to href
-    }
-
-    function enableStickyNav()
-    {
-      var stickyElements = document.getElementsByClassName('sticky');
-
-      for (var i = stickyElements.length - 1; i >= 0; i--) {
-          Stickyfill.add(stickyElements[i]);
-      }
-    }
   </script>
 
-<!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
-  <script type="text/javascript" src="indexNested.js"></script>
-  <script src="stickyfill.js"></script>
+  <!-- 'indexNested.js' defines the global 'var indexData' holding menu entries  -->
+  <script type="text/javascript" src="indexNested-01.js"></script>
 
   <script type="text/javascript">
     addLoadEvent( function(){
       buildMenu(indexData);
-      enableStickyNav();
     });
   </script>
 
 </head>
 <body>
-<center> all data copied from <a href="http://www.arc.id.au/">http://www.arc.id.au/</a> for educational use only. </center><br /><br />
   <div id="headerBkg"></div>
   <div class="outer">
     <div class="header">
@@ -172,76 +66,298 @@
         <h1>Cango3D User Guide</h1>
         <div class="text_01">
 <h2>Cango3D</h2>
-<p>Cango3D is a graphics library for the HTML5 canvas element which simplifies the drawing and animation of 3D shapes on the 2D canvas. Cango uses the fact that straight lines and Bézier curves maintain their shape under 3D transformation. Restricting object outline definitions to these types means that smooth curves can be drawn in 3D with very few points needing to be transformed and projected onto the canvas.</p>
+<p>Cango3D is a graphics library for the HTML5 canvas element which simplifies the drawing and animation of 3D shapes on the 2D canvas. The current version of Cango3D is 8v00, and the source code is available here <a href="Cango3D-8v00.js" download>Cango3D-8v00.js</a> and the minified version may be downloaded here <a href="Cango3D-8v00-min.js" download>Cango3D-8v00-min.js</a>.</p>
 
-<p>The current version of Cango3D is 7v10, and the source code is available at <a href="Cango3D-7v10.js" download>Cango3D-7v10.js</a>.</p>
-
-<h3>New in Version 7</h3>
-<p>Version 7 makes the Drag3D object private and defines the Drag-N-Drop callback functions by the arguments of the <i>Obj3D</i>.<b>enableDrag</b> method. The change to the 'enableDrag' arguments means that application code written for earlier Versions will need modification to use Version 7.</p>
-<p>Outline paths of Obj3D are most often defined as 2D paths in the XY plane and then rotated and translated into position as panels of more complex 3D shapes. The <b>svgToCgo3D</b> utility is provided to convert 2D paths into Cgo3D format for creating Obj3D. The <b>svgToCgo3D</b> utility accept strings assumes to be in SVG format and conforming to SVG coordinate conventions (Y coordinates increasing DOWN the canvas). It also accepts arrays of Cgo2D commands and coordinates which are the same as the full SVG command set but have Y coordinates increasing UP the canvas. In Version 7v10 the SVG/Cgo2D parser has been completely rewritten, adopting the sign convention of the <a href="CanvasGraphics.html">Cango</a> library for Cgo2D arcs. The 'x-axis-rotation' and 'sweep' parameters of the 'A' (arc) command which indicate a Clockwise sweep in SVG now indicate a Counter-Clockwise sweep in Cgo2D (their SVG interpretation remains unchanged).</p>
-<p>The only changes required to application code is toggling the 'sweep' parameter of any Cgo2D 'A' commands, so sweep=0 should be 1 and sweep=1 should become 0. If any x axis rotation has specified then the sign of the angle should be swapped.</p>
+<h3>New in Version 8</h3>
+<ul>
+  <li>The generic Obj3D has become a private Cango3D object. Its three derived types Path3D, Shape3D and Text3D, have each been given their own constructors.</li>
+  <li>The predefined 'shapes3D' have been renamed 'shapeDefs3D' to avoid confusion with Shape3D object.</li>
+  <li>The Cango3D 'tagShape' method has been dropped and replaced by the Group3D method 'tagFirstChild'.</li>
+  <li>An object's 'soft' transform matrix is now automatically reset after rendering, the use of transform.reset method has been deprecated.</li>
+  <li>The 'renderFrame' method has been dropped avoiding additional transforms being applied when waiting for the render to execute.</li>
+</ul>
 
 <h3>Architecture</h3>
-<p>Everything drawn on the canvas by Cango3D is an <b>Obj3D</b> which packages drawing instructions for PATH, SHAPE or TEXT type objects. PATH types are rendered as outlines. SHAPE types are always filled with their color shaded according to the location of the light source. TEXT objects are rendered in a stroked font with each character converted into a multi-segment 3D path. Obj3D store the coordinates of the objects outline path and other properties define the position and appearance of the object when rendered to the canvas, such fill color, stroke color, font size and so on. They have a <b>centroid</b> property, which is used in calculation of stacking order when multiple objects are rendered. They also have a <b>normal</b> property used in calculating color shading.</p>
+<p>Cango3D supports drawing just three basic objects path outlines, filled shapes and text. To draw any of these the application code first creates the corresponding Path3D, Shape3D or Text3D object. Path3D objects are rendered as outlines. Shape3D objects are always filled with their color shaded according to the location of the light source. Text3D objects are rendered in a stroked font with each character converted into a multi-segment 3D path. The 3D coordinates defining the path, shape or text outlines are stored as a property of the object, other properties define the position and appearance of the object when rendered to the canvas, such fill color, stroke color, font size and so on. They all have a <b>centroid</b> property, which is used in calculation of stacking order when multiple objects are rendered. Shape3D and Text3D are treated as flat panels they have a <b>normal</b> property used in calculating color shading (The restriction to co-planar coordinates is not enforced so 2D projections of genuine 3 dimensional shapes can be drawn).</p>
 
-<p>Obj3Ds have <b>translate</b>, <b>rotate</b> and <b>scale</b> methods to manoeuvre them in 3D space. These methods change the object's outline coordinate definitions, making a permanent changes to the path's offset, orientation and size relative to it's drawing origin. Using these methods complex shapes are formed by manoeuvring Obj3D to become the components of a larger object, these can then be grouped as a <b>Group3D</b> object. Group3D's also have <b>translate</b>, <b>rotate</b> and <b>scale</b> methods for manoeuvring all their descendants to form even more complex objects.</p>
+<h4>'Hard' transform methods</h4>
+<p>Path3D, Shape3D, Text3D and Group3D have a set of common methods inherited from the generic 'Obj3D' object. Obj3D have a set of 'hard' transform methods, <b>translate</b>, <b>rotate</b> and <b>scale</b>. These methods make permanent changes to the object's outline coordinate definitions altering the path's offset, orientation and size. They are designed for construction more complex objects from component panels.</p>
 
-<h4>Matrix Transform Methods</h4>
-<p>Both Obj3D and Group3D have a <b>transform</b> property which has methods <i>obj</i>.<b>transform.translate</b>, <i>obj</i>.<b>transform.rotate</b>, <i>obj</i>.<b>transform.revolve</b>, <i>obj</i>.<b>transform.scale</b> and <b>transform.reset</b>. These methods create transform matrices applied to the Obj3D coordinates. Transforms applied to a Group3D are inherited by its Obj3D children. Child objects may have had transform methods applied to them directly, these are combined with the inherited transform and the resulting net transform is applied to an Obj3D's coordinates. These transform matrix operations do not change the Obj3D's path definition. An object can accumulate the effects of transform methods each time it is re-drawn or the transform matrix can be reset to the the identity matrix by the <b>transform.reset</b> method. The transform methods are designed for drag-and-drop and animation applications.</p>
+<h4>'Soft' Transform Methods</h4>
+<p>Obj3D have a <b>transform</b> property which has methods <i>obj</i>.<b>transform.translate</b>, <i>obj</i>.<b>transform.rotate</b>, <i>obj</i>.<b>transform.revolve</b> and <i>obj</i>.<b>transform.scale</b>. Each method creates a transform matrix that is applied to Obj3D's 'soft' transform matrix, which is initially the identity matrix which accumulates the effects of the transforms. The net transform matrix is applied to the coordinates when rendered. The Obj3D coordinates are multiplied by this net transform and the 2D projection of the resulting coordinates are rendered. The 'soft' transform matrix is then reset to the identity matrix, the objects' definition coordinates are not altered. The transform methods are designed for drag-and-drop and animation applications.</p>
 
-<h3>Cango3D Methods</h3>
+<p>Complex structures are formed by maneuvering component objects and grouping them as a <b>Group3D</b> object. Group3D can have more Group3D as children as well as Obj3D so a family tree can be created to an arbitrary depth. Group3D also have the 'hard' and 'soft' matrix transform methods as Obj3D for maneuvering all their descendants as a single entity. Transforms applied to a Group3D are inherited by its children. Child objects may have transforms applied to them directly, these are combined with the inherited transform and the resulting net transform is applied to descendent Obj3D recursively.</p>
 
-<h4>Coordinate system</h4>
+<h3 id="Cango3DContructor">Cango3D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var cgo = <b>new Cango3D</b>(canvasID);</p>
+<h4>Description:</h4>
+<p>To start drawing an instance of the Cango3D graphics context must be created. This requires a canvas element to exist in the web page and for it to have a unique ID. Pass the canvas ID to the Cango3D constructor and the Cango3D object is returned.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>canvasID</b>:String - The 'id' attribute of the canvas object on which the Cango3D graphics context will draw.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Cango3D object - An instance of the Cango3D graphics library which has all the following properties and methods.</p>
+
+<h3>Cango2D properties</h3>
+  <table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="12%">Property</th><th width="28%">Type</th><th>Description</th>
+  </tr>
+  <tr>
+  <td>ctx</td><td align="left">CanvasRenderingContext2D</td><td style="text-align:left">The raw canvas drawing context. This is available to access the more esoteric canvas capabilities.</td>
+  </tr>
+  <tr>
+  <td>aRatio</td><td align="left">Number</td><td style="text-align:left">Aspect ratio of the canvas element, the canvas width divided by canvas height. If the canvas is 300px wide and 200px high, <i>cgo</i>.aRatio = 1.5.</td>
+  </tr>
+  </table>
+
+<h3>Cango3D coordinate system methods</h3>
+
+<div class="manualItems">
+<div class="sectClosed">
+  <a id="setWorldCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">setWorldCoords3D</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setWorldCoords3D</b>(lowerLeftX, lowerLeftY, spanX);</p>
+<h4>Description:</h4>
+<p>Defines a world coordinate system for subsequent drawing operations with this graphics context. The world coordinate system sets translation and scaling factors to map world coordinate values to canvas pixel coordinates. The canvas is always in the X,Y plane. The coordinate system is right handed, the X axis is always +ve to the right, Y axis is +ve up the screen and Z axis is +ve out of the screen. X, Y and Z axes all have the same scale factor.</p>
+<p>World coordinates are set by defining the coordinate values of the lower left corner of the canvas and the width of the canvas. Since the canvas has equal scaling factors in the X, Y and Z directions, setting the span of the canvas X dimension is sufficient to set all scaling factors. The X,Y coordinates of the lower left corner are sufficient to set the origin {0, 0, 0} of the coordinate system. The lower left Z coordinate value does not need to be specified as the canvas always in the X,Y plane (z=0).</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>lowerLeftX</b>:Number - World X coordinate value of the lower left corner of the canvas.</p>
+  <p><b>lowerLeftY</b>:Number - World Y coordinate value of the lower left corner of the canvas.</p>
+  <p><b>spanX</b>:Number - The width of the canvas in world coordinates.</p>
+<p>If <i>setWorldCoords3D</i> is called with no parameter passed, or not called at all, the world coordinate system is set to have the canvas lowerLeft=0,0 and spanX = 100.</p>
+</div>
+
+
+<h4>Right Hand Cartesian coordinate system</h4>
 
 <img src="Images/rightHandCoords.gif" style="width: 140px;margin: 10px; float:right" alt="" />
-<p>Cango3D coordinate system is <b>right handed</b>, with X values increasing to the RIGHT, Y increasing UP the screens and Z increasing OUT from the screen. The canvas lies in the XY plane at Z=0. The viewpoint is at some distance from the canvas along the Z axis, the current field-of-view angle sets the viewpoint distance.</p>
+<p>Cango3D coordinate system is <b>Right Hand Cartesian</b>, with X values increasing to the RIGHT, Y increasing UP the screens and Z increasing OUT from the screen. The canvas lies in the XY plane at Z=0. The viewpoint is at some distance from the canvas along the Z axis, the current field-of-view angle sets the viewpoint distance.</p>
+  </dt>
+</div>
 
-<p>All three axes have the same scale factor. The user defined world coordinates are set by the <i>cgo</i>.<b>setWorldCoords3D</b> method.</p>
+<div class="sectClosed">
+  <a id="setLightSource" href="#" class="itemName" onclick="return toggleSection(this)">setLightSource</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setLightSource</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>Defines a vector in 3D space starting at the origin and ending at {x:, y:, z:}. Shading of rendered Obj3D faces is determined by the dot product of the unit vector in the direction of the light source and the unit vector normal to the front face of the Obj3D. If no call is made to <i>setLightSource</i> the default value is {x:0, y:100, z:500}.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>x</b>:Number - X coordinate of the light source direction vector measured in world coordinates.</p>
+  <p><b>y</b>:Number - Y coordinate.</p>
+  <p><b>z</b>:Number - Z coordinate.</p>
+</div>
+  </dt>
+</div>
 
-<h4>Rendering</h4>
+<div class="sectClosed">
+  <a id="setFOV" href="#" class="itemName" onclick="return toggleSection(this)">setFOV</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setFOV</b>(deg);</p>
+<h4>Description:</h4>
+<p>Sets the Field Of View represented by calculating the location of the viewpoint at which the width of the canvas will subtend an angle of 'deg'. The viewpoint distance is used for all subsequent rendering on the canvas. The Field-Of-View will determine extent of the perspective distortion of an objects dimensions, values greater than 60&deg; produce less realistic perspective effects, as result setFOV restricts the value of 'deg' to range 20&deg; to 60&deg;, a value of 45&deg; is recommended. The calculation assumes the world coordinate origin is always on the canvas, if not the field of view is calculated as if the origin were on the edge of the canvas and the FOV should be set to smaller values to prevent undue distortion.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>deg</b>:Number - The angle subtended at the viewpoint by the width of the canvas, measured in degrees. The viewpoint distance along the Z axis is set to yield the requested Field-of-View. Angles greater than 60&deg; or less than 20&deg; are ignored.</p>
+</div>
+  </dt>
+</div>
 
-<p>Cango3D has two methods to draw Obj3Ds onto the canvas; <i>cgo</i>.<b>render</b> and <i>cgo</i>.<b>renderFrame</b>.
-</p>
+<div class="sectClosed">
+  <a id="toPixelCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">toPixelCoords3D</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toPixelCoords3D</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>This method converts the coordinates (x, y, z) of a point expressed in world coordinates to an object with {x:, y:, z:} properties that hold the raw canvas pixel coordinates of the point. The canvas pixel coordinates of the Cango3D context are set to be equal to the screen pixels when the graphics context is created, so 'toPixelCoords' always returns the canvas pixel coordinates which map 1 to 1 with screen pixels.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>, <b>z</b>:Number - X, Y, Z coordinates of a point measured in world coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with three properties:</p>
+  <p style='margin-left:2em'><b>x, y, z</b>:Numbers - X, Y and Z coordinates of the point measured in canvas pixel coordinates.</p>
+  </dt>
+</div>
 
-<p><b>render</b> takes a single Group3D or Obj3D as a parameter to be rendered to the canvas. In the case of Group3D, all the descendant Obj3Ds are rendered. All matrix transforms that have been accumulated by any of the Group3D or Obj3D in the family tree are propagated down the family tree structure to determine the final positions of the Obj3D which are then rendered to the canvas.</p>
+<div class="sectClosed">
+  <a id="toWorldCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">toWorldCoords3D</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var posObj = <i>cgo</i>.<b>toWorldCoords3D</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>This method converts the coordinates (x, y, z) of a point expressed in canvas pixels coordinates to an object with {x:, y:, z:} properties that hold the equivalent world coordinates of the point.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>x</b>, <b>y</b>, <b>z</b>:Number - X, Y, Z coordinates of a point measured in pixel coordinates.</p>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Object - An object with three properties:</p>
+  <p style='margin-left:2em'><b>x, y, z</b>:Number - X, Y and Z coordinates of the point measured in current world coordinates of the <i>cgo</i> graphics context.</p>
+  </dt>
+</div>
 
-<p><b>renderFrame</b> does not draw the object immediately to the canvas, instead, it calls the browser window's 'requestAnimationFrame' to asynchronously call the 'render' method. 'renderFrame' is designed for speed and efficiency and should be used in all animation applications. Since the call returns quickly, before the drawing work is actually done, it may be called from event handlers.</p>
+</div>    <!--  manualItems  -->
 
-<h4>Utility methods</h4>
+<hr class="ugHr" />
 
-<p>Cango3D has several utilities methods to configure the 3D display environment, such as <i>cgo</i>.clearCanvas, <i>cgo</i>.setLightSource etc. All the methods are described in the reference sections below.</p>
+<h2>Obj3D: Path3D, Shape3D, Text3D</h2>
 
-<h4>Obj3D creation methods</h4>
+<p>All objects drawn with Cango3D are composed of Obj3D. There are three types of Obj3D each a JavaScript object with its own constructor: <b>Path3D</b>, <b>Shape3D</b> and <b>Text3D</b>. All these constructors take a definition parameter which may be an outline path definition for Path3D and Shape3D or a string for Text3D objects. The constructors can take a second optional parameter that sets the initial values of properties. These objects are created independent of the Cango3D instance and have transforms applied and properties modified prior to rendering. These Obj3D once instantiated may be rendered and re-rendered without having to be re-constructed each time which is desirable in animations.</p>
 
-<p>Obj3Ds are constructed by the following Cango3D methods: <i>cgo</i>.<b>compilePath3D</b>, <i>cgo</i>.<b>compileShape3D</b> and <i>cgo</i>.<b>compileText3D</b> or by calling the Obj3D constructor directly with 'new Obj3D'.</p>
+<p>Most drawing starts with simple flat shapes, rectangles, circles Bezier curves etc. defined in the XY plane. All coordinates are of course 3 dimensional more complex objects are then built by applying 3D matrix transforms to these simple panels and grouping them into the more complex objects.</p>
 
-<p>The PATH and SHAPE methods take as input an array of commands defining their outline. The command syntax is referred to as <b>Cgo3D</b> format, comprising single letter draw commands and their associated 3D coordinate triplets. Uppercase commands have coordinates relative to the origin, lowercase commands coordinates are relative to the current pen position (end point of previous command). As an example, here is the array of commands to draw a unit square in the XY plane with the drawing origin (0,0,0) at it's center.</p>
+<p>All Obj3D have methods which apply transforms to their initial definition. These are; <i>obj</i>.<b>rotate</b>, <i>obj</i>.<b>scale</b> and <i>obj</i>.<b>translate</b>. These are 'hard' transforms which permanently alter the definition of the object. All Obj3D also all have a 'transform' property whose methods make apply 'soft' ie. temporary transformations to the object as it is rendered. This 'soft' transform matrix is reset after the Obj3D is rendered.</p>
+
+<p>Here are more details about each Obj3D type.</p>
+
+<hr class="ugHr" />
+
+<h3 id="Path3D">Path3D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Path3D</b>(data[, options]);</p>
+<h4>Description:</h4>
+<p>Takes a 'data' parameter which is an array of <a href="#svgCmds">Cgo3D</a> format commands and their associated 3D coordinates and returns a Path3D object suitable for rendering by a Cango3D context.</p>
+<p>Path definition data may be imported in 2D SVG format, possibly copied as a string from an SVG editor such as InkScape, or as an array in Cgo2D format, which is just the SVG single letter commands with their coordinate pairs stored as an array. These strings or arrays of 2D data can use the entire SVG path command set. The paths they represent will of course be two dimensional and must be converted to the <b>Cgo3D</b> format before being passed to the Path3D constructor. The utility provided to do this conversion is <a href="#svgToCgo3D">svgToCgo3D</a>.</p>
+
+<p>To simplify defining the most common shapes Cango3D provides the <a href="#shapeDefs3D">shapeDefs3D</a> utility. The shapeDefs3D methods create a Cgo3D data array representing the outline path of many commonly used shapes. The methods take dimension parameters such as the width and height of the ellipse, the diameter of the circle, side length of a square etc.</p>
+
+<p>When rendered the Path3D outline will be drawn with a line width set by 'lineWidth' (in pixels) or 'lineWidthWC' in world coordinates. The line color is set by its 'strokeColor' property. If these properties has not been set explicitly by the user code then the default value from the Cango3D context used to render the Path3D will be used.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>data</b>: Array - A JavaScript array of Cgo3D command letters and associated coordinates defining the outline path. The Cgo3D syntax is a sub-set of the SVG path drawing command set, restricted to M (move), L (straight line), Q (Quadratic Bezier curve) and C (Cubic Bezier curve) commands (see <a href="#svgCmds">Cgo3D syntax</a>).</p>
+
+<p style='margin-left:2em'><b>options</b>: Object - An optional JavaScript object containing key-value pairs to set the properties of the Path3D object returned. The keys and value ranges are described in the <a href="#setProperty">setProperty</a> method.</p>
+<h4>Example</h4>
+<p>The following line of code will create a 'Path3D' object. When rendered 'obj' will be drawn as a square with width and height 4 units in the world coordinate units. The outline will be 2 pixels wide and colored 'red'.</p>
 <div class="srcFmt">
 <pre>
-var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
+var obj = new Path3D(['M',2,-2,0, 'l',0,4,0, -4,0,0, 0,-4,0, 'z'], {
+  lineWidth: 2,
+  strokeColor: 'red'});
 </pre>
 </div>
 
-<p>The syntax is a sub-set of the SVG path drawing command set, restricted to straight lines, Quadratic and Cubic Bézier curve drawing commands.</p>
+<h3 id="pathProperties">Path3D properties</h3>
+  <table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="25%">Property Name</th><th>Type</th><th>Range / Description</th>
+  </tr>
+  <tr>
+  <td>strokeColor</td><td align="left">CSS Color</td><td>see <a href="#colors">Colors</a></td>
+  </tr>
+  <tr>
+  <td>lineWidthWC</td><td align="left">Number (World Coordinates)</td><td> > 0</td>
+  </tr>
+  <tr>
+  <td>lineWidth</td><td align="left">Number (pixels)</td><td> > 0</td>
+  </tr>
+  <tr>
+  <td>lineCap</td><td align="left">String</td><td>'butt', 'round', 'square'</td>
+  </tr>
+  </table>
 
-<p>Path data may also be imported as 2D drawing commands in a string in SVG format, possibly copied from an SVG editor, or as an array in Cgo2D format which is just the SVG single letter commands with the coordinate pair stored as numbers. The paths will of course start out as 2D in the XY plane but they may then be transformed in 3D like any other Obj3D. These strings or arrays of 2D data can use the entire SVG path command set, but they must be converted to the <b>Cgo3D</b> format before being passed to the compile methods. The utility provided to do this conversion is <a href="#svgToCgo3D">svgToCgo3D</a>.</p>
+<h3>Path3D methods</h3>
+<p>Path3D objects along with Shape3D and Text3D inherit all the <a href="#obj3dMethods">Obj3D methods</a> described below.</p>
 
-<p><b>svgToCgo3D</b> translates the 'A' (draw arc) and other non-Cgo3D commands to Bézier curves and straight lines. It also handles the different coordinate system used by SVG editors which have the Y coordinate values +ve DOWN the screen and angles measured positive Clockwise. The <b>svgToCgo3D</b> method will flip the sign of all Y coordinates and the sign of the angles if the 2D data is passed as a String object. If the data is passed as an Array object then the coordinates are assumed to be in Cgo2D format which has the Y coordinates +ve up the screen and angles positive counter-clockwise and so don't need to be changed.</p>
 
-<h4>Group3D creation method</h4>
+<hr class="ugHr" />
 
-<p>Group3D can be created using the <i>cgo</i>.<b>createGroup3D</b> method or by calling the constructor directly using 'new Group3D'. The objects to be grouped are passed as parameters. Objects can be added later using the <i>Group3D</i>.<b>addObj</b> method.</p>
+<h3 id="Shape3D">Shape3D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Shape3D</b>(data[, options]);</p>
+<h4>Description:</h4>
+<p>Takes a 'data' parameter which is an array of <a href="#svgCmds">Cgo3D</a> format commands and their associated 3D coordinates and returns a Shape3D object suitable for rendering by a Cango3D context.</p>
+<p>Shape outline path definition data may be imported in 2D SVG format, possibly copied as a string from an SVG editor such as InkScape, or as an array in Cgo2D format which is just the SVG single letter commands with their coordinate pairs stored as an array. These strings or arrays of 2D data can use the entire SVG path command set. The paths they represent will of course be two dimensional and must be converted to the <b>Cgo3D</b> format before being passed to the Shape3D constructor. The utility provided to do this conversion is <a href="#svgToCgo3D">svgToCgo3D</a>.</p>
 
-<p>A Group3D object is also created by the <i>cgo</i>.<b>tagShape</b> method which groups a SHAPE type object with a tag object which is an existing TEXT, PATH or another SHAPE Obj3D. The group is drawn so that the tag appears 'painted' onto the shape's front face.</p>
+<p>To simplify defining the most common shapes Cango3D provides the <a href="#shapeDefs3D">shapeDefs3D</a> utility. The shapeDefs3D methods create a Cgo3D data array representing the outline path of many commonly used shapes. The methods take dimension parameters such as the width and height of the ellipse, the diameter of the circle, side length of a square etc.</p>
 
-<p>There is one more method can create a complex Group3D comprising many Obj3Ds in a single call, <i>cgo</i>.<b>objectOfRevolution3D</b>. It takes a path specified as an array of Cgo3D data representing a profile and forms a 3D object by rotating the profile in steps about the Y axis forming a 3D object with segments like an orange.</p>
+<p>When rendered, the outline path will be closed (if not already closed) and the Shape3D will be filled. If the normal to the surface is facing toward the viewpoint, it is filled with color value of its 'fillColor' property, if facing away it is filled with 'backColor'. If either of these properties have not been set explicitly by the user code then the default values from the Cango3D context used to render the Shape3D will be used.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>data</b>: Array of Cgo3D data - The Cgo3D array holds command letters and associated coordinates defining the shape outline. The full SVG set of commands is supported (see <a href="#svgCmds">Cgo3D syntax</a>).</p>
+<p style='margin-left:2em'><b>options</b>: Object - This object may contain key-value pairs to pre-set the properties of the object returned. The keys and value restrictions are identical to those described in the <a href="#setProperty">setProperty</a> method.</p>
+<h4>Example</h4>
+<p>The following line of code will create a Shape3D object and then scale its size. When rendered 'obj' will be drawn as a square with width and height 4 units in the world coordinates of the Cango3D context used to render it.</p>
+<div class="srcFmt">
+<pre>
+var obj = new Shape3D(['M', 2,-2,0, 'l',0,4,0, -4,0,0, 0,-4,0, 'z'], {fillColor: 'pink'});
+</pre>
+</div>
 
-<h4>Saving 3D objects to a file</h4>
-<p>Applications don't need to include all the object creation and positioning code every time they are run. Completed Obj3Ds or Group3Ds can have their defining properties converted to a JSON string, which can be saved to a file using the method <i>cgo</i>.<b>Obj3DtoJSON</b> and retrieved using <i>cgo</i>.<b>JSONtoObj3D</b>.</p>
+<h3>Shape3D properties</h3>
+<table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="25%">Property Name</th><th>Type</th><th>Range / Description</th>
+  </tr>
+  <tr>
+  <td>fillColor</td><td align="left">CSS Color or gradient</td><td>see <a href="#colors">Colors</a></td>
+  </tr>
+  <tr>
+  <td>backColor</td><td align="left">CSS Color</td><td>see <a href="#colors">Colors</a></td>
+  </tr>
+  <tr>
+  <td>backHidden</td><td align="left">Boolean</td><td>true or false</td>
+  </tr>
+</table>
 
-<p><b>Obj3DtoJSON</b> generates a JSON string describing an object or group. <b>JSONtoObj3D</b> converts the JSON parsed string back to the original group of objects. Code to save the JSON string to a file is beyond the scope of this library, but one handy technique is to save the string returned by <b>Obj3DtoJSON</b> as the 'innerHTML' property of an element on the HTML page, then, when the JSON string is displayed in the browser, copy and paste it into a text editor that has full file system access so the editor can save the string to disk as a '.json' file.</p>
+<h3>Shape3D methods</h3>
+<p>Shape3D objects along with Path3D and Text3D inherit all the <a href="#obj3dMethods">Obj3D methods</a> described below.</p>
 
-<h3>Obj3D Methods</h3>
+<hr class="ugHr" />
+
+<h3 id="Text3D">Text3D constructor</h3>
+<h4>Syntax:</h4>
+<p class='syntax'>var obj = <b>new Text3D</b>(str[, options]);</p>
+<h4>Description:</h4>
+<p>Creates a Text3D object comprising the set of straight line segments forming each character in the string 'str'. The characters are rendered in the <a href="#hersheyChars">Cango3D font</a>, which uses characters from the Hershey stroke font. The Cango3D character set comprises 104 characters from the standard ASCII character set and 52 special characters, the upper and lower case Greek alphabet and some mathematical symbols. Special characters are generated by inserting their corresponding Unicode into the text string using the '\uXXXX' format.</p>
+<p>The text characters are scaled to be 'pxlSize' pixels (independent of the world coordinate scaling). The line width used when rendering is set by the fontWeight property. The 'lorg' property sets the drawing origin, the point within the text bounding box that will the reference point for translating, rotating or scaling the text.  </p>
+
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>str</b>: String - The text string to be converted to 3D path segments suitable for 3D rendered to the canvas.</p>
+<p style='margin-left:2em'><b>options</b>: Object - This object may contain key-value pairs to pre-set the properties of the Text3D object returned. The keys and value restrictions are identical to those described in the <a href="#setProperty">setProperty</a> method.</p>
+<h4>Example</h4>
+<div class="srcFmt">
+<pre>
+var obj = new Text3D("Hullo World", {
+  fillColor: "blue",
+  fontSize: 28,
+  lorg:5 });
+</pre>
+</div>
+<p>This code snippet will create a Text3D object when rendered, the text "Hullo World" will be drawn onto the canvas. The fontSize will be 28 pixels, fontWeight and fontFamily will be the default values of Cango3D context used to render the Text3D as these properties have not been explicitly set. The text will be colored blue. The lorg 5 value will result in drawing origin being set at the center of the text bounding box. When rendered the drawing origin will be placed at the world coordinate origin (0,0) unless a translate transform is applied to the Text3D prior to rendering.</p>
+
+<h3>Text3D properties</h3>
+<table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="25%">Property Name</th><th>Type</th><th>Range / Description</th>
+  </tr>
+  <tr>
+  <td>strokeColor</td><td align="left">CSS Color</td><td>Specifies border color, see <a href="#colors">Colors</a></td>
+  </tr>
+  <tr>
+  <td>border</td><td align="left">Boolean</td><td>true or false</td>
+  </tr>
+  <tr>
+  <td>fontFamily</td><td align="left">String</td><td>CSS fontFamily definitions</td>
+  </tr>
+  <tr>
+  <td>fontSize</td><td align="left">Number (pixels)</td><td>-</td>
+  </tr>
+  <tr>
+  <td>fontWeight</td><td align="left">Number</td><td>100..900</td>
+  </tr>
+  <tr>
+  <td>lorg</td><td align="left">Number</td><td> 1..9 (see <a href="#lorg">lorg</a>) </td>
+  </tr>
+</table>
+
+<h3>Text3D methods</h3>
+<p>Text3D objects along with Path3D and Shape3D inherit all the <a href="#obj3dMethods">Obj3D methods</a> described below.</p>
+
+
+<hr class="ugHr" />
+
+<h2 id="obj3dMethods">Obj3D methods</h2>
 
 <p>Obj3D have the following methods to adjust their 3D coordinate definitions, <i>obj</i>.translate, <i>obj</i>.rotate and <i>obj</i>.scale.</p>
 
@@ -249,35 +365,450 @@ var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
 
 <p>Drag-n-Drop capability can be enabled on any Obj3D by calling the <i>obj</i>.<b>enableDrag(</b>grab, drag, drop<b>)</b> method of the object, passing as parameters the callback functions that should be executed when 'mousedown', 'mousemove' and 'mouseup' events occur. The Obj3D drag-n-drop can be disabled using <i>obj</i>.<b>disableDrag</b>.</p>
 
-<p>To calculate shading for SHAPE type Obj3Ds, a 'normal' vector, perpendicular to the surface is maintained as a property of the Obj3D. If a shape is drawn in the XY plane and the outline path is defined by traversing the nodes counter-clockwise (CCW) then the normal will point out of the canvas. If the path is traversed clockwise (CW) then the normal will point into the canvas and only the back of the panel is seen. If a path is found to have been defined such that the calculated normal faces in the opposite direction than was intended, rather than recalculate the path definition traversing the nodes in the opposite sense, the <i>obj</i>.<b>flipNormal</b> method is provided to flip the normal by 180&deg;.</p>
+<p>To calculate shading for Shape3D, a 'normal' vector, perpendicular to the surface is maintained as a Shape3D property. If a shape is drawn in the XY plane and the outline path is defined by traversing the nodes counter-clockwise (CCW) then the normal will point out of the canvas. If the outline path is traversed clockwise (CW) then the normal will point into the canvas and only the back of the panel is seen. If a path is found to have been defined such that the calculated normal faces in the opposite direction than was intended, rather than recalculate the path definition traversing the nodes in the opposite sense, the <i>obj</i>.<b>flipNormal</b> method is provided to flip the normal by 180&deg;.</p>
 
-<h3>Group3D Methods</h3>
+<h3>Obj3D method details</h3>
 
-<p>The Group3D object has the property 'children', an array containing Obj3ds and/or Group3Ds. Objects are added to Group3D's 'children' array by the <b>addObj</b> method which can take Obj3Ds, Group3Ds or arrays of them as parameters. Children can be removed by the <b>deleteObj</b> method.</p>
+<div class="manualItems">
 
-<p>Group3Ds also have several methods that can be applied to all their children recursively: <i>grp</i>.translate, <i>grp</i>.rotate and <i>grp</i>.scale.</p>
+<div class="sectClosed">
+  <a id="enableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i><b>.enableDrag(grabCallback, dragCallback, dropCallback)</b>;</p>
+<h4>Description:</h4>
+<p>This method takes as parameters the user defined functions to be called mousedown, mousemove or mouseup (or mouseout) events. It saves a reference to 'obj' in the array of objects to be checked when a mousedown event occurs on the canvas.</p>
+<p>Once an object is enabled, the Cango3D 'mousedown' event handler will check if the mouse event occurred within the outline of the object. If it did, then the object's grab event handler is called, this assigns handlers for subsequent 'mousemove' and 'mouseup' events and then calls the user 'grabCallback' function. On subsequent mousemove or mouseup events, the object's event handlers will update the cursor coordinates and call the 'dragCallback' or 'dropCallback' functions. For every drag callback ie. every mousemove event, the current world coordinates of the cursor are always passed to the callback functions as an object with x,y,z properties. The cursor location is a point on the canvas which is always in the XY plane, therefore the z property of the cursor location will always be 0.</p>
+<p>Drag-n-drop callbacks often need to know the drawing origin and the cursor offsets when the grab occurred. To simplify writing grab, drag and drop functions, the callbacks are executed in the scope of a Drag3D object which has properties to supply these values. All the handy properties in scope of the handlers are listed in the <a href="#drag3D">Drag3D</a> section below.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>grabCallback</b>: Function or null - This function to be called when a 'mousedown' event occurs within the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dragCallback</b>: Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dropCallback</b>: Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<h4>Example</h4>
+<p>As an example of the enableDrag method, here is a code snippet that simply moves text with the cursor: </p>
+<div class="srcFmt">
+<pre>
+function txtSimple(g)
+{
+  var txt1;
 
-<p>The <b>translate</b>, <b>rotate</b> and <b>scale</b> methods recursively apply 'hard' transforms to the coordinates of the Group3D's children, so all future rendering will show the effects of these changes. These methods are useful in creating more complex objects by manoeuvring the component Obj3Ds. These are not suitable for animation.</p>
+  function dragTxt(mousePos)
+  {
+    var newPos = {x:mousePos.x-this.grabOfs.x,
+                  y:mousePos.y-this.grabOfs.y,
+                  z:mousePos.z-this.grabOfs.z};
+    txt1.transform.translate(newPos.x, newPos.y, newPos.z);
+    txt1.render();
+  }
+
+  g.clearCanvas();
+  g.setWorldCoords3D(-400, -200, 800);
+  g.setViewpointDistance(500);
+
+  txt1 = new Text3D("Hullo World", 'green', 20, 700, 5);
+  txt1.enableDrag(null, dragTxt, null);
+  txt1.render();
+}
+</pre>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="disableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i><b>.disableDrag()</b>;</p>
+<h4>Description:</h4>
+<p>Sets the <i>obj</i>.dragNdrop property to 'null' and removes the reference to <i>obj</i> from the array of objects to be checked for a hit on mousedown events.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="setProperty" href="#" class="itemName" onclick="return toggleSection(this)">setProperty</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>setProperty</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the values for various Path3D, Shape3D or Text3D properties. The property whose value is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new value is passed as 'value'. The value must be of an appropriate type and fall within the useful range of values for the property, and the types are listed in column 2 and range of values is listed in column 3. If the property is not one of the string values listed or the value is an incorrect type then the call is ignored and the current value remains unaltered.</p>
+<p>Each Cango3D context holds default values for all the properties needed by the render method. So if the property has not been set prior to rendering the default value set in the Cango3D context used to render the Obj3D will be used. Cango3D property defaults are set by the <i>cgo</i>.<a href="#setPropertyDefault">setPropertyDefault</a> method.</p>
+
+<table class="txtTbl" style="width: 520px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color</td><td>valid RGBA color</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>valid RGBA color</td>
+</tr>
+<tr>
+<td>backColor</td><td>CSS Color</td><td>valid RGBA color</td>
+</tr>
+<tr>
+<td>lineWidth</td><td>Number (pixels)</td><td>-</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (pixels)</td><td>-</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td>
+</tr>
+<tr>
+<td>lorg</td><td>Number</td><td> 1..9 (see <a href="#lorg">lorg</a>) </td>
+</tr>
+</table>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>: String- The name of the Obj3D property the value of which is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>: (various types) - The new value for the property. Its type should match the type listed in column 2 of the table and its range should fall with the range set out in column 3 of the table above.</p>
+   </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="flipNormal" href="#" class="itemName" onclick="return toggleSection(this)">flipNormal</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>flipNormal</b>();</p>
+<h4>Description:</h4>
+<p>If an Obj3D previously defined and has the calculated normal the wrong way, so the back surface is shown in a default color instead of the correct colored front, then the Obj3D method <b>flipNormal</b> called on the object will flip the normal to the opposite direction.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>None</b></p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="rotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>rotate</b>(vx, vy, vz, theta);</p>
+<h4>Description:</h4>
+<p>Each 3D point defining the Obj3D 'obj', its, centroid and normal are transformed to have its position rotated by and angle 'theta' degrees about the axis defined by the vector (vx, vy, vz). The new coordinate values over-write the old coordinates, so whenever the object is re-drawn it will have the net effect of this rotation as it reference position. This 'rotate' method should be used in positioning component panels in construction of multi-panel 3D object, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to a unit vector before use). The vector defines the axis, about which all points of the object will be rotated. The angle 'theta' is measured in degrees, +ve anti-clockwise when the vector is pointing at you (right hand rule).</p>
+<p><b>theta</b>:Number - The rotation angle measured in degrees, +ve in the direction your right hand fingers curl if your right thumb is pointing in the direction of the vector (right hand rule).</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="scale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>scale</b>(s);</p>
+<h4>Description:</h4>
+<p>Each 3D point defining the outline path of 'obj', its centroid and normal have their X, Y and Z coordinates multiplied by the scale factor 's'. The effect of this is to expand or contract the size of the object with the expansion or contraction centered on the drawing origin (0, 0, 0). The new coordinate values over-write the old coordinates, so when ever the object is re-drawn it will maintain this new size. This 'scale' method should be used in positioning component panels in construction of arrays of Obj3D forming a multi-panel 3D object, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>s</b>:Number - The scale factor, greater than 0, by which the object's size in to be increased or decreased.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="translate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>translate</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>Each 3D point defining the outline path, centroid and normal of 'obj', has the factors, 'x', 'y' and 'z' added to their respective coordinates. The effect of this is to move the object relative to its drawing origin. The new coordinate values over-write the old coordinates, so when ever the object is re-drawn it will have this displacement from its drawing origin. This 'translate' method should be used in positioning component panels in construction of arrays of Obj3D forming a multi-panel 3D object, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>x</b>:Number - The X coordinate offset measured in world coordinates to be added to all drawing command coordinates.</p>
+<p><b>y</b>:Number - The Y coordinate offset.</p>
+<p><b>z</b>:Number - The Z coordinate offset.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="tfmRotate" href="#" class="itemName" onclick="return toggleSection(this)">transform.rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.rotate</b>(vx, vy, vz, degs);</p>
+<h4>Description:</h4>
+<p>Adds a rotate matrix to the transforms to be applied to the object when rendered. The object will be rotated by 'degs' degrees about the axis defined by a vector starting object's drawing origin and parallel to the vector vx, vy, vz. This rotation is independent of any transform.translate calls that may have moved the drawing origin from the world coordinate origin, like the earth rotating on it's axis.</p>
+<h4>Parameters:</h4>
+<p><b>vx, vy, vz</b>: Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be rotated. The transform.rotate is applied before any transform.translate, so the axis of rotation is through the drawing origin rather than the world coordinate origin.</p>
+<p><b>degs</b>:Number - the angle by which this transform will rotate an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="tfmScale" href="#" class="itemName" onclick="return toggleSection(this)">transform.scale</a>
+  <dt class="itemBody">
+<h3 id="tfmScale" style="color:blue">transform.scale</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.scale</b>(scl);</p>
+<h4>Description:</h4>
+<p>Adds a scale matrix to the transforms to be applied to the object when rendered. The object's coordinates will be scaled by a factor 'scl'. The objects dimensions enlarge or contract centered on the object's drawing origin, independent of any transform.translate that may have been applied.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>scl</b>: Number - A number, greater than 0, by which the objects dimensions relative to it's drawing origin are scaled.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="tfmTranslate" href="#" class="itemName" onclick="return toggleSection(this)">transform.translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.translate</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>Adds a translation matrix to the transforms to be applied to the object when rendered. The object's drawing origin will be offset from its current location by x, y and z world coordinate units in the X direction, Y direction and Z direction respectively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>x, y, z</b>: Numbers - The distance in the X, Y and Z directions respectively that the object will be moved relative to the world coordinate origin.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="tfmRevolve" href="#" class="itemName" onclick="return toggleSection(this)">transform.revolve</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.revolve</b>(vx, vy, vz, degs);</p>
+<h4>Description:</h4>
+<p>Adds a revolve matrix to the transforms to be applied to the object when rendered. The object will be revolved by 'degs' degrees about the axis defined by the vector starting from the world coordinate origin (not the object's drawing origin) and ending at the location vx, vy, vz. If no transform.translate has been applied prior to this method being called, transform.revolve behaves identically to transform.rotate, since the object drawing origin has not been moved from the world coordinate origin, but if the object has been translated, this method revolves the object around the world coordinate origin now some distance from the object, like the earth revolving around the sun.</p>
+<h4>Parameters:</h4>
+<p><b>vx, vy, vz</b>: Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be revolved.</p>
+<p><b>degs</b>: Number - the angle by which this transform will revolve an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<hr class="ugHr" />
+
+<h2>Group3D</h2>
+
+<p>Group3D can be created using the <b>Group3D</b> constructor. The objects to be grouped are passed as parameters. Objects can be added later using the <i>Group3D</i>.<b>addObj</b> method.</p>
+
+<p>The Group3D object has the property 'children', an array containing Obj3D and/or Group3D. Objects are added to Group3D's 'children' array by the <b>addObj</b> method which can take Obj3D, Group3D or arrays of them as parameters. Children can be removed by the <b>deleteObj</b> method.</p>
+
+<p>Group3D also have several methods that can be applied to all their children recursively: <i>grp</i>.translate, <i>grp</i>.rotate and <i>grp</i>.scale.</p>
+
+<p>The <b>translate</b>, <b>rotate</b> and <b>scale</b> methods recursively apply 'hard' transforms to the coordinates of the Group3D's children, so all future rendering will show the effects of these changes. These methods are useful in creating more complex objects by maneuvering the component Obj3D. These are not suitable for animation.</p>
 
 <p>All the children of a Group3D can be 'drag-n-drop' enabled or disabled with a call to the Group3D methods, <i>grp</i>.enableDrag and <i>grp</i>.disableDrag.</p>
 
+<p>There is one more method can create a complex Group3D comprising many Obj3D in a single call, <i>cgo</i>.<b>objectOfRevolution3D</b>. It takes a path specified as an array of Cgo3D data representing a profile and forms a 3D object by rotating the profile in steps about the Y axis forming a 3D object with segments like an orange.</p>
 
-<hr />
-<h2>Cango3D Properties</h2>
-
+<h3>Group3D constructor</h3>
 <h4>Syntax:</h4>
-<p><b>var</b> <i>value</i> = <i>cgo</i><b>.property</b>;</p>
-<h4>Properties:</h4>
-  <p><b style="color:blue">ctx</b>:CanvasRenderingContext2D - the canvas 2D drawing context.</p>
-  <p><b style="color:blue">cnvs</b>:DOM Element - the canvas element object within the DOM tree.</p>
-  <p><b style="color:blue">aRatio</b>:Number - Aspect ratio of the canvas element, the canvas width divided by canvas height. If the canvas is square, aRatio=1, if canvas is 300 pixels wide and 200 pixels high, <b>aRatio</b>=1.5.</p>
+<p class='syntax'>var obj = <b>new Group2D</b>(...);</p>
+<h4>Description:</h4>
+<p> Creates a Group3D object with a 'children' array property which hold Obj3D and other Group3D. The Group3D object has methods to apply transforms to children, and recursively apply them to the children of child Group3D. The objects forming the Group3D's children may be passed as parameters, either individual Obj3D or Group3D or arrays of either. More objects can be added to the group after creation, by using the <b>addObj</b> method.</p>
+
+<h4>Parameters:</h4>
+<p><b> . . . &nbsp;&nbsp;</b>:Objects, Group2D or arrays or either - The 'arguments' property is parsed to extract all Obj3D and Group3D and they are added to the <i>grp</i>.children array in sequence left to right.</p>
 
 
-
-<hr />
-<h2>Cango3D methods</h2>
+<h3>Group3D method details</h3>
 
 <div class="manualItems">
+
+<div class="sectClosed">
+  <a id="addObj" href="#" class="itemName" onclick="return toggleSection(this)">addObj</a>
+  <dt class="itemBody">
+<h3 id="addObjGrp3D" style="color:blue">addObj</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>addObj</b>(...);</p>
+<h4>Description:</h4>
+<p>The method adds Obj3D or Group3D to the Group3D, grp. The arguments can be single Obj3D or Group3D or arrays of either. The array structure is discarded and the individual Obj3D or Group3D are added to the grp.children array.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b> . . . &nbsp;&nbsp;</b>:Obj3D, Group3D or arrays or either - The arguments variable is parsed to extract all Obj3D and Group3D and they are added to grp's children array.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="deleteObj" href="#" class="itemName" onclick="return toggleSection(this)">deleteObj</a>
+  <dt class="itemBody">
+<h3 id="deleteObjGrp3D" style="color:blue">deleteObj</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>deleteObj</b>(obj);</p>
+<h4>Description:</h4>
+<p>If 'obj' is a child of the Group3D 'grp' then it is removed from the array of children.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>obj</b>:Obj3D or Group3D - The child to be removed from the Group3D.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpEnableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i><b>.enableDrag(grabCallback, dragCallback, dropCallback)</b>;</p>
+<h4>Description:</h4>
+<p>Calls the <i>Obj3D</i>.enableDrag method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. The three user defined call back functions 'grabCallback', 'dragCallback', 'dropCallback' are passed to the <i>Obj3D</i>.enableDrag method.</p>
+<p>Drag-n-drop callbacks often need to know the drawing origin and the cursor offsets when the grab occurred. To simplify writing grab, drag and drop functions, the callbacks are executed in the scope of a Drag3D object which has properties to supply these values. All the handy properties in scope of the handlers are listed in the <a href="#drag3D">Drag3D</a> section below.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>grabCallback</b>:Function or null - This function to be called when a 'mousedown' event occurs within the outline of the grp's descendent Obj3D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dragCallback</b>:Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of the grp's descendent Obj3D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+<p style='margin-left:2em'><b>dropCallback</b>:Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpDisableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i><b>.disableDrag()</b>;</p>
+<h4>Description:</h4>
+<p>Sets the <i>grp</i>.dragNdrop property to 'null' and removes the reference to grp's children from the array of objects to be checked for a hit on mousedown events.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>none</b></p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="tagFirstChild" href="#" class="itemName" onclick="return toggleSection(this)">tagFirstChild</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>tagFirstChild</b>(tagObj, xOfs, yOfs);</p>
+<h4>Description:</h4>
+<p>Requires the first child of the Group3D 'grp' to be a Shape3D, if so, this method inserts the Obj3D 'tagObj' into the Group3D children array as the second element. The centroid of 'tagObj' is set to be a copy of the centroid of the first child (the Shape3D object) so that any transformations the group suffers will not affect the sorted order of the group when rendered. Since they have the same centroid and the Shape3D is added as the first child, it will always be drawn first and the 'tagObj' will always be rendered in front. The 'backHidden' property of the 'tagObj' is set 'true' so if it is facing away from the viewpoint the 'tagObj' will not be rendered and only the back of the first child will be seen. Multiple tags may be added to a shape object by multiple calls to the method. Tag objects may be removed from the group using the <i>Group3D</i>.<b>deleteObj</b> method.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>tagObj</b>: Obj3D - A Text3D, Path3D or Shape3D ideally flat (essentially a 2D drawing) to be always drawn together with and in front of the Shape3D first child of the Group3D.</p>
+  <p><b>xOfs, yOfs</b>: Numbers - X and Y offsets added to all the coordinates of the 'tagObj' to position its drawing origin with respect to the shape's drawing origin.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpRotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>rotate</b>(vx, vy, vz, theta);</p>
+<h4>Description:</h4>
+<p>Calls the <i>Obj3D</i>.rotate method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'rotate' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to a unit vector before use). The vector defines the axis, about which all points of the object will be rotated. The angle 'theta' is measured in degrees, +ve anti-clockwise when the vector is pointing at you (right hand rule).</p>
+<p><b>theta</b>:Number - The rotation angle measured in degrees, +ve in the direction your right hand fingers curl if your right thumb is pointing in the direction of the vector (right hand rule).</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpScale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
+  <dt class="itemBody">
+<h3 id="scaleGrp3D" style="color:blue">scale</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>scale</b>(s);</p>
+<h4>Description:</h4>
+<p>Calls the <i>Obj3D</i>.scale method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'scale' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>s</b>:Number - The scale factor, greater than 0, by which the descendant object's size in to be increased or decreased.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpTranslate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>grp</i>.<b>translate</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>Calls the <i>Obj3D</i>.translate method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'translate' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+<p><b>x, y, z</b>:Numbers - The X, Y, Z coordinate offsets measured in world coordinates to be added to all drawing command coordinates.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpTfmRotate" href="#" class="itemName" onclick="return toggleSection(this)">transform.rotate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.rotate</b>(vx, vy, vz, degs);</p>
+<h4>Description:</h4>
+<p>Adds a rotate matrix to the transforms to be applied to the groups descendent Obj3D when rendered. The transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively. Each Obj3D will be rotated by 'degs' degrees about the axis defined by a vector starting object's drawing origin and parallel to the vector vx, vy, vz. This rotation is independent of any transform.translate calls that may have moved the drawing origin from the world coordinate origin, like the earth rotating on it's axis.</p>
+<h4>Parameters:</h4>
+<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be rotated. The transform.rotate is applied before any transform.translate, so the axis of rotation is through the drawing origin rather than the world coordinate origin.</p>
+<p><b>degs</b>:Number - the angle by which this transform will rotate an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpTfmScale" href="#" class="itemName" onclick="return toggleSection(this)">transform.scale</a>
+  <dt class="itemBody">
+<h3 id="tfmScale" style="color:blue">transform.scale</h3>
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.scale</b>(scl);</p>
+<h4>Description:</h4>
+<p>Adds a scale matrix to the transforms to be applied to the groups descendent Obj3D when rendered. The transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively. Each Obj3D's coordinates will be scaled by a factor 'scl'. The objects dimensions enlarge or contract centered on the object's drawing origin, independent of any transform.translate that may have been applied.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>scl</b>:Number - A number, greater than 0, by which the objects dimensions relative to it's drawing origin are scaled.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpTfmTranslate" href="#" class="itemName" onclick="return toggleSection(this)">transform.translate</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.translate</b>(x, y, z);</p>
+<h4>Description:</h4>
+<p>Adds a translate matrix to the transforms to be applied to the groups descendent Obj3D when rendered. The transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively. Each Obj3D's drawing origin will be offset from its current location by x, y and z world coordinate units in the X direction, Y direction and Z direction respectively.</p>
+<h4>Parameters:</h4>
+<p style='margin-left:2em'><b>x, y, z</b>:Numbers - The distance in the X, Y and Z directions respectively that the object will be moved relative to the world coordinate origin (0,0).</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="grpTfmRevolve" href="#" class="itemName" onclick="return toggleSection(this)">transform.revolve</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>obj</i>.<b>transform.revolve</b>(vx, vy, vz, degs);</p>
+<h4>Description:</h4>
+<p>Adds a revolve matrix to the transforms to be applied to the groups descendent Obj3D when rendered. The transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively. Each Obj3D's coordinates will be revolved by 'degs' degrees about the axis defined by the vector starting from the world coordinate origin (not the object's drawing origin) and ending at the location vx, vy, vz. If no transform.translate has been applied prior to this method being called, transform.revolve behaves identically to transform.rotate, since the object drawing origin has not been moved from the world coordinate origin, but if the object has been translated, this method revolves the object around the world coordinate origin now some distance from the object, like the earth revolving around the sun.</p>
+<h4>Parameters:</h4>
+<p><b>vx, vy, vz</b>: Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be revolved.</p>
+<p><b>degs</b>: Number - the angle by which this transform will revolve an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<hr class="ugHr" />
+
+<h2>Rendering</h2>
+
+<p>Cango3D has just one method to draw Obj3D onto the canvas; <i>cgo</i>.<b>render</b>.</p>
+
+<p><b>render</b> takes a single Group3D or Obj3D as a parameter to be rendered to the canvas. In the case of Group3D, all the descendant Obj3D are rendered. All matrix transforms that have been accumulated by any of the Group3D or Obj3D in the family tree are propagated down the family tree structure to determine the final positions of the Obj3D. The 3D objects are depth sorted are projected into 2D and then rendered to the canvas most distant rendered first. Once all the Obj3D are rendered their 'soft' transform matrices are reset to the identity matrix.</p>
+
+<h3>Cango3D method details</h3>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="render" href="#" class="itemName" onclick="return toggleSection(this)">render</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>render</b>(obj, ...);</p>
+<h4>Description:</h4>
+<p>This method renders an Obj3D or all the Obj3D descendants of the Group3D, onto the canvas. By default the render method first clears the canvas. Two optional string parameters are recognised, 'noclear', which will prevent the current drawing on the canvas from being cleared and 'wireframe' which will prevent the Shape3D being filled with color, just their outline will be drawn.</p>
+<p>The 'render' method applies all the object's accumulated transform matrices to form a net transform matrix which is applied to all the coordinates of 'obj' if it an Obj3D, or to descendant children if 'obj' is a Group3D. 'render' then sorts the Group3D's into the order that they will be drawn, based on distance of the Groups3D's centroid from the viewpoint, most distant (smallest Z coordinate value) will be drawn first. The all the descendant Obj3D within each group are sorted among themselves. All coordinates of the Obj3D are then projected from 3D to 2D to create the native 2D canvas draw commands which are then drawn onto the canvas.</p>
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>obj</b>: Obj3D or Group3D - The object or group of objects to be rendered to the canvas.</p>
+  <p style='margin-left:2em'><b>. . . </b> : Option Strings - The strings 'noclear' and 'wireframe' may be passed as parameters in any order. 'noclear' inhibits the 'clearCanvas' call prior to rendering. 'wireframe' which will inhibit the color filling of Shape3D.</p>
+  </dt>
+</div>
 
 <div class="sectClosed">
   <a id="clearCanvas" href="#" class="itemName" onclick="return toggleSection(this)">clearCanvas</a>
@@ -285,7 +816,7 @@ var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
 <h4>Syntax:</h4>
 <p class='syntax'><i>cgo</i><b>.clearCanvas</b>(fillColor);</p>
 <h4>Description:</h4>
-<p>Clears the canvas, deleting all drawing. The canvas may be optionally filled with the color 'fillColor.  If 'clearCanvas' is called with no 'fillColor' parameter, then the canvas is cleared back to its background color.  The background-color may be set be in the CSS code of the host page or set by the Cango3D 'setPropertyDefault' method. Listening for mousedown events on any draggable objects is cancelled. </p>
+<p>Clears the canvas, deleting all drawing. The canvas may be optionally filled with the color 'fillColor.  If 'clearCanvas' is called with no 'fillColor' parameter, then the canvas is cleared back to its background color.  The background-color may be set be in the CSS code of the host page. Listening for mousedown events on any draggable objects is canceled. </p>
 <h4>Parameters:</h4>
 <div  style="padding-left:2em">
   <p><b>none</b></p>
@@ -293,51 +824,241 @@ var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
   </dt>
 </div>
 
+</div>    <!--  manualItems  -->
+
+<hr class="ugHr" />
+
+<h2>Saving 3D objects to a file</h2>
+
+<p>Applications don't need to include all the object creation and positioning code every time they are run. Completed Obj3D or Group3D can have their defining properties converted to a JSON string, which can be saved to a file using the method <i>cgo</i>.<b>Obj3DtoJSON</b> and retrieved using <i>cgo</i>.<b>JSONtoObj3D</b>.</p>
+
+<p><b>Obj3DtoJSON</b> generates a JSON string describing an object or group. <b>JSONtoObj3D</b> converts the JSON parsed string back to the original group of objects. Code to save the JSON string to a file is beyond the scope of this library, but one handy technique is to save the string returned by <b>Obj3DtoJSON</b> as the 'innerHTML' property of an element on the HTML page, then, when the JSON string is displayed in the browser, copy and paste it into a text editor that has full file system access so the editor can save the string to disk as a '.json' file.</p>
+
+<hr class="ugHr" />
+
+<h2>Cango3D Utility methods</h2>
+
+<p>Cango3D has several utilities methods to configure the 3D display environment, such as <i>cgo</i>.clearCanvas, <i>cgo</i>.setLightSource etc. All the methods are described in the reference sections below.</p>
+
+<h3>Cango3D method details</h3>
+
+<div class="manualItems">
+
 <div class="sectClosed">
-  <a id="compilePath3D" href="#" class="itemName" onclick="return toggleSection(this)">compilePath3D</a>
+  <a id="JSONtoObj3D" href="#" class="itemName" onclick="return toggleSection(this)">JSONtoObj3D</a>
   <dt class="itemBody">
 <h4>Syntax:</h4>
-<p class='syntax'>var obj = <i>cgo</i>.<b>compilePath3D</b>(data, color, lineWidth);</p>
+<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>JSONtoObj3D</b>(jsonData);</p>
 <h4>Description:</h4>
-<p>Creates an Obj3D object containing the commands to draw the 3D path defined by 'data' parameter. The optional values for color, line width are stored with the object and uses during subsequent rendering.</p>
+<p>This method converts the JavaScript Objects or Arrays returned from JSON.parse(), into and Obj3D or Group3D. The data will come from parsing a JSON string, loaded from a previously saved file. This JavaScript data will contain Cgo3D format outline path definitions along with fillColor and strokeColor etc. to re-create the objects previously encoded into the file.</p>
 <h4>Parameters:</h4>
-<div style="padding-left:2em">
-  <p><b>data</b>:Array - An array of 'Cgo3D' format drawing commands, each command specifying a line segment. Each command comprises a single letter string followed by the associated coordinate triplets. The first command must be 'M' (move to) followed by a coordinates specifying the x,y,z values of the starting point of the path. This is followed by an arbitrarily long set of commands and associated coordinate values. The allowed commands are 'L' for a line segment, 'C' for a cubic Bézier curve, 'Q' for quadratic Bézier and 'Z' to close a path. The coordinates following each command letter are all in world coordinates. Lowercase versions of these commands are also supported, their coordinates are relative the the current pen position (the end point of the previous command).</p>
-<p><b>color</b>:String - Color to be used when the path is rendered. The path is drawn as an outline only. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'color' is undefined, then the current pen color will be saved as the object's color. Color gradients are not supported. The color is stored as an 'RGBAColor' object which has 'r', 'g', 'b', 'a' and 'ok' properties.</p>
-<p><b>lineWidth</b>:Number - An optional line width (>0) specifying the thickness of the line when drawn in units of canvas pixels. Any scaling of the path will scale the line width too.</p>
+<div  style="padding-left:2em">
+  <p><b>jsonData</b>:JavaScript Objects and Arrays - This method expects the objects and arrays to be in the <a href="#CangoJSON">Cango3D JSON</a> format.</p>
 </div>
 <h4>Returns:</h4>
-<p style='margin-left:2em'>Obj3D - An object encapsulating the drawing commands for the path's outline with its color and other properties, along with methods to manoeuvre the path in 3D space.</p>
+<p style='margin-left:2em'>Obj3D or Group3D objects - Objects encapsulating the commands and various properties to re-create the originals.</p>
   </dt>
 </div>
 
 <div class="sectClosed">
-  <a id="compileShape3D" href="#" class="itemName" onclick="return toggleSection(this)">compileShape3D</a>
+  <a id="Obj3DtoJSON" href="#" class="itemName" onclick="return toggleSection(this)">Obj3DtoJSON</a>
   <dt class="itemBody">
 <h4>Syntax:</h4>
-<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>compileShape3D</b>(data, fillColor, backColor);</p>
+<p class='syntax'>var <i>jsonStr</i> = <i>cgo</i>.<b>Obj3DtoJSON</b>(obj, nameStr);</p>
 <h4>Description:</h4>
-<p>Creates an Obj3D object containing the commands to draw the closed shape, defined by 'data' parameter. When rendered, the outline path will be closed (if not already closed) and the shape will be filled. If the normal to the surface is facing toward the viewpoint, it is fill with 'fillColor', if facing away it is filled with 'backColor'.</p>
+<p>Obj3DtoJSON encodes the outline path definitions, colors and type etc. of an Obj3D or Group3D into a JSON format string. The returned JSON format string can be saved to a file for later re-loading to re-create the objects using the JSONtoObj3D utility. The 'nameStr' is optional, if present it will be saved as top level property 'name'.</p>
 <h4>Parameters:</h4>
-<div style="padding-left:2em">
-  <p><b>data</b>:Array - An array of single letter string representing a drawing command each command is followed by their coordinate triplets. The first command must be 'M' (move to) followed by a coordinates specifying the x,y,z values of the starting point of the path. This is followed by an arbitrarily long set of commands and associated coordinate values. The allowed commands are 'L' for a line segment, 'C' for a cubic Bézier curve, 'Q' for quadratic Bézier and 'Z' to close a path. The coordinates following each command letter are all in world coordinates. Lowercase versions of these commands are also supported, their coordinates are relative the the current pen position (the end point of the previous command).</p>
-  <p><b>fillColor</b>:String - The fill color to be used. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'fillColor' parameter is undefined or null, then the current default paint color is used. The color is stored as 'RGBAColor' objects to expose the r, g, b and a values for shading calculations.</p>
-  <p><b>backColor</b>:String - The fill color to be used if the normal the the shape is pointing away from the viewpoint. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'backColor' is undefined or null then the current default 'backColor' is used. The color is stored as 'RGBAColor' object to expose the r, g, b and a values for shading calculations.</p>
+<div  style="padding-left:2em">
+  <p><b>obj</b>:Obj3D or Group3D object - This method recursively parses the tree of objects from the root 'obj' into a JSON string. The string returned holds the various data such as outline path description, type, colors. The output is in the <a href="#CangoJSON">Cango3D JSON</a> format.</p>
+  <p><b>nameStr</b>:String - A user defined string which will be saved as the value of the property 'name'. If 'nameStr' is undefined then the default string 'Object1' will be saved as the 'name' property (see Cango3D JSON examples).</p>
 </div>
 <h4>Returns:</h4>
-<p style='margin-left:2em'>Obj3D - An object encapsulating the drawing commands for the shape's outline, its fill color and other properties, along with methods to manoeuvre the shape in 3D space.</p>
+<div  style="padding-left:2em">
+<p>JSON String - JSON format string containing sufficient data describing 'obj' to reconstruct it.</p>
+</div>
   </dt>
 </div>
 
 <div class="sectClosed">
-  <a id="compileText3D" href="#" class="itemName" onclick="return toggleSection(this)">compileText3D</a>
+  <a id="objectOfRevolution3D" href="#" class="itemName" onclick="return toggleSection(this)">objectOfRevolution3D</a>
   <dt class="itemBody">
 <h4>Syntax:</h4>
-<p class='syntax'>var obj = <i>cgo</i>.<b>compileText3D</b>(str, color, pxlSize, fontWt, lorg);</p>
+<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>objectOfRevolution3D</b>(path, xOffset, segments, fillColor, backColor, straight);</p>
 <h4>Description:</h4>
-<p>Compiles a string into a path comprising the set of line segments forming each character. The characters are rendered in the Cango3D font, which uses characters from the Hershey stroke font. The font is scaled to be 'pxlSize' pixels (independent of the world coordinate scaling). The optional 'fontWt' sets the line width used when rendering. The 'lorg' parameter sets the drawing origin, the point within the text bounding box that will the reference point for translating, rotating or scaling the text.  The Cango3D character set comprises 104 characters from the standard ASCII character set and 52 special characters, the upper and lower case Greek alphabet and some mathematical symbols. Special characters are generated by inserting their corresponding Unicode into the text string using the '\uXXXX' format.</p>
+<p>Generates a Group3D holding an array of Obj3D representing a multi-panel 3D object formed by revolving the profile specified by the 'path' parameter, about the Y axis. An xOffset may be applied to all coordinates to position the profile the required distance from the Y axis, this is usually required if the profile has been copied from an SVG editor. The path is then revolved by 360 degrees about the Y axis in 'segments' number of steps. At each step multiple Obj3D panels are formed from the corresponding draw commands of the path forming the sides of the panel and top and bottom are joined by circular arcs (by default) or straight lines if the 'straight' parameter evaluates to 'true'. The array of panels forming the Object of Revolution are added to new Group3D object which is returned.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+    <p><b>data</b>:Array or String - An array or string containing in Cgo3D format of single letter SVG drawing commands followed by x,y,z coordinate triplets, all z components are assumed to be 0. The first command must be 'M' followed by a coordinates specifying the x,y,z values of the starting point of the path. This is followed by commands specifying line segments. The path should be simple starting from the top of the profile (maximum Y coordinate) and monotonically decreasing to the bottom, all points should have +ve X coordinates (after xOffset has been added).</p>
+  <p>If the path is passed as a String, it is assumed to have been copied from and SVG editor such as Inkscape. The Y coordinates will be flipped to match the Cango3D convention of Y coordinates +ve up the screen.</p>
+  <p><b>xOffset</b>:Number - An offset added to all X coordinates of the profile to position the profile with respect to the Y axis.</p>
+  <p><b>segments</b>:Number -  Specifies the number of segments, the 360 degree rotation will be divided by. The object is created like segments of an orange. The larger the number of segments the smoother the color gradations will be on the final shape but the slower it will be to render.</p>
+  <p><b>fillColor</b>:String - The fill color to be used when the normal of a panel faces the viewpoint. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'fillColor' parameter is omitted or null, then the current paint color is used.</p>
+  <p><b>backColor</b>:String - The fill color to be used when the normal of a panel faces away from the viewpoint. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'backColor' parameter is omitted or null, then the current fillColor is used. For closed shapes, where the back faces are never seen, this should be set to 'transparent'.</p>
+  <p><b>straight</b>:Boolean - An optional boolean value, if true, then the sections of adjacent profiles are joined by straight lines rather than the default circular arcs.</p>
+</div>
+<h4>Returns:</h4>
+<div  style="padding-left:2em">
+<p>Group3D - the children of the group comprise the panels forming the 3D object.</p>
+</div>
+  </dt>
+</div>
 
-<h4>Cango3D character set</h4>
+<div class="sectClosed">
+  <a id="setPropertyDefault" href="#" class="itemName" onclick="return toggleSection(this)">setPropertyDefault</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'><i>cgo</i>.<b>setPropertyDefault</b>(propertyName, val);</p>
+<h4>Description:</h4>
+<p>Sets the default values for various system properties. The property whose default is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
+<p>The new default value is passed as 'value'. The value is restricted to be within the range of values appropriate to the property. If the property is not one of the string values listed or the value is an incorrect type or outside the reasonable range of values then the call is ignored and the current default value remains unaltered.</p>
+<p>If no call is made to 'setPropertyDefault' for a particular property, then the property value remains at its system default value listed in column 4.</p>
+
+<table class="txtTbl" style="width: 620px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+<tr>
+<th>Name</th><th>Type</th><th>Range</th><th>Default</th>
+</tr>
+<tr>
+<td>backgroundColor</td><td>CSS Color</td><td>-</td><td>set by canvas element style</td>
+</tr>
+<tr>
+<td>fillColor</td><td>CSS Color</td><td>-</td><td>'rgba(128, 128, 128, 1.0)'</td>
+</tr>
+<tr>
+<td>strokeColor</td><td>CSS Color</td><td>-</td><td>'rgba(0, 0, 0, 1.0)'</td>
+</tr>
+<tr>
+<td>strokeWidth</td><td>Number (pixels)</td><td>-</td><td>1</td>
+</tr>
+<tr>
+<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td><td>'butt'</td>
+</tr>
+<tr>
+<td>fontSize</td><td>Number (points)</td><td>-</td><td>10</td>
+</tr>
+<tr>
+<td>fontWeight</td><td>Number</td><td>100..900</td><td>400</td>
+</tr>
+</table>
+
+<h4>Parameters:</h4>
+  <p style='margin-left:2em'><b>propertyName</b>:String- The name of the property whose default value is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
+  <p style='margin-left:2em'><b>value</b>- The new default value for the property. Its type should match the type listed in column 2 of the table above and the range of values must fall within the range listed in column 3.</p>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<hr class="ugHr" />
+
+<h2>Global utility methods</h2>
+
+<p>Both Obj3D and Group3D have a 'transform' property which is an object with the following methods:</p>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="calcIncAngle" href="#" class="itemName" onclick="return toggleSection(this)">calcIncAngle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var degs = <b>calcIncAngle</b>(p1, p2, p3);</p>
+<h4>Description:</h4>
+<p>Calculates the included angle between the vectors from p1 to p2 and p1 to p3. If <b>A</b> is the vector defined as p2 - p1, and <b>B</b> is the vector p3 - p1, then the included angle (less than 180&deg;) between A and B will be returned. The sign may be determined from the cross product <b>A</b>&times;<b>B</b> direction (determined from right hand rule). The direction of the positive angle is counter-clockwise when the cross-product is pointing at you.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>p1</b>:Object {x:, y: z:} - A point in 3D space which is taken as the base point of the two vectors whose included angle is to be measured.</p>
+  <p><b>p2y</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p2 defines the first vector <b>A</b>.</p>
+  <p><b>p3</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p3 defines the second vector <b>B</b>.</p>
+</div>
+<h4>Returns:</h4>
+<div  style="padding-left:2em">
+<p>Number - An angle between the two 3D vectors measured in degrees.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="calcNormal" href="#" class="itemName" onclick="return toggleSection(this)">calcNormal</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var norm = <b>calcNormal</b>(p1, p2, p3);</p>
+<h4>Description:</h4>
+<p>Calculates the unit vector perpendicular to the plane defined by the points p1, p2 and p3. If <b>A</b> is the vector from p1 to p2 (p2 - p1), and <b>B</b> is the vector from p1 to p3 (p3 - p1), then the cross product <b>A</b>x<b>B</b> is calculated and normalised to have unit length. The direction of the normal will be given by the 'right hand rule', if A were along the X axis, and B along the Y axis the normal would be along the Z axis.</p>
+<h4>Parameters:</h4>
+<div  style="padding-left:2em">
+  <p><b>p1</b>:Object {x:, y: z:} - A point in 3D space which is taken as the base point of the two vectors defining the plane.</p>
+  <p><b>p2</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p2 defines a line in the plane.</p>
+  <p><b>p3</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p3 defines a second line in the plane.</p>
+</div>
+<h4>Returns:</h4>
+<div  style="padding-left:2em">
+<p>Object {x:, y: z:} - A point in 3D space unit distance (world coordinates) from the origin in the direction normal to the plane defined by the three points p1, p2 and p3.</p>
+</div>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="svgToCgo3D" href="#" class="itemName" onclick="return toggleSection(this)">svgToCgo3D</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var dataAry = <b>svgToCgo3D</b>(svgData, xRef, yRef);</p>
+<h4>Description:</h4>
+<p>This is utility accepts 2D path data in SVG or <a href="CangoUserGuide.html#svgCmds">Cgo2D</a> format and returns 3D path data in <a href="#svgCmds">Cgo3D</a> format with all Z coordinate values set to 0. SVG data is passed as a String and Cgo2D data is passed as an Array.</p>
+<p>The SVG string format is designed to handle path definitions imported, via copy and paste, from SVG source editors. The path to be copied can be easily identified within the SVG source code. The path's '<b>d</b>' parameter holds the command letters and 2D coordinates for each segment of the path. The first command must be 'M' (move to) followed by a coordinates specifying the x,y values of the starting point of the path. This is followed by an arbitrarily long set of commands and associated coordinate values such as 'L' for a line segment, 'C' for a cubic Bézier curve, etc. All the SVG syntax commands are supported 'A','S','T', etc. commands are converted to simple cubic Bézier curves which preserve their shape under 3D transformation. The coordinates following each command letter are all in world coordinates.</p>
+<p>Since all SVG editors use a coordinate system with Y coordinates +ve down the screen, 'svgData' passed as a will be assumed to be in this format and <b>svgToCgo3D</b> will flip all the Y coordinates to match the Cango3D Right Handed coordinate system.</p>
+<p>The 'xRef,yRef' parameters are available to shift the drawing origin of the coordinates. The SVG editors usually have the drawing origin offset away in the top corner, 'xRef,yRef' allow it to be shifted to a more convenient position.</p>
+<p>The 'svgData' may also be in Cgo2D format, a JavaScript array containing single letter SVG commands followed by their corresponding 2D coordinates. The coordinate x,y pairs are numbers not strings. They are assumed to be in the correct Right Handed coordinate system with Y +ve up the screen. This format is suitable for programmatically generated data or data arrays copied from Cango or Cango2D applications.</p>
+<h4>Parameters:</h4>
+  <p><b style="color:blue">svgData</b>:String or Array - A string or array holding the drawing instructions for the path. If 'svgData' is a string then it must be in the format of the SVG path <b>d</b>="(path data)" attribute. If 'svgData' is an Array it is assumed to be in Cgo2D format.</p>
+  <p><b style="color:blue">xRef, yRef</b>:Numbers - X and Y offsets to be added to all the drawing coordinates of string data, to effectively move the path's drawing origin, measured in the original SVG editor coordinates (which will subsequently be interpreted as world coordinates).</p>
+<h4>Returns:</h4>
+<div  style="padding-left:2em">
+<p>An Cgo3D format data array consisting of single letter commands and their numeric coordinate x,y,z triplets (all z values will initially be 0) suitable for input to the Cango3D 'compile' methods.</p>
+</div>
+  </dt>
+</div>
+
+</div>    <!--  manualItems  -->
+
+<hr class="ugHr" />
+
+<h2 id="dragndrop">Drag-and-Drop</h2>
+
+<p>Drag-n-drop can be enabled on any Obj3D or Group3D by calling the <b>enableDrag</b> method passing as parameters references to the event handlers to be called when mousedown, mousemove and mouseup events occur. Drag-and-Drop can be disabled by calling the <b>disableDrag</b> or by clearing the canvas on which the object was drawn.</p>
+
+<h3 id="drag3D">Drag3D Object</h3>
+
+<p>The 'enableDrag' method creates a object type <b>Drag3D</b> which is assigned to the <i>obj</i>.<b>dragNdrop</b> property. Drag3D objects encapsulate the event handlers that run when mousedown, mousemove and mouseup events occur within the outline of the Obj3D as drawn on the canvas. When a mousedown event occurs the handler enables listening for mousemove, mouseup and mouseout event, it then updates the values the Drag3D properties and calls the user defined 'grabHandler' callback. Subsequent mousemove events will similarly update the Drag3D properties and call the user defined 'dragHandler'. The 'dropHandler' callback is called when either a mouseup event occurs or the cursor moves off the canvas generating a mouseout event. The callbacks are passed the current position of the cursor on the canvas in world coordinates. The callback functions are executed in the scope of the <i>obj</i>.dragNdrop object.</p>
+
+<p>Enabling drag-n-drop on a Group3D recursively enables the drag-n-drop on all the group's descendent Obj3D. If a child Obj3D has drag-n-drop enabled this handler will take precedence over any parent Group3D drag-n-drop handler. So an Obj3D which is a child of a Group3D will move when any child of the group is dragged but will also move independent of the group if it has drag-and-drop independently enabled.</p>
+
+<h3>Drag3D properties</h3>
+
+<p> The <i>obj</i>.dragNdrop is a Drag3D object which has as properties several variables often required when writing event handlers, such as 'grabOfs', the X and Y offset of the cursor from the drawing origin of the Obj3D when the mousedown event occurred. Since the callbacks are executed in the scope of the obj's <b>dragNdrop</b> object, 'this' will refer to the Drag3D object so its properties listed below will be available:</p>
+
+  <table class="txtTbl" style="width: 600px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
+  <tr>
+  <th width="12%">Property</th><th width="28%">Type</th><th>Description</th>
+  </tr>
+  <tr>
+  <td>cgo</td><td align="left"> Cango3D object</td><td style="text-align:left">This makes the Cango3D methods such as this.cgo.clearCanvas() readily accessible from the scope of the Drag3D object.</td>
+  </tr>
+  <tr>
+  <td>target</td><td align="left"> Group3D or Obj3D</td><td style="text-align:left">Group3D or Obj3D actually being dragged, the Group3D or Obj3D whose 'enableDrag' method was called.</td>
+  </tr>
+  <tr>
+  <td>dwgOrg</td><td align="left"> Object</td><td style="text-align:left">Object with x, y and z properties holding the 'as rendered' coordinates of the drawing origin (measured in world coordinates) of the target.</td>
+  </tr>
+  <tr>
+  <td>grabOfs</td><td align="left"> Object</td><td style="text-align:left">Object with properties x, y and z holding the offset of the cursor coordinates from the target drawing origin at the time of the mousedown (grab) event, measured in world coordinates.</td>
+  </tr>
+  <tr>
+  <td>grabCsrPos</td><td align="left"> Object</td><td style="text-align:left">Object with properties x, y and z holding the cursor coordinates saved at grab time, measured in world coordinates.</td>
+  </tr>
+  </table>
+
+<hr class="ugHr" />
+
+<h3 id='hersheyChars'>Text3D character set</h3>
 <h4>ASCII characters</h4>
 <table class="txtTbl" style="width: 620px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
 <tr>
@@ -427,685 +1148,23 @@ var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
 </tr>
 </table>
 
+<hr class="ugHr" />
 
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>str</b>:String - The text string composed from a series of characters or Unicode symbols.</p>
-  <p style='margin-left:2em'><b>pxlSize</b>:Number - Size of the font to be used when rendering the text, measured in points. If undefined or set to null, the default font size is used. The default font size is set by the <a href="#setPropertyDefault">setPropertyDefault</a> method.</p>
-  <p style='margin-left:2em'><b>fontWt</b>:Number - the font weight will be converted to an equivalent stroke width when rendering the texts. The font weight may be set to any value from 100 to 900, where 400 is 'normal' and 700 is 'bold'. If undefined or set to null, the default font weight of 400 is used.</p>
-  <p style='margin-left:2em'><b>lorg</b>:Number - Location of the drawing origin within the bounding rectangle of the text. 'lorg' can take integer values 1..9. lorg=1 locates the drawing origin at the top,left of the text, lorg=2 locates it at the top,center of the text, and so on. See <a href="#lorg">LORG</a> notes for details.</p>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Obj3D - An object encapsulating the canvas commands to draw the text as stroked characters, its font size, font weight and so on, along with various methods to manoeuvre the text in 3D.</p>
-  </dt>
-</div>
+<h3 id="svgCmds">Cgo3D Data Syntax:</h3>
 
-<div class="sectClosed">
-  <a id="createGroup3D" href="#" class="itemName" onclick="return toggleSection(this)">createGroup3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var <i>grp</i> = <i>cgo</i>.<b>createGroup3D</b>(...);</p>
-<h4>Description:</h4>
-<p>Creates a Group3D object with a 'children' array property, designed to hold Obj3D and other Group3D objects. The Group3D object has transform matrix properties and methods to apply these transforms to the coordinates of the Obj3D in the 'children' array, and recursively apply them to the children of Group3D objects in the 'children' array. The objects forming the group are passed in as parameters, they may be Obj3D, Group3D or arrays of either. Elements of Arrays of objects are added individually to the 'children' array. More objects can be added to the group after creation, by using the Group3D <b>addObj</b> method.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b> . . . &nbsp;&nbsp;</b>:Obj3D, Group3D or arrays or either - The 'arguments' property is parsed to extract all Obj3D and Group3Ds and they are added to Group3D's 'children' array.</p>
-</div>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Group3D object - an object holding references to Obj3Ds and/or Group3Ds to to be manipulated as a single unit.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="JSONtoObj3D" href="#" class="itemName" onclick="return toggleSection(this)">JSONtoObj3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>JSONtoObj3D</b>(jsonData);</p>
-<h4>Description:</h4>
-<p>This method converts the JavaScript Objects or Arrays returned from JSON.parse(), into and Obj3D or Group3D. The data will come from parsing a JSON string, loaded from a previously saved file. This JavaScript data will contain Cgo3D format outline path definitions along with fillColor and strokeColor etc. to re-create the objects previously encoded into the file.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>jsonData</b>:JavaScript Objects and Arrays - This method expects the objects and arrays to be in the <a href="#CangoJSON">Cango3D JSON</a> format.</p>
-</div>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Obj3D or Group3D objects - Objects encapsulating the commands and various properties to re-create the originals.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="Obj3DtoJSON" href="#" class="itemName" onclick="return toggleSection(this)">Obj3DtoJSON</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var <i>jsonStr</i> = <i>cgo</i>.<b>Obj3DtoJSON</b>(obj, nameStr);</p>
-<h4>Description:</h4>
-<p>Obj3DtoJSON encodes the outline path definitions, colors and type etc. of an Obj3D or Group3D into a JSON format string. The returned JSON format string can be saved to a file for later re-loading to re-create the objects using the JSONtoObj3D utility. The 'nameStr' is optional, if present it will be saved as top level property 'name'.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>obj</b>:Obj3D or Group3D object - This method recursively parses the tree of objects from the root 'obj' into a JSON string. The string returned holds the various data such as outline path description, type, colors. The output is in the <a href="#CangoJSON">Cango3D JSON</a> format.</p>
-  <p><b>nameStr</b>:String - A user defined string which will be saved as the value of the property 'name'. If 'nameStr' is undefined then the default string 'Object1' will be saved as the 'name' property (see Cango3D JSON examples).</p>
-</div>
-<h4>Returns:</h4>
-<div  style="padding-left:2em">
-<p>JSON String - JSON format string containing sufficient data describing 'obj' to reconstruct it.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="objectOfRevolution3D" href="#" class="itemName" onclick="return toggleSection(this)">objectOfRevolution3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var <i>obj</i> = <i>cgo</i>.<b>objectOfRevolution3D</b>(path, xOffset, segments, fillColor, backColor, straight);</p>
-<h4>Description:</h4>
-<p>Generates a Group3D holding an array of Obj3D representing a multi-panel 3D object formed by revolving the profile specified by the 'path' parameter, about the Y axis. An xOffset may be applied to all coordinates to position the profile the required distance from the Y axis, this is usually required if the profile has been copied from an SVG editor. The path is then revolved by 360 degrees about the Y axis in 'segments' number of steps. At each step multiple Obj3D panels are formed from the corresponding draw commands of the path forming the sides of the panel and top and bottom are joined by circular arcs (by default) or straight lines if the 'straight' parameter evaluates to 'true'. The array of panels forming the Object of Revolution are added to new Group3D object which is returned.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-    <p><b>data</b>:Array or String - An array or string containing in Cgo3D format of single letter SVG drawing commands followed by x,y,z coordinate triplets, all z components are assumed to be 0. The first command must be 'M' followed by a coordinates specifying the x,y,z values of the starting point of the path. This is followed by commands specifying line segments. The path should be simple starting from the top of the profile (maximum Y coordinate) and monotonically decreasing to the bottom, all points should have +ve X coordinates (after xOffset has been added).</p>
-  <p>If the path is passed as a String, it is assumed to have been copied from and SVG editor such as Inkscape. The Y coordinates will be flipped to match the Cango3D convention of Y coordinates +ve up the screen.</p>
-  <p><b>xOffset</b>:Number - An offset added to all X coordinates of the profile to position the profile with respect to the Y axis.</p>
-  <p><b>segments</b>:Number -  Specifies the number of segments, the 360 degree rotation will be divided by. The object is created like segments of an orange. The larger the number of segments the smoother the color gradations will be on the final shape but the slower it will be to render.</p>
-  <p><b>fillColor</b>:String - The fill color to be used when the normal of a panel faces the viewpoint. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'fillColor' parameter is omitted or null, then the current paint color is used.</p>
-  <p><b>backColor</b>:String - The fill color to be used when the normal of a panel faces away from the viewpoint. The color may be expressed in any of the CSS color formats, see <a href="#colors">Colors</a> notes for details. If 'backColor' parameter is omitted or null, then the current fillColor is used. For closed shapes, where the back faces are never seen, this should be set to 'transparent'.</p>
-  <p><b>straight</b>:Boolean - An optional boolean value, if true, then the sections of adjacent profiles are joined by straight lines rather than the default circular arcs.</p>
-</div>
-<h4>Returns:</h4>
-<div  style="padding-left:2em">
-<p>Group3D - the children of the group comprise the panels forming the 3D object.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="render" href="#" class="itemName" onclick="return toggleSection(this)">render</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>render</b>(obj, ...);</p>
-<h4>Description:</h4>
-<p>Clears the canvas and renders an Obj3D or all the Obj3D descendants of the Group3D, onto the canvas. Two optional string parameters are recognised, 'noclear', which will prevent the current drawing on the canvas from being cleared and 'wireframe' which will prevent the SHAPE type Obj3D being filled with color, just their outline will be drawn.</p>
-<p>The 'render' method applies all the object's accumulated transform matrices to form a net transform matrix which is applied to all the coordinates of 'obj' if it an Obj3D, or to descendant children if 'obj' is a Group3D. 'render' then sorts the Group3D's into the order that they will be drawn, based on distance of the Groups3D's centroid from the viewpoint, most distant (smallest Z coordinate value) will be drawn first. The all the descendant Obj3D within each group are sorted among themselves. All coordinates of the Obj3D are then projected from 3D to 2D to create the native 2D canvas draw commands which are then drawn onto the canvas.</p>
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>obj</b>: Obj3D or Group3D - The object or group of objects to be rendered to the canvas.</p>
-  <p style='margin-left:2em'><b>. . . </b> : Option Strings - The strings 'noclear' and 'wireframe' may be passed as parameters in any order. 'noclear' inhibits the 'clearCanvas' call prior to rendering. 'wireframe' which will inhibit the color filling of SHAPE Obj3Ds.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="renderFrame" href="#" class="itemName" onclick="return toggleSection(this)">renderFrame</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>renderFrame</b>(obj);</p>
-<h4>Description:</h4>
-<p>The 'renderFrame' method does not directly call the canvas draw methods, instead it requests that the cgo.<b>render</b> method be called using the window.<b>requestAnimationFrame</b> utility. The 'renderFrame' method returns quickly (since no actual drawing is done in this call) so it is suitable for use in animation and can be called from an event handler. The 'renderFrame' method calls 'render' without 'noclear' or 'wireframe' parameters, so the canvas is always cleared prior to rendering and all SHAPE type objects are filled.</p>
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>obj</b>:Obj3D or Group3D - The object or family tree of objects to be rendered to the canvas.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="setLightSource" href="#" class="itemName" onclick="return toggleSection(this)">setLightSource</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>setLightSource</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>Defines a vector in 3D space starting at the origin and ending at {x:, y:, z:}. Shading of rendered Obj3D faces is determined by the dot product of the unit vector in the direction of the light source and the unit vector normal to the front face of the Obj3D. If no call is made to <i>setLightSource</i> the default value is {x:0, y:100, z:500}.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>x</b>:Number - X coordinate of the light source direction vector measured in world coordinates.</p>
-  <p><b>y</b>:Number - Y coordinate.</p>
-  <p><b>z</b>:Number - Z coordinate.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="setFOV" href="#" class="itemName" onclick="return toggleSection(this)">setFOV</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>setFOV</b>(deg);</p>
-<h4>Description:</h4>
-<p>Sets the Field Of View represented by calculating the location of the viewpoint at which the width of the canvas will subtend an angle of 'deg'. The viewpoint distance is used for all subsequent rendering on the canvas. The Field-Of-View will determine extent of the perspective distortion of an objects dimensions, values greater than 60&deg; produce less realistic perspective effects, as result setFOV restricts the value of 'deg' to range 20&deg; to 60&deg;, a value of 45&deg; is recommended. The calculation assumes the world coordinate origin is always on the canvas, if not the field of view is calculated as if the origin were on the edge of the canvas and the FOV should be set to smaller values to prevent undue distortion.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>deg</b>:Number - The angle subtended at the viewpoint by the width of the canvas, measured in degrees. The viewpoint distance along the Z axis is set to yield the requested Field-of-View. Angles greater than 60&deg; or less than 20&deg; are ignored.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="setPropertyDefault" href="#" class="itemName" onclick="return toggleSection(this)">setPropertyDefault</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>setPropertyDefault</b>(propertyName, val);</p>
-<h4>Description:</h4>
-<p>Sets the default values for various system properties. The property whose default is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
-<p>The new default value is passed as 'value'. The value is restricted to be within the range of values appropriate to the property. If the property is not one of the string values listed or the value is an incorrect type or outside the reasonable range of values then the call is ignored and the current default value remains unaltered.</p>
-<p>If no call is made to 'setPropertyDefault' for a particular property, then the property value remains at its system default value listed in column 4.</p>
-
-<table class="txtTbl" style="width: 620px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
-<tr>
-<th>Name</th><th>Type</th><th>Range</th><th>Default</th>
-</tr>
-<tr>
-<td>backgroundColor</td><td>CSS Color</td><td>-</td><td>set by canvas element style</td>
-</tr>
-<tr>
-<td>fillColor</td><td>CSS Color</td><td>-</td><td>'rgba(128, 128, 128, 1.0)'</td>
-</tr>
-<tr>
-<td>strokeColor</td><td>CSS Color</td><td>-</td><td>'rgba(0, 0, 0, 1.0)'</td>
-</tr>
-<tr>
-<td>strokeWidth</td><td>Number (pixels)</td><td>-</td><td>1</td>
-</tr>
-<tr>
-<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td><td>'butt'</td>
-</tr>
-<tr>
-<td>fontSize</td><td>Number (points)</td><td>-</td><td>10</td>
-</tr>
-<tr>
-<td>fontWeight</td><td>Number</td><td>100..900</td><td>400</td>
-</tr>
-</table>
-
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>propertyName</b>:String- The name of the property whose default value is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
-  <p style='margin-left:2em'><b>value</b>- The new default value for the property. Its type should match the type listed in column 2 of the table above and the range of values must fall within the range listed in column 3.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="setWorldCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">setWorldCoords3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>cgo</i>.<b>setWorldCoords3D</b>(lowerLeftX, lowerLeftY, spanX);</p>
-<h4>Description:</h4>
-<p>Defines a world coordinate system for subsequent drawing operations with this graphics context. The world coordinate system sets translation and scaling factors to map world coordinate values to canvas pixel coordinates. The canvas is always in the X,Y plane. The coordinate system is right handed, the X axis is always +ve to the right, Y axis is +ve up the screen and Z axis is +ve out of the screen. X, Y and Z axes all have the same scale factor.</p>
-<p>World coordinates are set by defining the coordinate values of the lower left corner of the canvas and the width of the canvas. Since the canvas has equal scaling factors in the X, Y and Z directions, setting the span of the canvas X dimension is sufficient to set all scaling factors. The X,Y coordinates of the lower left corner are sufficient to set the origin {0, 0, 0} of the coordinate system. The lower left Z coordinate value does not need to be specified as the canvas always in the X,Y plane (z=0).</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>lowerLeftX</b>:Number - World X coordinate value of the lower left corner of the canvas.</p>
-  <p><b>lowerLeftY</b>:Number - World Y coordinate value of the lower left corner of the canvas.</p>
-  <p><b>spanX</b>:Number - The width of the canvas in world coordinates.</p>
-<p>If <i>setWorldCoords3D</i> is called with no parameter passed, or not called at all, the world coordinate system is set to have the canvas lowerLeft=0,0 and spanX = 100.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="tagShape" href="#" class="itemName" onclick="return toggleSection(this)">tagShape</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var <i>grp</i> = <i>cgo</i>.<b>tagShape</b>(shapeObj, tagObj, xOfs, yOfs);</p>
-<h4>Description:</h4>
-<p>Creates a Group3D with children 'shapeObj' and 'tagObj'. The centroid of 'tagObj' is set to be a copy of the 'shapeObj' centroid so any transformations the group suffers will not affect the sorted order of the group when rendered. Since they have the same centroid and the 'shapeObj' is added as the first child, it will always be drawn first and the 'tagObj' will always be rendered in front. The 'backHidden' property of the 'tagObj' is set 'true' so if it is facing away from the viewpoint the 'tagObj' will not be rendered and only the back of the 'shapeObj' will be seen. Multiple tags may be added to a shape object by multiple calls to the method. Tag objects may be removed from the group using the <i>Group3D</i>.<b>deleteObj</b> method.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>shapeObj</b>:Obj3D - A pre-existing object of type SHAPE with which the tag object will be grouped so as to always be drawn in front.</p>
-  <p><b>obj</b>:Obj3D - A TEXT, PATH or SHAPE Obj3D ideally flat (essentially a 2D drawing) to be always drawn together with the 'shapeObj' and in front of it.</p>
-  <p><b>xOfs, yOfs</b>:Numbers - X and Y offsets added to all the coordinates of the 'tagObj' to position its drawing origin with respect to the 'shapeObj' drawing origin.</p>
-</div>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Group3D - Group comprising the 'shapeObj' and 'obj'.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="toPixelCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">toPixelCoords3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var posObj = <i>cgo</i>.<b>toPixelCoords3D</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>This method converts the coordinates (x, y, z) of a point expressed in world coordinates to an object with {x:, y:, z:} properties that hold the raw canvas pixel coordinates of the point. The canvas pixel coordinates of the Cango3D context are set to be equal to the screen pixels when the graphics context is created, so 'toPixelCoords' always returns the canvas pixel coordinates which map 1 to 1 with screen pixels.</p>
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>x</b>, <b>y</b>, <b>z</b>:Number - X, Y, Z coordinates of a point measured in world coordinates.</p>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Object - An object with three properties:</p>
-  <p style='margin-left:2em'><b>x, y, z</b>:Numbers - X, Y and Z coordinates of the point measured in canvas pixel coordinates.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="toWorldCoords3D" href="#" class="itemName" onclick="return toggleSection(this)">toWorldCoords3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var posObj = <i>cgo</i>.<b>toWorldCoords3D</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>This method converts the coordinates (x, y, z) of a point expressed in canvas pixels coordinates to an object with {x:, y:, z:} properties that hold the equivalent world coordinates of the point.</p>
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>x</b>, <b>y</b>, <b>z</b>:Number - X, Y, Z coordinates of a point measured in pixel coordinates.</p>
-<h4>Returns:</h4>
-<p style='margin-left:2em'>Object - An object with three properties:</p>
-  <p style='margin-left:2em'><b>x, y, z</b>:Number - X, Y and Z coordinates of the point measured in current world coordinates of the <i>cgo</i> graphics context.</p>
-  </dt>
-</div>
-
-</div>    <!--  manualItems  -->
-
-<h2>Obj3D methods</h2>
-
-<div class="manualItems">
-
-<div class="sectClosed">
-  <a id="disableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i><b>.disableDrag()</b>;</p>
-<h4>Description:</h4>
-<p>Sets the <i>obj</i>.dragNdrop property to 'null' and removes the reference to <i>obj</i> from the array of objects to be checked for a hit on mousedown events.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>none</b></p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="enableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i><b>.enableDrag(grabCallback, dragCallback, dropCallback)</b>;</p>
-<h4>Description:</h4>
-<p>This method takes as parameters the user defined functions to be called mousedown, mousemove or mouseup (or mouseout) events. It saves a reference to 'obj' in the array of objects to be checked when a mousedown event occurs on the canvas.</p>
-<p>Once an object is enabled, the Cango 'mousedown' event handler will check if the mouse event occurred within the outline of the object. If it did, then the object's grab event handler is called, this assigns handlers for subsequent 'mousemove' and 'mouseup' events and then calls the user 'grabCallback' function. On subsequent mousemove or mouseup events, the object's event handlers will update the cursor coordinates and call the 'dragCallback' or 'dropCallback' functions. For every drag callback ie. every mousemove event, the current world coordinates of the cursor are always passed to the callback functions as an object with x,y,z properties. The cursor location is a point on the canvas which is always in the XY plane, therefore the z property of the cursor location will always be 0.</p>
-<p>Drag-n-drop callbacks often need to know the drawing origin and the cursor offsets when the grab occurred. To simplify writing grab, drag and drop functions, the callbacks are executed in the scope of a Drag3D object which has properties to supply these values. Other handy properties of the Drag3D object are listed below.</p>
-<h4>Properties:</h4>
-<p style='margin-left:2em'><b>grabCallback</b>:Function or null - This function to be called when a 'mousedown' event occurs within the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-<p style='margin-left:2em'><b>dragCallback</b>:Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of 'obj'. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-<p style='margin-left:2em'><b>dropCallback</b>:Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-<h4>Example</h4>
-<p>As an example of the enableDrag method, here is a code snippet that simply moves text with the cursor: </p>
+<p>The Path3D and Shape3D constructors take as input an array of commands defining their outline. The command syntax is referred to as <b>Cgo3D</b> format, comprising single letter draw commands and their associated 3D coordinate triplets representing x,y,z coordinate values. Cgo3D commands are case-sensitive, uppercase commands have coordinates relative to the world coordinate origin ( absolute positioning), lowercase commands coordinates are relative to the current pen position ie. the end point of previous command (relative positioning). The first point must always be a 'M' (move) command using absolute positioning as there is no previous pen position. As an example, here is the array of commands to draw a unit square in the XY plane with the drawing origin (0,0,0) at it's center.</p>
 <div class="srcFmt">
 <pre>
-function txtSimple(g)
-{
-  var txt1;
-
-  function dragTxt(mousePos)
-  {
-    var newPos = {x:mousePos.x-this.grabOfs.x,
-                  y:mousePos.y-this.grabOfs.y,
-                  z:mousePos.z-this.grabOfs.z};
-    txt1.transform.translate(newPos.x, newPos.y, newPos.z);
-    txt1.render();
-  }
-
-  g.clearCanvas();
-  g.setWorldCoords3D(-400, -200, 800);
-  g.setViewpointDistance(500);
-
-  txt1 = g.compileText3D("Hullo World", 'green', 20, 700, 5);
-  txt1.enableDrag(null, dragTxt, null);
-  txt1.render();
-}
+var square = ['M', 0.5, -0.5, 0, 'l', 0, 1, 0, -1, 0, 0, 0, -1, 0, 'z'];
 </pre>
 </div>
-  </dt>
-</div>
 
-<div class="sectClosed">
-  <a id="flipNormal" href="#" class="itemName" onclick="return toggleSection(this)">flipNormal</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>flipNormal</b>();</p>
-<h4>Description:</h4>
-<p>If an Obj3D previously defined and has the calculated normal the wrong way, so the back surface is shown in a default color instead of the correct colored front, then the Obj3D method <b>flipNormal</b> called on the object will flip the normal to the opposite direction.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>None</b></p>
-</div>
-  </dt>
-</div>
+<p>The syntax is a sub-set of the SVG path drawing command set, restricted to straight lines, Quadratic and Cubic Bézier curve drawing commands.</p>
 
-<div class="sectClosed">
-  <a id="rotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>rotate</b>(vx, vy, vz, theta);</p>
-<h4>Description:</h4>
-<p>Each 3D point defining the Obj3D 'obj', its, centroid and normal are transformed to have its position rotated by and angle 'theta' degrees about the axis defined by the vector (vx, vy, vz). The new coordinate values over-write the old coordinates, so whenever the object is re-drawn it will have the net effect of this rotation as it reference position. This 'rotate' method should be used in positioning component panels in construction of multi-panel 3D object, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to a unit vector before use). The vector defines the axis, about which all points of the object will be rotated. The angle 'theta' is measured in degrees, +ve anti-clockwise when the vector is pointing at you (right hand rule).</p>
-<p><b>theta</b>:Number - The rotation angle measured in degrees, +ve in the direction your right hand fingers curl if your right thumb is pointing in the direction of the vector (right hand rule).</p>
-</div>
-  </dt>
-</div>
+<p>Path3D data may also be imported as 2D drawing commands in a string in SVG format, possibly copied from an SVG editor, or as an array in Cgo2D format which is just the SVG single letter commands with the coordinate pair stored as an array. The paths will of course start out as 2D in the XY plane but they may then be transformed in 3D like any other Obj3D. These strings or arrays of 2D data can use the entire SVG path command set, but they must be converted to the <b>Cgo3D</b> format before being passed to the Obj3D constructors. The utility provided to do this conversion is <a href="#svgToCgo3D">svgToCgo3D</a>.</p>
 
-<div class="sectClosed">
-  <a id="scale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>scale</b>(s);</p>
-<h4>Description:</h4>
-<p>Each 3D point defining the outline path of 'obj', its centroid and normal have their X, Y and Z coordinates multiplied by the scale factor 's'. The effect of this is to expand or contract the size of the object with the expansion or contraction centred on the drawing origin (0, 0, 0). The new coordinate values over-write the old coordinates, so when ever the object is re-drawn it will maintain this new size. This 'scale' method should be used in positioning component panels in construction of arrays of Obj3D forming a multi-panel 3D object, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>s</b>:Number - The scale factor, greater than 0, by which the object's size in to be increased or decreased.</p>
-</div>
-  </dt>
-</div>
+<p><b>svgToCgo3D</b> translates the 'A' (draw arc) and other non-Cgo3D commands to Bézier curves and straight lines. It also handles the different coordinate system used by SVG editors which have the Y coordinate values +ve DOWN the screen and angles measured positive Clockwise. The <b>svgToCgo3D</b> method will flip the sign of all Y coordinates and the sign of the angles if the 2D data is passed as a String object. If the data is passed as an Array object then the coordinates are assumed to be in Cgo2D format which has the Y coordinates +ve up the screen and angles positive counter-clockwise and so don't need to be changed.</p>
 
-<div class="sectClosed">
-  <a id="setProperty" href="#" class="itemName" onclick="return toggleSection(this)">setProperty</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>setProperty</b>(propertyName, val);</p>
-<h4>Description:</h4>
-<p>Sets the values for various Obj3D properties. The property whose value is to be set is specified by the string 'propertyName' this string is not case sensitive and may take the values set out in column 1 of the table below.</p>
-<p>The new value is passed as 'value'. The value must be of an appropriate type and fall within the useful range of values for the property, and the types are listed in column 2 and range of values is listed in column 3. If the property is not one of the string values listed or the value is an incorrect type then the call is ignored and the current value remains unaltered.</p>
-<p>Each property has a Cango2D default value, so that if the property has not been set by a compile-time parameter, then the property will have been be set to the Cango2D default value, see <a href="#setPropertyDefault">setPropertyDefault</a>.</p>
-
-<table class="txtTbl" style="width: 520px; margin: 2em auto;text-align:center" cellpadding="1" cellspacing="1" border="1">
-<tr>
-<th>Name</th><th>Type</th><th>Range</th>
-</tr>
-<tr>
-<td>fillColor</td><td>CSS Color</td><td>valid RGBA color</td>
-</tr>
-<tr>
-<td>strokeColor</td><td>CSS Color</td><td>valid RGBA color</td>
-</tr>
-<tr>
-<td>backColor</td><td>CSS Color</td><td>valid RGBA color</td>
-</tr>
-<tr>
-<td>lineWidth</td><td>Number (pixels)</td><td>-</td>
-</tr>
-<tr>
-<td>lineCap</td><td>String</td><td>'butt', 'round', 'square'</td>
-</tr>
-<tr>
-<td>fontSize</td><td>Number (pixels)</td><td>-</td>
-</tr>
-<tr>
-<td>fontWeight</td><td>Number</td><td>100..900</td>
-</tr>
-<tr>
-<td>lorg</td><td>Number</td><td> 1..9 (see <a href="#lorg">lorg</a>) </td>
-</tr>
-</table>
-
-<h4>Parameters:</h4>
-  <p style='margin-left:2em'><b>propertyName</b>: String- The name of the Obj3D property the value of which is to be set. It must be one of the strings listed in column 1 of the table above. The string value is not case sensitive.</p>
-  <p style='margin-left:2em'><b>value</b>: (various types) - The new value for the property. Its type should match the type listed in column 2 of the table and its range should fall with the range set out in column 3 of the table above.</p>
-   </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="translate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>translate</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>Each 3D point defining the outline path, centroid and normal of 'obj', has the factors, 'x', 'y' and 'z' added to their respective coordinates. The effect of this is to move the object relative to its drawing origin. The new coordinate values over-write the old coordinates, so when ever the object is re-drawn it will have this displacement from its drawing origin. This 'translate' method should be used in positioning component panels in construction of arrays of Obj3D forming a multi-panel 3D object, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>x</b>:Number - The X coordinate offset measured in world coordinates to be added to all drawing command coordinates.</p>
-<p><b>y</b>:Number - The Y coordinate offset.</p>
-<p><b>z</b>:Number - The Z coordinate offset.</p>
-</div>
-  </dt>
-</div>
-
-</div>    <!--  manualItems  -->
-
-
-<h2>Group3D methods</h2>
-
-<div class="manualItems">
-
-<div class="sectClosed">
-  <a id="addObj" href="#" class="itemName" onclick="return toggleSection(this)">addObj</a>
-  <dt class="itemBody">
-<h3 id="addObjGrp3D" style="color:blue">addObj</h3>
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i>.<b>addObj</b>(...);</p>
-<h4>Description:</h4>
-<p>The method adds Obj3Ds or Group3Ds to the Group3D, grp. The arguments can be single Obj3Ds or Group3Ds or arrays of either. The array structure is discarded and the individual Obg3Ds or Group3Ds are added to the grp.children array.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b> . . . &nbsp;&nbsp;</b>:Obj3D, Group3D or arrays or either - The arguments variable is parsed to extract all Obj3D and Group3Ds and they are added to grp's children array.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="deleteObj" href="#" class="itemName" onclick="return toggleSection(this)">deleteObj</a>
-  <dt class="itemBody">
-<h3 id="deleteObjGrp3D" style="color:blue">deleteObj</h3>
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i>.<b>deleteObj</b>(obj);</p>
-<h4>Description:</h4>
-<p>If 'obj' is a child of the Group3D 'grp' then it is removed from the array of children.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>obj</b>:Obj3D or Group3D - The child to be removed from the Group3D.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="disableDrag" href="#" class="itemName" onclick="return toggleSection(this)">disableDrag</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i><b>.disableDrag()</b>;</p>
-<h4>Description:</h4>
-<p>Sets the <i>grp</i>.dragNdrop property to 'null' and removes the reference to grp's children from the array of objects to be checked for a hit on mousedown events.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>none</b></p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="enableDrag" href="#" class="itemName" onclick="return toggleSection(this)">enableDrag</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i><b>.enableDrag(grabCallback, dragCallback, dropCallback)</b>;</p>
-<h4>Description:</h4>
-<p>Calls the <i>Obj3D</i>.enableDrag method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. The three user defined call back functions 'grabCallback', 'dragCallback', 'dropCallback' are passed to the <i>Obj3D</i>.enableDrag method.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>grabCallback</b>:Function or null - This function to be called when a 'mousedown' event occurs within the outline of the grp's descendent Obj3D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-<p style='margin-left:2em'><b>dragCallback</b>:Function or null - This function to be called when a 'mousemove' event occurs after the mouse down event has occurred with the outline of the grp's descendent Obj3D. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-<p style='margin-left:2em'><b>dropCallback</b>:Function or null - This function to be called when a mouseup or mouseout event occurs after the mouse down event. An object containing the current cursor world coordinate position is the only parameter passed when the function is called. The cursor position object has x: and y: properties.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="rotate" href="#" class="itemName" onclick="return toggleSection(this)">rotate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i>.<b>rotate</b>(vx, vy, vz, theta);</p>
-<h4>Description:</h4>
-<p>Calls the <i>Obj3D</i>.rotate method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'rotate' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to a unit vector before use). The vector defines the axis, about which all points of the object will be rotated. The angle 'theta' is measured in degrees, +ve anti-clockwise when the vector is pointing at you (right hand rule).</p>
-<p><b>theta</b>:Number - The rotation angle measured in degrees, +ve in the direction your right hand fingers curl if your right thumb is pointing in the direction of the vector (right hand rule).</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="scale" href="#" class="itemName" onclick="return toggleSection(this)">scale</a>
-  <dt class="itemBody">
-<h3 id="scaleGrp3D" style="color:blue">scale</h3>
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i>.<b>scale</b>(s);</p>
-<h4>Description:</h4>
-<p>Calls the <i>Obj3D</i>.scale method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'scale' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>s</b>:Number - The scale factor, greater than 0, by which the descendant object's size in to be increased or decreased.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="translate" href="#" class="itemName" onclick="return toggleSection(this)">translate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>grp</i>.<b>translate</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>Calls the <i>Obj3D</i>.translate method on all grp's Obj3D children, and also calls the method on all the Obj3D children of grp's Group3D children and so on recursively for its descendants. This 'translate' method should be used in positioning the Group3D to form yet larger groups, not for animation.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-<p><b>x, y, z</b>:Numbers - The X, Y, Z coordinate offsets measured in world coordinates to be added to all drawing command coordinates.</p>
-</div>
-  </dt>
-</div>
-
-</div>    <!--  manualItems  -->
-
-
-<h2>Group3D and Obj3D transform methods</h2>
-
-<p>Both Obj3D and Group3D have a 'transform' property which is an object with the following methods:</p>
-
-<div class="manualItems">
-
-<div class="sectClosed">
-  <a id="tfmReset" href="#" class="itemName" onclick="return toggleSection(this)">transform.reset</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>transform.reset</b>();</p>
-<h4>Description:</h4>
-<p>Clears all the transforms that have been previously accumulated to be applied to the Obj3D or Group3D. If an object is rendered without further transforms being applied after a transform.reset, it will be rendered with its drawing origin at the world coordinate origin (0,0,0) with no rotation or scaling of the objects coordinate definitions.</p>
-<p>When applied to a Group3D reset will clear the transforms for that Group3D only i.e. its children and their children will only inherit an identity matrix from this Group3D. Child Group3Ds may have had transforms applied independently to them, these will not be cleared by a reset applied to an ancestor Group3D.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>none</b></p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="tfmRevolve" href="#" class="itemName" onclick="return toggleSection(this)">transform.revolve</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>transform.revolve</b>(vx, vy, vz, degs);</p>
-<h4>Description:</h4>
-<p>Adds a revolve matrix to the transforms to be applied to the object when rendered. The object will be revolved by 'degs' degrees about the axis defined by the vector starting from the world coordinate origin (not the object's drawing origin) and ending at the location vx, vy, vz. If no transform.translate has been applied prior to this method being called, transform.revolve behaves identically to transform.rotate, since the object drawing origin has not been moved from the world coordinate origin, but if the object has been translated, this method revolves the object around the world coordinate origin now some distance from the object, like the earth revolving around the sun.</p>
-<p>When applied to a Group3D this transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively.</p>
-<h4>Parameters:</h4>
-<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be revolved.</p>
-<p><b>degs</b>:Number - the angle by which this transform will revolve an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="tfmRotate" href="#" class="itemName" onclick="return toggleSection(this)">transform.rotate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>transform.rotate</b>(vx, vy, vz, degs);</p>
-<h4>Description:</h4>
-<p>Adds a rotate matrix to the transforms to be applied to the object when rendered. The object will be rotated by 'degs' degrees about the axis defined by a vector starting object's drawing origin and parallel to the vector vx, vy, vz. This rotation is independent of any transform.translate calls that may have moved the drawing origin from the world coordinate origin, like the earth rotating on it's axis.</p>
-<p>When applied to a Group3D this transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively.</p>
-<h4>Parameters:</h4>
-<p><b>vx, vy, vz</b>:Points - The x, y, and z components of a vector from the origin to the point vx,vy,vz. The vector can be of any length (it will be converted to unit length before use). The vector defines the axis, about which all points of the object will be rotated. The transform.rotate is applied before any transform.translate, so the axis of rotation is through the drawing origin rather than the world coordinate origin.</p>
-<p><b>degs</b>:Number - the angle by which this transform will rotate an object. The angle 'degs' is measured in degrees, +ve anti-clockwise if the axis vector is pointing at you (right hand rule).</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="tfmScale" href="#" class="itemName" onclick="return toggleSection(this)">transform.scale</a>
-  <dt class="itemBody">
-<h3 id="tfmScale" style="color:blue">transform.scale</h3>
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>transform.scale</b>(scl);</p>
-<h4>Description:</h4>
-<p>Adds a scale matrix to the transforms to be applied to the object when rendered. The object's coordinates will be scaled by a factor 'scl'. The objects dimensions enlarge or contract centered on the object's drawing origin, independent of any transform.translate that may have been applied.</p>
-<p>When applied to a Group3D this transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>scl</b>:Number - A number, greater than 0, by which the objects dimensions relative to it's drawing origin are scaled.</p>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="tfmTranslate" href="#" class="itemName" onclick="return toggleSection(this)">transform.translate</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'><i>obj</i>.<b>transform.translate</b>(x, y, z);</p>
-<h4>Description:</h4>
-<p>Adds a translation matrix to the transforms to be applied to the object when rendered. The object's drawing origin will be offset from its current location by x, y and z world coordinate units in the X direction, Y direction and Z direction respectively.</p>
-<p>When applied to a Group3D this transform matrix is applied to all the children of the Group3D and to the children of any Group3D children recursively.</p>
-<h4>Parameters:</h4>
-<p style='margin-left:2em'><b>x, y, z</b>:Numbers - The distance in the X, Y and Z directions respectively that the object will be moved relative to the world coordinate origin.</p>
-  </dt>
-</div>
-
-</div>    <!--  manualItems  -->
-
-
-<h2>Global utility methods</h2>
-
-<p>Both Obj3D and Group3D have a 'transform' property which is an object with the following methods:</p>
-
-<div class="manualItems">
-
-<div class="sectClosed">
-  <a id="calcIncAngle" href="#" class="itemName" onclick="return toggleSection(this)">calcIncAngle</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var degs = <b>calcIncAngle</b>(p1, p2, p3);</p>
-<h4>Description:</h4>
-<p>Calculates the included angle between the vectors from p1 to p2 and p1 to p3. If <b>A</b> is the vector defined as p2 - p1, and <b>B</b> is the vector p3 - p1, then the included angle (less than 180&deg;) between A and B will be returned. The sign may be determined from the cross product <b>A</b>&times;<b>B</b> direction (determined from right hand rule). The direction of the positive angle is counter-clockwise when the cross-product is pointing at you.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>p1</b>:Object {x:, y: z:} - A point in 3D space which is taken as the base point of the two vectors whose included angle is to be measured.</p>
-  <p><b>p2y</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p2 defines the first vector <b>A</b>.</p>
-  <p><b>p3</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p3 defines the second vector <b>B</b>.</p>
-</div>
-<h4>Returns:</h4>
-<div  style="padding-left:2em">
-<p>Number - An angle between the two 3D vectors measured in degrees.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="calcNormal" href="#" class="itemName" onclick="return toggleSection(this)">calcNormal</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var norm = <b>calcNormal</b>(p1, p2, p3);</p>
-<h4>Description:</h4>
-<p>Calculates the unit vector perpendicular to the plane defined by the points p1, p2 and p3. If <b>A</b> is the vector from p1 to p2 (p2 - p1), and <b>B</b> is the vector from p1 to p3 (p3 - p1), then the cross product <b>A</b>x<b>B</b> is calculated and normalised to have unit length. The direction of the normal will be given by the 'right hand rule', if A were along the X axis, and B along the Y axis the normal would be along the Z axis.</p>
-<h4>Parameters:</h4>
-<div  style="padding-left:2em">
-  <p><b>p1</b>:Object {x:, y: z:} - A point in 3D space which is taken as the base point of the two vectors defining the plane.</p>
-  <p><b>p2</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p2 defines a line in the plane.</p>
-  <p><b>p3</b>:Object {x:, y: z:} - A point in 3D coordinates, the vector from p1 to p3 defines a second line in the plane.</p>
-</div>
-<h4>Returns:</h4>
-<div  style="padding-left:2em">
-<p>Object {x:, y: z:} - A point in 3D space unit distance (world coordinates) from the origin in the direction normal to the plane defined by the three points p1, p2 and p3.</p>
-</div>
-  </dt>
-</div>
-
-<div class="sectClosed">
-  <a id="svgToCgo3D" href="#" class="itemName" onclick="return toggleSection(this)">svgToCgo3D</a>
-  <dt class="itemBody">
-<h4>Syntax:</h4>
-<p class='syntax'>var dataAry = <b>svgToCgo3D</b>(svgData, xRef, yRef);</p>
-<h4>Description:</h4>
-<p>This is utility accepts 2D path data in SVG or <a href="Cango2DUserGuide.html#svgCmds">Cgo2D</a> format and returns 3D path data in <a href="#Cgo3D">Cgo3D</a> format with all Z coordinate values set to 0. SVG data is passed as a String and Cgo2D data is passed as an Array.</p>
-<p>The SVG string format is designed to handle path definitions imported, via copy and paste, from SVG source editors. The path to be copied can be easily identified within the SVG source code. The path's '<b>d</b>' parameter holds the command letters and 2D coordinates for each segment of the path. The first command must be 'M' (move to) followed by a coordinates specifying the x,y values of the starting point of the path. This is followed by an arbitrarily long set of commands and associated coordinate values such as 'L' for a line segment, 'C' for a cubic Bézier curve, etc. All the SVG syntax commands are supported 'A','S','T', etc. commands are converted to simple cubic Bézier curves which preserve their shape under 3D transformation. The coordinates following each command letter are all in world coordinates.</p>
-<p>Since all SVG editors use a coordinate system with Y coordinates +ve down the screen, 'svgData' passed as a will be assumed to be in this format and <b>svgToCgo3D</b> will flip all the Y coordinates to match the Cango3D Right Handed coordinate system.</p>
-<p>The 'xRef,yRef' parameters are available to shift the drawing origin of the coordinates. The SVG editors usually have the drawing origin offset away in the top corner, 'xRef,yRef' allow it to be shifted to a more convenient position.</p>
-<p>The 'svgData' may also be in Cgo2D format, a JavaScript array containing single letter SVG commands followed by their corresponding 2D coordinates. The coordinate x,y pairs are numbers not strings. They are assumed to be in the correct Right Handed coordinate system with Y +ve up the screen. This format is suitable for programmatically generated data or data arrays copied from Cango or Cango2D applications.</p>
-<h4>Parameters:</h4>
-  <p><b style="color:blue">svgData</b>:String or Array - A string or array holding the drawing instructions for the path. If 'svgData' is a string then it must be in the format of the SVG path <b>d</b>="(path data)" attribute. If 'svgData' is an Array it is assumed to be in Cgo2D format.</p>
-  <p><b style="color:blue">xRef, yRef</b>:Numbers - X and Y offsets to be added to all the drawing coordinates of string data, to effectively move the path's drawing origin, measured in the original SVG editor coordinates (which will subsequently be interpreted as world coordinates).</p>
-<h4>Returns:</h4>
-<div  style="padding-left:2em">
-<p>An Cgo3D format data array consisting of single letter commands and their numeric coordinate x,y,z triplets (all z values will initially be 0) suitable for input to the Cango3D 'compile' methods.</p>
-</div>
-  </dt>
-</div>
-
-</div>    <!--  manualItems  -->
-
-<hr />
-
-<h3><i>Cgo3D</i> Data Syntax:</h3>
-<p>A path is defined in 3D by a array of one letter string commands and number triplets representing x,y,z coordinates.</p>
-<p>Path commands are case-sensitive, an uppercase command's coordinates use absolute positioning and a lowercase command's coordinates are relative the last point. The one exception to this is the first point must always be a 'M' (move) command using absolute positioning.</p>
 <table class="txtTbl" style="width: 620px">
 <tr>
   <th width="10%"><div class="tblTitle">Command</div></th>
@@ -1115,7 +1174,7 @@ function txtSimple(g)
 <tr>
   <td><div class="tblAtt">M</div></td>
   <td><div class="tblExp">x, y, z</div></td>
-  <td><div class="tblExp"><span style="font-weight:bold;">moveto</span>: Moves the pen to a new location. No line is drawn. All path data must begin with a 'moveto' command.</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">moveTo</span>: Moves the pen to a new location. No line is drawn. All path data must begin with a 'moveto' command.</div></td>
 </tr>
 <tr>
   <td colspan="3"><div class="tblMidDiv">Line Commands</div></td>
@@ -1123,7 +1182,7 @@ function txtSimple(g)
 <tr>
   <td><div class="tblAtt">L</div></td>
   <td><div class="tblExp">x, y, z</div></td>
-  <td><div class="tblExp"><span style="font-weight:bold;">lineto</span>: Draws a line from the current point to the point (x,y,z).</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">lineTo</span>: Draws a line from the current point to the point (x,y,z).</div></td>
 </tr>
 <tr>
   <td colspan="3"><div class="tblMidDiv">Cubic Bézier Curve Commands</div></td>
@@ -1131,7 +1190,7 @@ function txtSimple(g)
 <tr>
   <td><div class="tblAtt">C</div></td>
   <td><div class="tblExp">x1, y1, z1,</br>x2, y2, z2,</br>x, y, z</div></td>
-  <td><div class="tblExp"><span style="font-weight:bold;">curveto</span>: Draw a cubic Bézier curve to the point (x,y,z) where the points (x1,y1,z1) and (x2,y2,z2) are the start and end control points, respectively.</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">bezierCurveTo</span>: Draw a cubic Bézier curve to the point (x,y,z) where the points (x1,y1,z1) and (x2,y2,z2) are the start and end control points, respectively.</div></td>
 </tr>
 <tr>
   <td colspan="3"><div class="tblMidDiv">Quadratic Bézier Curve Commands</div></td>
@@ -1139,7 +1198,7 @@ function txtSimple(g)
 <tr>
   <td><div class="tblAtt">Q</div></td>
   <td><div class="tblExp">x1, y1, z1,</br>x, y, z</div></td>
-  <td><div class="tblExp"><span style="font-weight:bold;">Quadratic Bézier curveto</span>: Draw a quadratic Bézier between the last point and point (x,y,z) using the point (x1,y1,z1) as the control point.</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">quadraticCurveTo</span>: Draw a quadratic Bézier between the last point and point (x,y,z) using the point (x1,y1,z1) as the control point.</div></td>
 </tr>
 <tr>
   <td colspan="3"><div class="tblMidDiv">End Path Commands</div></td>
@@ -1147,11 +1206,12 @@ function txtSimple(g)
 <tr>
   <td><div class="tblAtt">Z</div></td>
   <td><div class="tblExp">-</div></td>
-  <td><div class="tblExp"><span style="font-weight:bold;">closepath</span>: Closes the path. A line is drawn from the last point to the first.</div></td>
+  <td><div class="tblExp"><span style="font-weight:bold;">closePath</span>: Closes the path. A line is drawn from the last point to the first.</div></td>
 </tr>
 </table>
 
-<hr />
+<hr class="ugHr" />
+
 <h3 id="colors">Colors:</h3>
 <p>Fill color, back color or stroke color parameters may be specified by a string representing a color in one of the CSS color formats.</p>
 <h4>CSS Color formats</h4>
@@ -1163,7 +1223,8 @@ function txtSimple(g)
 - Predefined colors names specified by the <a href="http://www.w3.org/TR/css3-color/#svg-color">Extended CSS Color List</a> eg. 'red', 'blue', 'maroon', 'palegoldenrod', 'wheat' etc.  There are 143 standard colors named in the list and 'transparent' is also supported.
  </p>
 
-<hr />
+<hr class="ugHr" />
+
 <h3 id="CangoJSON">Cango3D JSON format:</h3>
 <p>The Cango3D JSON file format is suitable for saving the definition of 3D objects that have been created by Cango3D. The file format was designed for recording the properties of an Obj3D or Group3D in a text file that can be saved to disk. The file can then loaded into a web page with AJAX methods, and parsed into a JavaScript object with JSON.parse(). The <b>JSONtoObj3D</b> method can re-create the Obj3D or Group3D that was originally encoded and saved in the file.</p>
 <p>The Cango3D JSON format is recursive with a branch ending with the properties of Obj3D. If the current object's 'type' property is 'GROUP' then there is a further generation of children to be processed. If the 'type' is 'PATH' or 'SHAPE' then it is a terminal node with all the properties required to re-create the original Obj3D.</p>
@@ -1193,7 +1254,8 @@ function txtSimple(g)
 </pre>
 </div>
 
-<hr />
+<hr class="ugHr" />
+
 <h3 id="lorg">LORG (locate origin):</h3>
 <p>LORG is a parameter used as shorthand for setting the location of the drawing origin within the bounding rectangle of text. 'lorg' can take integer values 1..9. lorg=1 locates the drawing origin at the top,left of the text, lorg=2 locates it at the top,center of the text, and so on.</p>
 
@@ -1207,6 +1269,112 @@ function txtSimple(g)
   <p class="caption"><b>Figure 1.</b> Placement of the 9 labels show all possible lorg values. The text drawing origin is indicated by the adjacent grid intersection.</p>
 </div>  <!-- captionHolder -->
 
+<hr class="ugHr" />
+
+<h3 id="shapeDefs3D">shapeDefs3D</h3>
+<p>Cango3D makes available the <b>shapeDefs3D</b> object which has methods to create the Cgo3D data defining the outline path of many commonly used shapes.</p>
+
+<div class="manualItems">
+
+<div class="sectClosed">
+  <a id="circle" href="#" class="itemName" onclick="return toggleSection(this)">circle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs3D.<b>circle</b>(d);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of a circle with diameter 'd'. The returned array is suitable as input parameter for the Obj3D constructor for PATH or SHAPE types objects. The Obj3D drawing origin will be at the center of the circle.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>d</b>:Number - Diameter of the circle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the circle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ellipse" href="#" class="itemName" onclick="return toggleSection(this)">ellipse</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs3D.<b>ellipse</b>(w, h);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of a ellipse with width (X axis) 'w' and height (Y axis) 'h'. The returned array is suitable as input parameter for the Obj3D constructor for PATH or SHAPE types objects. The Obj3D drawing origin will be at the center of the ellipse.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>w</b>:Number - The width (X dimension) of the ellipse measured in the world coordinates.</p>
+<p><b>h</b>:Number - The height (Y dimension) of the ellipse measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the ellipse.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="square" href="#" class="itemName" onclick="return toggleSection(this)">square</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs3D.<b>square</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of a square with sides of length 's'. The returned array is suitable as input parameter for the Obj3D constructor for PATH or SHAPE types objects. The Obj3D drawing origin will be at the center of the square.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - Side length of the square measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the square.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="triangle" href="#" class="itemName" onclick="return toggleSection(this)">triangle</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>shapeData</i> = shapeDefs3D.<b>triangle</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of an equilateral triangle with sides of length 's'. The returned array is suitable as input parameter for the Obj3D constructor for PATH or SHAPE types objects. The Obj3D drawing origin will be at the center of the triangle.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each side of the triangle measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the triangle.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="cross" href="#" class="itemName" onclick="return toggleSection(this)">cross</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs3D.<b>cross</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of a cross with horizontal and vertical arms of length 's'. The returned array is suitable as input parameter for the Obj3D constructor for PATH type object. The Obj3D drawing origin will be at the center of the cross.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of the horizontal and vertical arms of the cross, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the cross.</p>
+  </dt>
+</div>
+
+<div class="sectClosed">
+  <a id="ex" href="#" class="itemName" onclick="return toggleSection(this)">ex</a>
+  <dt class="itemBody">
+<h4>Syntax:</h4>
+<p class='syntax'>var <i>pathData</i> = shapeDefs3D.<b>ex</b>(s);</p>
+<h4>Description:</h4>
+<p>Generates a Cgo3D format data array defining the outline path of a ex with arm lengths 's'. The returned array is suitable as input parameter for the Obj3D constructor for PATH type object. The Obj3D drawing origin will be at the center of the ex.</p>
+<h4>Parameters:</h4>
+<div style="padding-left:2em">
+<p><b>s</b>:Number - The length of each arm of the ex, measured in the world coordinates.</p>
+</div>
+<h4>Returns:</h4>
+<p style='margin-left:2em'>Array - Array of Cgo3D format commands and associated coordinate pairs defining the outline of the ex.</p>
+  </dt>
+</div>
+
+</div> <!-- manualItems -->
+
        </div>  <!-- text_01 -->
       </div>   <!--  content -->
     </div>  <!-- page  -->
@@ -1214,4 +1382,6 @@ function txtSimple(g)
   </div>   <!-- outer -->
 
 </body>
+
+<!-- Mirrored from www.arc.id.au/Canvas3DManual.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 25 Oct 2017 16:39:14 GMT -->
 </html>

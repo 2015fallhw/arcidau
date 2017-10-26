@@ -1,0 +1,267 @@
+/*================================================================
+  Filename: 2ColStickyScroll-16.css
+
+  Style Sheet for ARC Web Pages
+
+  Date    Description                                          By
+  -------|----------------------------------------------------|---
+  14Nov13 First release with Leaf Corcoran's Sticky-kit nav    ARC
+  26Mar14 Logo z-index=2 to sit above the sticky nav panel     ARC
+  18May14 Use accordian style menu                             ARC
+  19May14 Add transition effects                               ARC
+  22May14 Add height to menu input button to stop inheritance  ARC
+  26May14 Made accordian specifiers prefixed with #sidenav     ARC
+  09Jan15 Assume support for linear-gradient                   ARC
+  10Jan15 Reduced height of items, menus getting too long      ARC
+  03Jan16 Use stickyfill.js                                    ARC
+  15Jan16 Declutter and lighten                                ARC
+  05Mar16 bugfix: header missing border-bottom
+          Use header to set min page width not content margin  ARC
+  24Apr17 Use browser support for sticky no javascript         ARC
+ =================================================================*/
+
+/*=================================
+  Layout
+ =================================*/
+
+  body {
+    background-color: #d0d0d0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: Arial,Helvetica,sans-serif;
+  }
+
+  .outer {
+    position:relative;
+    width: 1000px;
+    padding: 0;
+    margin: 0 auto;
+  }
+
+  #page {
+    position: relative;
+    width: 780px;
+    padding: 0;
+    margin: 0 0 0 220px;
+  }
+
+/*=================================
+  Navigation Stuff
+ =================================*/
+
+  .sticky {
+    position: relative;  /* for MS browsers that don't support sticky */
+    position: sticky;
+    top: 0px;
+  }
+
+  #sideNavBkg {
+    position: absolute;
+    background-color:#687888;  /* sidebar color for sidebar shorter than content */
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    margin: 0;
+    padding: 0;
+  }
+
+  #sideNav {
+    float: left;
+    width: 200px;
+    font-family: Arial, Helvetica;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 20px 0 10px 0;
+    margin: 0;
+  }
+
+  /*==== Accordian menu ====*/
+
+  #sideNav ul {
+  	list-style:none;
+  	margin:0;
+  	padding:0;
+  	margin:0;
+  }
+
+  #sideNav ul li input {
+   	border-top: 1px solid #687078;
+   	border-left: 1px solid #586068;
+   	border-right: 1px solid #505e6a;
+  	border-bottom: 1px solid #43474d;
+    border-radius: 2px;
+    font-family: Helvetica,Arial,sans-serif;
+    font-weight: bold;
+  	text-shadow: 0 0 1px #000;
+  	background: #788898; /* fallback colour */
+  	background: linear-gradient(to bottom right, #8898a8, #586878);
+    padding: 5px 0px 5px 5px;
+    width: 200px;
+    height: 33px;
+    color: #f8f8f8;
+    text-align: left;
+    margin: 0;
+  }
+
+  #sideNav ul li input:hover {
+  	background: #98acc4;
+  	background: linear-gradient(to bottom right, #b0c4de, #8094ae);
+    color: #f0f0f0;
+  }
+
+  #sideNav ul li.sectOpen input {
+  	background: #98acc4;
+  	text-shadow: 0 0 1px #444444;
+    color: #ffffff;
+  }
+
+  #sideNav ul li.sectOpen ul.options {
+  	height: auto;
+    min-height: 30px;
+  	max-height: 300px;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+
+  #sideNav ul li.sectClosed ul.options {
+  	max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+
+  #sideNav ul ul {
+    width: 200px;
+  }
+
+  #sideNav ul ul li a {
+  	display: block;
+  	padding: 6px 6px;
+    color: #333;
+    font-weight: bold;
+  	text-decoration:none;
+    border-left: 1px solid #888888;
+    border-right: 1px solid #888888;
+    border-bottom: 1px solid #888888;
+    background: #f8fafc;
+  }
+
+  #sideNav ul ul li a:hover {
+  	color: #000000;
+    background: #d0dcec;
+  }
+
+  /*================================
+    Content Stuff
+   ================================*/
+
+  #content {
+    position: relative;
+    width: 750px;
+    margin: 20px 0px 10px 0;
+    padding: 10px 10px 20px 20px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    background-color: #ffffff;
+  }
+
+  #content .h1Bkg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 55px;
+    background-color: #687888;
+  	background: linear-gradient(to bottom right, #78889c, #48586c);
+  }
+
+  /*================================
+    Header Stuff
+   ================================*/
+
+  .header {
+    position: relative;
+    width: 1000px;
+    margin: 0 auto;
+    padding-right: 20px;
+    height: 100px;
+    border-bottom: 1px solid #58606d;
+  }
+
+  #headerBkg {
+    position:absolute;
+    margin:0;
+    padding:0;
+    border-bottom: 1px solid #58606d;
+    width:100%;
+    height:100px;
+  }
+
+  #logo {
+    position: absolute;
+    top: 18px;
+    left: 25px;
+    width: 57px;
+    height: 53px;
+    background-color: #58606d;
+    border: 2px solid #cccccc;
+    z-index: 2;   /* above sticky scroll nav */
+  }
+
+  #logoHolder {
+    position: absolute;
+    width: 200px;
+    height: 100px;
+    overflow:hidden;
+    z-index:2;
+    background-color: transparent;
+    border-bottom:1px solid #d0d0d0;
+  }
+
+  #logo a.logoText {
+    display: block;
+    width: 51px;
+    height: 42px;
+    font-family: Verdana, Arial;
+    font-size: 26px;
+    font-weight: bold;
+    line-height: 19px;
+    letter-spacing: 0;
+    text-align: center;
+    background-color: #f2f4f6;
+    color: #687288;
+    margin: 3px;
+    padding: 3px 0px 2px 0px;
+    text-decoration: none;
+  }
+
+  p.banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #687288;
+    font-family: "Trebuchet MS",Verdana,Arial;
+    font-size: 58px;
+    letter-spacing: 7px;
+    line-height: 1.5em;
+    margin: 6px 0 0 179px;
+    padding: 0;
+  }
+
+  p.inverse {
+    color: #cccccc;
+  }
+
+  p.hdrBlurb {
+    position: absolute;
+    top: 58px;
+    right: 20px;
+    color: #687288;
+    font-family: Verdana;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+  }
